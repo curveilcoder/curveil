@@ -1,0 +1,252 @@
+/*
+ * Forms: one look for every input a user fills in. Amount boxes hold the label, balance, a large
+ * number and the token; text inputs and selects share one height, border and focus ring; choices
+ * are segmented buttons; the summary of what will happen sits in a quiet box above the action.
+ */
+:root {
+  --ink-2: #c9d1e3;
+  --field-bg: #060912;
+  --field-line: #1d2742;
+  --field-hover: #2c3858;
+  --placeholder: #4b5676;
+  --ring: 0 0 0 3px rgba(37, 99, 255, 0.22);
+  --radius-field: 8px;
+}
+
+/* ---------- Labels, hints and errors ---------- */
+.field { display: grid; gap: 8px; min-width: 0; align-content: start; }
+.field > span.small.muted:first-child,
+.field-top > span.small.muted:first-child,
+.field-label { color: var(--ink-2); font-size: 13.5px; font-weight: 500; letter-spacing: -0.005em; }
+.field-label .faint, .field > span.small.muted:first-child .faint { font-weight: 400; }
+.field > span.small.muted:not(:first-child), .field-hint { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.field-error { font-size: 13px; color: var(--bad); margin: 0; line-height: 1.5; }
+.field-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.field-count { font-family: var(--font-mono); font-size: 11.5px; color: var(--faint); font-weight: 400; }
+.field-count[data-over="true"] { color: var(--bad); }
+
+/* ---------- Text inputs, text areas and selects ---------- */
+.text-input, .text-input:not(.amount), .text-area, .token-select.wide, .field > select, .slip-input, .search input {
+  font: inherit; font-size: 15.5px; color: var(--ink); background-color: var(--field-bg);
+  border: 1px solid var(--field-line); border-radius: var(--radius-field);
+  min-height: 48px; padding: 0 14px; width: 100%; min-width: 0;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.text-area, textarea.text-input { padding: 12px 14px; line-height: 1.55; resize: vertical; min-height: 96px; }
+.text-input::placeholder, .text-area::placeholder, .slip-input::placeholder, .search input::placeholder, .tbox-input::placeholder { color: var(--placeholder); opacity: 1; }
+.text-input:hover, .text-area:hover, .token-select:hover, .slip-input:hover, .search input:hover { border-color: var(--field-hover); }
+.text-input:focus, .text-area:focus, .token-select:focus, .slip-input:focus, .search input:focus { border-color: var(--shielded); box-shadow: var(--ring); outline: none; }
+.text-input[aria-invalid="true"], .text-area[aria-invalid="true"] { border-color: rgba(255, 122, 122, 0.7); }
+.text-input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px rgba(255, 122, 122, 0.18); }
+.text-input[readonly] { color: var(--muted); }
+.search input { width: min(320px, 100%); min-height: 44px; }
+
+/* Selects draw their own chevron so they match the inputs. */
+.token-select, .field > select {
+  appearance: none; -webkit-appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%2399a4bd' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px;
+}
+.token-select { font: inherit; color: var(--ink); background-color: var(--field-bg); border: 1px solid var(--field-line); border-radius: var(--radius-field); min-height: 44px; padding-left: 14px; }
+.token-select option, .field > select option, .token-select optgroup { background: #0b1020; color: var(--ink); }
+
+/* ---------- Amount box ---------- */
+.tbox {
+  display: grid; gap: 6px; padding: 14px 16px 14px; border: 1px solid var(--field-line); border-radius: 10px;
+  background: var(--field-bg); transition: border-color 0.15s, box-shadow 0.15s; min-width: 0;
+}
+.tbox:hover { border-color: var(--field-hover); }
+.tbox:focus-within { border-color: var(--shielded); box-shadow: var(--ring); }
+.tbox[data-invalid="true"] { border-color: rgba(255, 122, 122, 0.7); }
+.tbox[data-invalid="true"]:focus-within { box-shadow: 0 0 0 3px rgba(255, 122, 122, 0.18); }
+.tbox[data-readonly="true"] { background: var(--surface); }
+.tbox[data-readonly="true"]:focus-within { border-color: var(--field-hover); box-shadow: none; }
+.tbox-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 22px; }
+.tbox-top label { color: var(--ink-2); font-size: 13.5px; font-weight: 500; }
+.tbox-bal { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.tbox-bal .mono { color: var(--ink-2); }
+.tbox-max {
+  border: 1px solid var(--line-strong); background: transparent; color: var(--shielded-text); cursor: pointer;
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 4px; line-height: 1.2;
+}
+.tbox-max:hover { border-color: var(--shielded); background: var(--shielded-dim); color: #fff; }
+.tbox-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.tbox-input {
+  flex: 1; min-width: 0; width: 0; border: 0; background: transparent; outline: none; padding: 0; margin: 0;
+  font-family: var(--font-sans); font-size: 30px; font-weight: 500; letter-spacing: -0.025em; line-height: 1.2;
+  color: #fff; font-variant-numeric: tabular-nums; min-height: 48px;
+}
+.tbox[data-readonly="true"] .tbox-input { color: #fff; cursor: default; }
+.tbox-foot { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.tbox-foot.bad-text { color: var(--bad); }
+/* The token sits inside the box as a pill. */
+.tbox .token-select, .tbox .token-tag {
+  flex: none; min-height: 40px; min-width: 0; border-radius: 999px; background-color: var(--surface-2);
+  border: 1px solid var(--line-strong); font-family: var(--font-sans); font-size: 15px; font-weight: 500;
+  color: #fff; padding: 0 34px 0 14px; box-shadow: none;
+}
+.tbox .token-select { background-position: right 12px center; }
+.tbox .token-tag { padding: 0 14px 0 8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.tbox .token-select:focus { border-color: var(--shielded); box-shadow: var(--ring); }
+@media (max-width: 520px) { .tbox-input { font-size: 26px; } .tbox { padding: 12px 14px; } }
+
+/* Flip sits on the seam between the two amount boxes. */
+.flip {
+  justify-self: center; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px;
+  border: 1px solid var(--line-strong); background: var(--bg); color: var(--ink-2); cursor: pointer;
+  margin: -24px 0; position: relative; z-index: 1; transition: border-color 0.15s, color 0.15s, transform 0.2s;
+}
+.flip:hover { border-color: var(--shielded); color: #fff; transform: rotate(180deg); }
+.flip svg { width: 16px; height: 16px; }
+
+/* ---------- Choices ---------- */
+.seg button { transition: background 0.15s, color 0.15s; }
+.seg button:hover:not([aria-pressed="true"]):not(:disabled) { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--surface-2); color: #fff; box-shadow: inset 0 0 0 1px var(--line-strong); }
+/* Inside a form a choice row fills the width, so every option is easy to hit. */
+.field .seg, .slippage .seg, .seg.fill { display: flex; width: 100%; background: var(--field-bg); border-color: var(--field-line); border-radius: var(--radius-field); }
+.field .seg button, .slippage .seg button, .seg.fill button { flex: 1 1 0; justify-content: center; border-radius: 5px; }
+.slippage .seg .slip-input { flex: 1.3 1 0; width: auto; min-height: 36px; font-size: 14px; border-radius: 5px; padding: 0 10px; text-align: center; }
+.slippage { display: grid; gap: 8px; }
+.side-seg { border-radius: var(--radius-field); }
+.side-seg button { min-height: 42px; font-size: 15px; }
+.side-seg button[data-side="long"][aria-pressed="true"] { box-shadow: inset 0 0 0 1px rgba(111, 211, 164, 0.4); }
+.side-seg button[data-side="short"][aria-pressed="true"] { box-shadow: inset 0 0 0 1px rgba(255, 122, 122, 0.4); }
+
+/* Option cards: a choice with a title and a line of explanation. */
+.choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.choice {
+  display: grid; gap: 2px; text-align: left; padding: 12px 14px; border-radius: var(--radius-field); cursor: pointer;
+  border: 1px solid var(--field-line); background: var(--field-bg); color: var(--ink); transition: border-color 0.15s, background 0.15s;
+}
+.choice:hover { border-color: var(--field-hover); }
+.choice[aria-pressed="true"] { border-color: var(--shielded); background: var(--shielded-dim); }
+.choice strong { font-size: 14.5px; font-weight: 500; }
+.choice span { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+
+/* Checkboxes */
+.check { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; padding: 12px 14px; border: 1px solid var(--field-line); border-radius: var(--radius-field); background: var(--field-bg); }
+.check:hover { border-color: var(--field-hover); }
+.check:has(input:checked) { border-color: rgba(37, 99, 255, 0.5); }
+.check input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none; flex: none; margin: 2px 0 0; width: 18px; height: 18px; border-radius: 4px;
+  border: 1px solid var(--line-strong); background: var(--bg); display: grid; place-content: center; cursor: pointer;
+}
+.check input[type="checkbox"]::after { content: ""; width: 9px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translate(1px, -1px); opacity: 0; }
+.check input[type="checkbox"]:checked { background: var(--shielded); border-color: var(--shielded); }
+.check input[type="checkbox"]:checked::after { opacity: 1; }
+.check input[type="checkbox"]:focus-visible { outline: 2px solid var(--shielded-text); outline-offset: 2px; }
+
+/* Range slider */
+input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; height: 28px; cursor: pointer; }
+input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: var(--line-strong); }
+input[type="range"]::-moz-range-track { height: 4px; border-radius: 999px; background: var(--line-strong); }
+input[type="range"]::-moz-range-progress { height: 4px; border-radius: 999px; background: var(--shielded); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 4px solid var(--shielded); margin-top: -7px; box-shadow: 0 0 0 4px rgba(37, 99, 255, 0.18); }
+input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 4px solid var(--shielded); }
+.range-scale { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--faint); margin-top: -4px; }
+
+/* File upload: a drop target with the preview inside it. */
+.upload {
+  display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px dashed var(--line-strong); border-radius: var(--radius-field);
+  background: var(--field-bg); cursor: pointer; transition: border-color 0.15s, background 0.15s;
+}
+.upload:hover, .upload[data-drag="true"] { border-color: var(--shielded); background: rgba(37, 99, 255, 0.06); }
+.upload:focus-within { border-color: var(--shielded); box-shadow: var(--ring); }
+.upload input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.upload-thumb { width: 56px; height: 56px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); overflow: hidden; }
+.upload-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.upload-thumb svg { width: 22px; height: 22px; }
+.upload-text { display: grid; gap: 2px; min-width: 0; }
+.upload-text strong { font-size: 14.5px; font-weight: 500; color: #fff; }
+.upload-text span { font-size: 13px; color: var(--muted); }
+.upload .btn { margin-left: auto; }
+
+/* ---------- Sections of a long form ---------- */
+.form-step { display: grid; gap: 16px; padding-top: 20px; border-top: 1px solid var(--line); }
+.form-step:first-child { padding-top: 0; border-top: 0; }
+.form-step-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.form-step-head .step-n { font-family: var(--font-mono); font-size: 12px; color: var(--shielded-text); }
+.form-step-head h3 { margin: 0; font-size: 17px; font-weight: 500; color: #fff; letter-spacing: -0.01em; }
+.form-step-head p { margin: 0; flex-basis: 100%; font-size: 13.5px; color: var(--muted); }
+.form-step-head .optional { font-size: 12.5px; color: var(--faint); }
+
+/* ---------- What will happen ---------- */
+dl.rows.summary { border: 1px solid var(--line); border-radius: var(--radius-field); background: var(--field-bg); padding: 2px 14px; }
+dl.rows.summary > div { padding: 10px 0; font-size: 13.5px; }
+dl.rows.summary dd { color: var(--ink); }
+.quote-line { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); padding: 0 2px; }
+.quote-line .mono { color: var(--ink-2); }
+
+/* ---------- The action ---------- */
+.btn-block { width: 100%; min-height: 52px; font-size: 15.5px; border-radius: var(--radius-field); }
+.btn-primary:disabled { background: var(--surface-2); border-color: var(--line-strong); color: var(--muted); opacity: 1; }
+.btn-primary:not(:disabled):hover { background: #dfe6f5; border-color: #dfe6f5; }
+.wallet-gate { border-radius: var(--radius-field); background: var(--field-bg); padding: 14px 16px; }
+/* Without a wallet, Connect is the next step: show it as the full-width main action, like the button it stands in for. */
+.wallet-gate { flex-direction: column; align-items: stretch; gap: 12px; }
+.wallet-gate .connect { width: 100%; }
+.wallet-gate .connect > .btn { width: 100%; min-height: 52px; font-size: 15.5px; border-radius: var(--radius-field); }
+.range-kv dd { font-family: var(--font-mono) !important; font-size: 15px !important; }
+.preview-empty { display: grid; place-items: center; min-height: 120px; border: 1px dashed var(--line); border-radius: var(--radius-field); padding: 16px; text-align: center; }
+.choice-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 420px) { .choice-grid.two { grid-template-columns: minmax(0, 1fr); } }
+
+/* Radio cards: one option per row, with a title and what it means. */
+.check input[type="radio"] {
+  appearance: none; -webkit-appearance: none; flex: none; margin: 3px 0 0; width: 18px; height: 18px; border-radius: 50%;
+  border: 1px solid var(--line-strong); background: var(--bg); cursor: pointer; display: grid; place-content: center;
+}
+.check input[type="radio"]::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #fff; opacity: 0; }
+.check input[type="radio"]:checked { border-color: var(--shielded); background: var(--shielded); }
+.check input[type="radio"]:checked::after { opacity: 1; }
+.check input[type="radio"]:disabled { opacity: 0.5; cursor: not-allowed; }
+.check:has(input[type="radio"]:checked) { border-color: var(--shielded); background: var(--shielded-dim); }
+.radio-card[data-disabled] { cursor: not-allowed; }
+.radio-card[data-disabled] .opt-text { opacity: 0.75; }
+.opt-text { display: grid; gap: 2px; min-width: 0; }
+.opt-text strong { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 14.5px; font-weight: 500; color: #fff; }
+.opt-text > span { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.opt-fee { font-size: 12px; color: var(--ink-2); font-weight: 400; }
+
+/* Passphrases */
+.pass-wrap { position: relative; display: block; }
+.pass-wrap .text-input { padding-right: 72px; }
+.pass-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: var(--surface-2); color: var(--ink-2); font-size: 12.5px; padding: 6px 10px; border-radius: 5px; cursor: pointer; }
+.pass-toggle:hover { color: #fff; }
+.strength { display: block; height: 3px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.strength > span { display: block; height: 100%; transition: width 0.2s, background 0.2s; }
+.field-row > .btn { min-height: 48px; border-radius: var(--radius-field); }
+.field-row > .text-input { flex: 1; }
+.optional { font-size: 12.5px; color: var(--faint); font-weight: 400; margin-left: 4px; }
+
+/* ---------- Token picker: logo, symbol and name ---------- */
+.tpick { position: relative; flex: none; }
+.tpick.wide { width: 100%; }
+.tpick-btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px 0 8px; cursor: pointer;
+  border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line-strong); color: #fff;
+  font: 500 15px var(--font-sans);
+}
+.tpick.wide .tpick-btn { width: 100%; min-height: 44px; border-radius: var(--radius-field); background: var(--field-bg); border-color: var(--field-line); padding-left: 10px; }
+.tpick.wide .tpick-btn svg { margin-left: auto; }
+.tpick-btn svg { color: var(--muted); }
+.tpick-btn:hover { border-color: var(--field-hover); }
+.tpick-btn:focus-visible { outline: none; border-color: var(--shielded); box-shadow: var(--ring); }
+.tpick-pop {
+  position: absolute; z-index: 30; right: 0; top: calc(100% + 6px); width: min(320px, calc(100vw - 32px));
+  background: #0b1020; border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  padding: 8px; display: grid; gap: 6px;
+}
+.tpick.wide .tpick-pop { left: 0; right: auto; width: 100%; min-width: 260px; }
+.tpick-search { font: inherit; color: var(--ink); background: var(--field-bg); border: 1px solid var(--field-line); border-radius: 8px; min-height: 40px; padding: 0 12px; }
+.tpick-search:focus { outline: none; border-color: var(--shielded); box-shadow: var(--ring); }
+.tpick-list { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow-y: auto; display: grid; gap: 2px; }
+.tpick-list li { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; min-height: 44px; }
+.tpick-list li.active, .tpick-list li[aria-selected="true"] { background: var(--surface-2); }
+.tpick-sym { color: #fff; font-weight: 500; }
+.tpick-name { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tpick-none { color: var(--muted); cursor: default; }
+.check-row { display: flex; align-items: flex-start; gap: 10px; color: var(--ink-2); cursor: pointer; line-height: 1.45; }
+.check-row input { width: 18px; height: 18px; margin-top: 1px; accent-color: var(--shielded); flex: none; }

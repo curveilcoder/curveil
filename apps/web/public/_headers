@@ -1,0 +1,15 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.reown.com; img-src 'self' data: https://api.web3modal.org https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com blob: https://curveil-api-testnet.zeronym.workers.dev http://localhost:8787; connect-src 'self' https://api.web3modal.org https://*.web3modal.org https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com wss://*.reown.com https://*.coinbase.com wss://www.walletlink.org https://curveil-api-testnet.zeronym.workers.dev https://curveil-broadcaster-testnet.zeronym.workers.dev http://localhost:8788 https://rpc.testnet.chain.robinhood.com http://localhost:8787; frame-src https://verify.walletconnect.com https://verify.walletconnect.org https://secure.walletconnect.org https://*.reown.com; frame-ancestors 'none'; base-uri 'self'
+
+/circuits/*
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+
+/sdk/*
+  Content-Type: application/gzip
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *

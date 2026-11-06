@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "curveil-web",
+  "compatibility_date": "2026-10-20",
+  "main": "worker/gate.ts",
+  "assets": { "directory": "./dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": true },
+  "rules": [{ "type": "Data", "globs": ["**/*.woff2"] }, { "type": "Text", "globs": ["**/*.svg"] }],
+  "env": {
+    "testnet": { "name": "curveil-web-testnet" },
+    // Deployed by scripts/deploy-mainnet.mjs. curveil.xyz is its custom domain.
+    "mainnet": { "name": "curveil-web-mainnet", "routes": [{ "pattern": "curveil.xyz", "custom_domain": true }], "vars": { "SITE_LOCK": "off" } }
+  }
+}
