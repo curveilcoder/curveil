@@ -1,0 +1,59 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "curveil-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Indexer"] }],
+  "env": {
+    "testnet": {
+      "name": "curveil-api-testnet",
+      "vars": {
+        "NETWORK": "testnet",
+        "RPC_URL": "https://rpc.testnet.chain.robinhood.com",
+        "ALLOWED_ORIGINS": "https://curveil-web-testnet.zeronym.workers.dev,http://localhost:5173",
+        // Testnet indexes every two minutes when idle, so it stays inside the account's Durable Object quota.
+        "INDEXER_IDLE_MS": "120000"
+      },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "curveil-testnet", "database_id": "f2513eb5-df11-4056-8dc0-27ab71f6b8b5", "migrations_dir": "migrations" }
+      ],
+      "kv_namespaces": [{ "binding": "CONFIG", "id": "7384e92ad1884cd49946f29e2d61bdd8" }],
+      "durable_objects": { "bindings": [{ "name": "INDEXER", "class_name": "Indexer" }] },
+      "services": [{ "binding": "KEEPER", "service": "curveil-keeper-testnet" }],
+      "ratelimits": [
+        { "name": "UPLOADS", "namespace_id": "4663001", "simple": { "limit": 6, "period": 60 } },
+        // Requests per minute: per IP without a key, per key with one (see src/auth.ts LIMITS).
+        { "name": "PUBLIC_LIMIT", "namespace_id": "4663002", "simple": { "limit": 300, "period": 60 } },
+        { "name": "KEY_LIMIT", "namespace_id": "4663003", "simple": { "limit": 3000, "period": 60 } }
+      ],
+      "queues": { "producers": [{ "binding": "WEBHOOKS", "queue": "curveil-webhooks-testnet" }] }
+      // Secret: WEBHOOK_MASTER_KEY (the same value as the webhooks Worker's).
+    },
+    "mainnet": {
+      // Not deployed until the go-ahead: see scripts/deploy-mainnet.mjs. RPC_URL is a secret here.
+      "name": "curveil-api-mainnet",
+      "routes": [{ "pattern": "api.curveil.xyz", "custom_domain": true }],
+      // RPC_URL (a secret, Alchemy's free plan) serves every call except eth_getLogs, which that plan caps
+      // at 10 blocks. Logs come from LOGS_RPC_URL (a secret, NodeFlare's free key: up to 5,000 blocks a
+      // call, about 120,000 calls a month), so the indexer polls every 30 seconds once caught up.
+      "vars": { "NETWORK": "mainnet", "ALLOWED_ORIGINS": "https://curveil.xyz,https://curveil-web-mainnet.zeronym.workers.dev", "MAX_LOG_RANGE": "5000", "INDEXER_IDLE_MS": "30000" },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "curveil-mainnet", "database_id": "3f0d0272-4eb7-4d45-8ebf-31acb49b24a3", "migrations_dir": "migrations" }
+      ],
+      "kv_namespaces": [{ "binding": "CONFIG", "id": "d0efd6b92ac84ebcb6a2e80873afa77c" }],
+      "durable_objects": { "bindings": [{ "name": "INDEXER", "class_name": "Indexer" }] },
+      "services": [{ "binding": "KEEPER", "service": "curveil-keeper-mainnet" }],
+      "ratelimits": [
+        { "name": "UPLOADS", "namespace_id": "4663101", "simple": { "limit": 6, "period": 60 } },
+        { "name": "PUBLIC_LIMIT", "namespace_id": "4663102", "simple": { "limit": 300, "period": 60 } },
+        { "name": "KEY_LIMIT", "namespace_id": "4663103", "simple": { "limit": 3000, "period": 60 } }
+      ],
+      "queues": { "producers": [{ "binding": "WEBHOOKS", "queue": "curveil-webhooks-mainnet" }] },
+      // No backup timer: the account's free plan has no cron triggers left, and every request
+      // restarts the indexer loop. On Workers Paid, set ["* * * * *"] to restart it every minute.
+      "triggers": { "crons": [] }
+    }
+  }
+}

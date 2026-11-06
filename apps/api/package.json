@@ -1,0 +1,26 @@
+{
+  "name": "@curveil/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --env testnet",
+    "deploy:testnet": "wrangler deploy --env testnet",
+    "migrate:testnet": "wrangler d1 migrations apply curveil-testnet --env testnet --remote",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@curveil/manifest": "workspace:*",
+    "@curveil/sdk": "workspace:*",
+    "@curveil/webhooks": "workspace:*",
+    "hono": "4.13.16",
+    "viem": "2.57.14"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261102.1",
+    "@types/node": "24.10.1",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5",
+    "wrangler": "4.156.1"
+  }
+}
