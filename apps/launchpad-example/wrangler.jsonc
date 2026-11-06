@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // A third-party launchpad, deployed the way an operator would deploy their own: static
+  // frontend plus a small Worker that serves its config and verifies Curveil webhooks.
+  "name": "curveil-launchpad-example",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-20",
+  "assets": { "directory": "./dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/config.json", "/webhooks", "/webhooks/*"] },
+  "env": {
+    "testnet": {
+      "name": "curveil-launchpad-example-testnet",
+      "vars": { "LAUNCHPAD": "sprout", "NETWORK": "testnet", "API_URL": "https://curveil-api-testnet.zeronym.workers.dev" },
+      // WEBHOOK_SECRET (the endpoint's whsec_ signing secret) is a Worker secret, never in this file.
+      "kv_namespaces": [{ "binding": "EVENTS", "id": "593ba853f4af45379d9bd711e0d3822f" }]
+    }
+  }
+}

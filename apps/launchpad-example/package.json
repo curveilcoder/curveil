@@ -1,0 +1,24 @@
+{
+  "name": "@curveil/launchpad-example",
+  "private": true,
+  "type": "module",
+  "description": "A branded launchpad frontend built only on @curveil/sdk and viem: no Curveil web code, no indexer. Also verifies Curveil webhooks in its Worker.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p . && tsc --noEmit -p worker && vite build",
+    "typecheck": "tsc --noEmit -p . && tsc --noEmit -p worker",
+    "test": "vitest run",
+    "deploy:testnet": "vite build && wrangler deploy --env testnet"
+  },
+  "dependencies": {
+    "@curveil/sdk": "workspace:*",
+    "viem": "2.57.14"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261102.1",
+    "typescript": "5.9.3",
+    "vite": "8.3.5",
+    "vitest": "5.0.5",
+    "wrangler": "4.156.1"
+  }
+}
