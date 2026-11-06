@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - run: forge build --sizes
+      - run: forge test -vv
+      # src/ keeps the exact formatting of the sources verified on the testnet explorer until the
+      # audit freeze (Phase 7), when it is formatted once before the mainnet build.
+      - run: forge fmt --check test script
+
+  apps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @curveil/manifest test
+      - run: pnpm --filter @curveil/manifest typecheck
+      - run: pnpm --filter @curveil/api typecheck
+      - run: pnpm --filter @curveil/web typecheck
+      - run: pnpm --filter @curveil/api test
+      - run: pnpm --filter @curveil/sdk test
+      - run: pnpm --filter @curveil/sdk typecheck
+      - run: pnpm --filter @curveil/webhooks test
+      - run: pnpm --filter @curveil/webhooks typecheck
+      - run: pnpm --filter @curveil/launchpad-example test
+      - run: pnpm --filter @curveil/launchpad-example typecheck
+      - run: pnpm --filter @curveil/web exec node scripts/pack-sdk.mjs
+      - run: pnpm --filter @curveil/web exec vite build --mode testnet

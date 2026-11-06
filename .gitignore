@@ -1,0 +1,26 @@
+node_modules/
+dist/
+.wrangler/
+.turbo/
+.env
+.env.local
+.env.*.local
+.dev.vars
+packages/contracts/out/
+packages/contracts/cache/
+packages/contracts/broadcast/*/31337/
+*.log
+packages/contracts/broadcast/**/dry-run/
+
+# Proving artifacts copied from packages/circuits at build time
+apps/web/public/circuits/
+
+# SDK tarball packed from packages/sdk at build time
+apps/web/public/sdk/
+packages/sdk/dist/
+
+# Environment files and filled-in inputs. Never commit.
+/.env.mainnet
+apps/*/.env.*
+# Ceremony keys served for a browser contribution (kept in project files, not git)
+apps/web/public/ceremony/

@@ -1,0 +1,40 @@
+name: Deploy testnet
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: testnet
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: D1 migrations
+        run: pnpm --filter @curveil/api exec wrangler d1 migrations apply curveil-testnet --env testnet --remote
+      - name: Publish manifest to KV
+        run: pnpm --filter @curveil/api exec wrangler kv key put manifest:testnet --path ../../packages/manifest/manifests/testnet.json --namespace-id 7384e92ad1884cd49946f29e2d61bdd8 --remote
+      # The API binds to the keeper, so the keeper goes first. Its secrets (KEEPER_KEY,
+      # PRICE_SIGNER_KEY) are set once with `wrangler secret put`, never from CI.
+      - name: Deploy perps keeper
+        run: pnpm --filter @curveil/keeper exec wrangler deploy --env testnet
+      # The webhook consumer and the API share WEBHOOK_MASTER_KEY, set once on both with
+      # `wrangler secret put`. The queues are created once (see README).
+      - name: Deploy webhook delivery
+        run: pnpm --filter @curveil/webhooks exec wrangler deploy --env testnet
+      - name: Deploy API
+        run: pnpm --filter @curveil/api exec wrangler deploy --env testnet
+      - name: Deploy broadcaster
+        run: pnpm --filter @curveil/broadcaster exec wrangler deploy --env testnet
+      - name: Deploy web
+        run: pnpm --filter @curveil/web run deploy:testnet
+      - name: Deploy example launchpad
+        run: pnpm --filter @curveil/launchpad-example run deploy:testnet
