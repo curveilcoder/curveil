@@ -1,0 +1,192 @@
+/**
+ * Generates real Groth16 proofs for the Foundry ShieldedPool tests
+ * (packages/contracts/test/fixtures/vault.json). The test deploys the token and the pool
+ * from fixed addresses at nonce 0, so their addresses, the note domain and every context
+ * hash are known here in advance. Re-run after any change to the circuits or the setup:
+ *   pnpm --filter @curveil/vault-core exec tsx scripts/gen-pool-fixture.ts
+ */
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
+import * as snarkjs from "snarkjs";
+import { getContractAddress, hexToBytes, type Address } from "viem";
+import {
+  NoteTree,
+  commitment,
+  deriveKeys,
+  fungibleResource,
+  newEntropy,
+  noteDomain,
+  planShield,
+  planTransfer,
+  planWithdraw,
+  scanCommitments,
+  toSolidityProof,
+  type SolidityProof,
+} from "../src";
+
+const CIRCUITS = join(import.meta.dirname, "..", "..", "circuits");
+const OUT = join(import.meta.dirname, "..", "..", "contracts", "test", "fixtures", "vault.json");
+const wasm = (n: string) => join(CIRCUITS, "build", n, `${n}_js`, `${n}.wasm`);
+const zkey = (n: string) => join(CIRCUITS, "artifacts", process.env.SETUP_NETWORK ?? "testnet", `${n}.zkey`);
+
+const CHAIN_ID = 31337;
+const TOKEN_DEPLOYER: Address = "0x000000000000000000000000000000000000Da01";
+const POOL_DEPLOYER: Address = "0x000000000000000000000000000000000000Da02";
+const BROADCASTER: Address = "0x000000000000000000000000000000000000B0B0";
+const RECIPIENT: Address = "0x000000000000000000000000000000000000Ca5e";
+const DEADLINE = 4_000_000_000n;
+const FEE_BPS = 10;
+
+const token = getContractAddress({ from: TOKEN_DEPLOYER, nonce: 0n });
+const pool = getContractAddress({ from: POOL_DEPLOYER, nonce: 0n });
+const domain = noteDomain(CHAIN_ID, pool);
+const resource = fungibleResource(token);
+
+const s = (x: bigint) => x.toString();
+const proofJson = (p: SolidityProof) => ({ a: p.a.map(s), b: p.b.map((r) => r.map(s)), c: p.c.map(s) });
+
+async function prove(name: string, input: Record<string, unknown>, expected: bigint[]) {
+  const { proof, publicSignals } = await snarkjs.groth16.fullProve(input as never, wasm(name), zkey(name));
+  if (publicSignals.map(BigInt).join() !== expected.join()) throw new Error(`${name}: public signals differ from the plan`);
+  return proofJson(toSolidityProof(proof));
+}
+
+const alice = deriveKeys(newEntropy());
+const bob = deriveKeys(newEntropy());
+const tree = new NoteTree();
+
+// 1-2. Alice shields 1,000 and 500 (6 decimals).
+const shields = [1_000_000_000n, 500_000_000n].map((amount) => {
+  const p = planShield(alice, resource, amount);
+  const cm = commitment(p.note, domain);
+  tree.append([cm]);
+  return { amount: s(amount), ownerHash: s(p.ownerHash), encryptedNote: p.encryptedNote, commitment: s(cm) };
+});
+const aliceNotes = scanCommitments(
+  alice,
+  domain,
+  shields.map((x, i) => ({ leafIndex: i, commitment: BigInt(x.commitment), encryptedNote: hexToBytes(x.encryptedNote) })),
+);
+if (aliceNotes.length !== 2) throw new Error("scan failed");
+
+// 3. Alice sends 1,200 to Bob through a broadcaster charging 1.
+const t = planTransfer({
+  spendingKey: alice.spendingKey,
+  tree,
+  chainId: CHAIN_ID,
+  pool,
+  domain,
+  resource,
+  inputs: aliceNotes,
+  fee: 1_000_000n,
+  feeRecipient: BROADCASTER,
+  deadline: DEADLINE,
+  to: bob,
+  amount: 1_200_000_000n,
+  changeTo: alice,
+});
+const transferProof = await prove("transfer", t.circuitInput, t.publicSignals);
+tree.append(t.args.commitments);
+const bobNotes = scanCommitments(bob, domain, [{ leafIndex: 2, commitment: t.args.commitments[0], encryptedNote: hexToBytes(t.args.encryptedNote0) }]);
+const aliceChange = scanCommitments(alice, domain, [{ leafIndex: 3, commitment: t.args.commitments[1], encryptedNote: hexToBytes(t.args.encryptedNote1) }]);
+
+// 4. Bob withdraws 700 to a public address through the broadcaster (fee 0.5).
+const w = planWithdraw({
+  spendingKey: bob.spendingKey,
+  tree,
+  chainId: CHAIN_ID,
+  pool,
+  domain,
+  resource,
+  inputs: bobNotes,
+  fee: 500_000n,
+  feeRecipient: BROADCASTER,
+  deadline: DEADLINE,
+  token,
+  amount: 700_000_000n,
+  recipient: RECIPIENT,
+  withdrawFeeBps: FEE_BPS,
+  changeTo: bob,
+});
+const withdrawProof = await prove("withdraw", w.circuitInput, w.publicSignals);
+tree.append([w.args.commitment]);
+
+// 5. Alice self-submits a full withdrawal of her change (no fee, zero change note).
+const w2 = planWithdraw({
+  spendingKey: alice.spendingKey,
+  tree,
+  chainId: CHAIN_ID,
+  pool,
+  domain,
+  resource,
+  inputs: aliceChange,
+  fee: 0n,
+  feeRecipient: "0x0000000000000000000000000000000000000000",
+  deadline: DEADLINE,
+  token,
+  amount: aliceChange[0]!.amount,
+  recipient: RECIPIENT,
+  withdrawFeeBps: FEE_BPS,
+  changeTo: alice,
+});
+const withdraw2Proof = await prove("withdraw", w2.circuitInput, w2.publicSignals);
+tree.append([w2.args.commitment]);
+
+const fixture = {
+  note: "Generated by packages/vault-core/scripts/gen-pool-fixture.ts. Do not edit.",
+  chainId: CHAIN_ID,
+  tokenDeployer: TOKEN_DEPLOYER,
+  poolDeployer: POOL_DEPLOYER,
+  token,
+  pool,
+  domain: s(domain),
+  resource: s(resource),
+  broadcaster: BROADCASTER,
+  recipient: RECIPIENT,
+  withdrawFeeBps: FEE_BPS,
+  shields,
+  transfer: {
+    proof: transferProof,
+    root: s(t.args.root),
+    nullifiers: t.args.nullifiers.map(s),
+    commitments: t.args.commitments.map(s),
+    fee: s(t.args.fee),
+    feeResource: s(t.args.feeResource),
+    feeRecipient: t.args.feeRecipient,
+    deadline: s(t.args.deadline),
+    encryptedNote0: t.args.encryptedNote0,
+    encryptedNote1: t.args.encryptedNote1,
+  },
+  withdraw: {
+    proof: withdrawProof,
+    root: s(w.args.root),
+    nullifiers: w.args.nullifiers.map(s),
+    commitment: s(w.args.commitment),
+    token: w.args.token,
+    amount: s(w.args.amount),
+    fee: s(w.args.fee),
+    recipient: w.args.recipient,
+    feeRecipient: w.args.feeRecipient,
+    deadline: s(w.args.deadline),
+    encryptedChange: w.args.encryptedChange,
+    protocolFee: s(w.protocolFee),
+  },
+  withdraw2: {
+    proof: withdraw2Proof,
+    root: s(w2.args.root),
+    nullifiers: w2.args.nullifiers.map(s),
+    commitment: s(w2.args.commitment),
+    token: w2.args.token,
+    amount: s(w2.args.amount),
+    fee: s(w2.args.fee),
+    recipient: w2.args.recipient,
+    feeRecipient: w2.args.feeRecipient,
+    deadline: s(w2.args.deadline),
+    encryptedChange: w2.args.encryptedChange,
+    protocolFee: s(w2.protocolFee),
+  },
+  finalRoot: s(tree.root()),
+};
+writeFileSync(OUT, JSON.stringify(fixture, null, 2) + "\n");
+console.log(`wrote ${OUT}`);
+process.exit(0);
