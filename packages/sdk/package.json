@@ -1,0 +1,59 @@
+{
+  "name": "@curveil/sdk",
+  "version": "0.1.0",
+  "description": "Curveil SDK: typed API client, transaction helpers for launches, launchpads and swaps, and webhook signature checks.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./webhooks": "./src/webhooks.ts",
+    "./client": "./src/client.ts",
+    "./tx": "./src/tx.ts"
+  },
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./webhooks": {
+        "types": "./dist/webhooks.d.ts",
+        "default": "./dist/webhooks.js"
+      },
+      "./client": {
+        "types": "./dist/client.d.ts",
+        "default": "./dist/client.js"
+      },
+      "./tx": {
+        "types": "./dist/tx.d.ts",
+        "default": "./dist/tx.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "smoke": "tsx scripts/smoke-api.mts",
+    "prepack": "pnpm build",
+    "load": "tsx scripts/load-api.mts"
+  },
+  "peerDependencies": {
+    "viem": "^2.57.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "typescript": "5.9.3",
+    "viem": "2.57.14",
+    "vitest": "5.0.5"
+  }
+}
