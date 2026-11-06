@@ -33,7 +33,9 @@ contract DeployGovernance is Script {
 
         address safe = cfg.readAddress(".governance.safe");
         if (safe == address(0)) revert NotConfigured("governance.safe");
-        if (block.chainid == MAINNET_CHAIN_ID && safe.code.length == 0) revert NotConfigured("governance.safe is not a contract");
+        if (block.chainid == MAINNET_CHAIN_ID && safe.code.length == 0) {
+            revert NotConfigured("governance.safe is not a contract");
+        }
         uint256 delay = cfg.readUint(".governance.timelockDelay");
         string[] memory sources = cfg.readStringArray(".governance.treasuries");
         if (sources.length == 0) revert NotConfigured("governance.treasuries");
@@ -53,7 +55,8 @@ contract DeployGovernance is Script {
         address[] memory treasuries = new address[](sources.length);
         for (uint256 i = 0; i < sources.length; i++) {
             bytes32 label = bytes32(bytes(sources[i]));
-            treasuries[i] = address(new ProtocolTreasury{salt: keccak256(abi.encode(salt, label))}(label, address(timelock)));
+            treasuries[i] =
+                address(new ProtocolTreasury{salt: keccak256(abi.encode(salt, label))}(label, address(timelock)));
         }
         BuybackBurner burner = new BuybackBurner{salt: salt}(IERC20(usdg), address(timelock), safe);
         vm.stopBroadcast();

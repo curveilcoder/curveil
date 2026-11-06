@@ -81,7 +81,8 @@ contract FactoriesTest is MarketsBase {
         dlmmFactory.createPair(address(weth), address(usdg), 7, BinMath.CENTER);
 
         TestToken stray = new TestToken("Stray", "STRAY", 18, address(this));
-        (address lo, address hi) = address(stray) < address(usdg) ? (address(stray), address(usdg)) : (address(usdg), address(stray));
+        (address lo, address hi) =
+            address(stray) < address(usdg) ? (address(stray), address(usdg)) : (address(usdg), address(stray));
         vm.expectRevert();
         dlmmFactory.createPair(lo, hi, 25, BinMath.CENTER);
 
@@ -93,7 +94,8 @@ contract FactoriesTest is MarketsBase {
     }
 
     function test_dlmmPriceIsInvertedWhenTheOrderFlips() public {
-        (address x, address y) = address(weth) < address(usdg) ? (address(weth), address(usdg)) : (address(usdg), address(weth));
+        (address x, address y) =
+            address(weth) < address(usdg) ? (address(weth), address(usdg)) : (address(usdg), address(weth));
         uint24 id = BinMath.CENTER + 100;
         address a = dlmmFactory.createPair(y, x, 25, id); // stated as price of x per y
         assertEq(DlmmPair(a).activeId(), BinMath.CENTER - 100);

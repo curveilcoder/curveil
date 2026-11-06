@@ -34,7 +34,9 @@ contract GovernanceTest is MarketsBase {
         _viaTimelock(address(registry), abi.encodeWithSignature("acceptOwnership()"), "accept");
 
         curveil = new TestToken("Curveil", "CURVEIL", 18, address(this));
-        _viaTimelock(address(registry), abi.encodeWithSignature("admit(address,string)", address(curveil), "CURVEIL"), "admit");
+        _viaTimelock(
+            address(registry), abi.encodeWithSignature("admit(address,string)", address(curveil), "CURVEIL"), "admit"
+        );
         curveil.mint(alice, 1e27);
         vm.prank(alice);
         curveil.approve(address(router), type(uint256).max);
@@ -203,11 +205,20 @@ contract GovernanceTest is MarketsBase {
     function test_bindOnceAndOnlyToTheTokenUsdgPool() public {
         DammPool other = _dammPool(address(weth), address(usdg), 1_000e18, 3_000_000e6);
         vm.prank(safe);
-        timelock.schedule(address(burner), 0, abi.encodeCall(BuybackBurner.bind, (IERC20(address(curveil)), other)), bytes32(0), "w", DELAY);
+        timelock.schedule(
+            address(burner),
+            0,
+            abi.encodeCall(BuybackBurner.bind, (IERC20(address(curveil)), other)),
+            bytes32(0),
+            "w",
+            DELAY
+        );
         vm.warp(block.timestamp + DELAY);
         vm.prank(safe);
         vm.expectRevert();
-        timelock.execute(address(burner), 0, abi.encodeCall(BuybackBurner.bind, (IERC20(address(curveil)), other)), bytes32(0), "w");
+        timelock.execute(
+            address(burner), 0, abi.encodeCall(BuybackBurner.bind, (IERC20(address(curveil)), other)), bytes32(0), "w"
+        );
 
         _bind();
         vm.prank(address(timelock));
