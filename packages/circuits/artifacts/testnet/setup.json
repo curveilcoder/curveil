@@ -1,0 +1,32 @@
+{
+  "label": "Curveil testnet single-party setup (not for mainnet)",
+  "network": "testnet",
+  "createdAt": "2026-11-02T09:14:38.208Z",
+  "compiler": "circom 2.2.3 (circom2 npm 0.2.23)",
+  "snarkjs": "0.7.6",
+  "ptau": {
+    "power": 16,
+    "sha256": "83551253fcb53dc273d11663e12f5bab56a077c5d26ce17ec36b45cb5f95a5bf",
+    "contributions": 1
+  },
+  "circuits": {
+    "transfer": {
+      "schema": "transfer/v1",
+      "nPublic": 9,
+      "r1cs": "40b0f60cbe5f877160895ece7512a125c9fd55c3a629792715c693169a24cb20",
+      "wasm": "3bb02f97ca42bd4185a9a59ad0e3bf40e7060b5faa8f0bc31a50828ea5723011",
+      "zkey": "bafb5917dedeee16954170e47360cc3ae1d45217f827b354edca5c8649714026",
+      "vkey": "c2ed39db3de872fc317d1e269f753e5836e81f5aa46abaa1d0a76c5dc990c825",
+      "verifier": "TransferVerifier"
+    },
+    "withdraw": {
+      "schema": "withdraw/v1",
+      "nPublic": 9,
+      "r1cs": "e0f7d9a5d483fd548c073c1bef34c3330f1ebe7e515aa2d72f4504311f3ff50d",
+      "wasm": "863dd991f69cb132797d1add64fe973e6fff63ddbd339400ad07b60c3917ce28",
+      "zkey": "ca17e7d7e00a5187ece586ceccb0454a3935b15b388db549a7d87f15b4cad0b7",
+      "vkey": "593625902a3e786edcec96a3050df8af674174993b10ec4d2b81f9b5daae4923",
+      "verifier": "WithdrawVerifier"
+    }
+  }
+}

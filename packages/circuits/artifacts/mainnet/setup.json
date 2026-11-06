@@ -1,0 +1,71 @@
+{
+  "label": "Curveil mainnet setup (2 contributors from the Curveil team and a random beacon)",
+  "network": "mainnet",
+  "createdAt": "2026-11-04T10:20:45.897Z",
+  "compiler": "circom 2.2.3 (circom2 npm 0.2.23)",
+  "snarkjs": "0.7.6",
+  "ptau": {
+    "sha256": "ed3622a7c79b0b49aadd134ebbc5b77df8c8c59bccebdfd0d9bf2c1a51561cf9",
+    "source": "https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_16.ptau (PSE perpetual powers of tau, contribution 0080 with beacon, listed at https://github.com/privacy-scaling-explorations/perpetualpowersoftau; sha256 computed on download, file checked with snarkjs powersoftau verify)"
+  },
+  "beacon": {
+    "hash": "5f6a7f23feb9f398df09971d36761ee8d84fe0c30de985c2752bc7254fbdb05b",
+    "iterations": 10,
+    "source": "Ethereum mainnet block 26340800 hash (announced 2026-11-04 ~10:03 UTC in the Curveil project, mined 10:17:59 UTC; read from etherscan.io and cross-checked on eth.blockscout.com)"
+  },
+  "contributors": 2,
+  "circuits": {
+    "transfer": {
+      "schema": "transfer/v1",
+      "nPublic": 9,
+      "r1cs": "40b0f60cbe5f877160895ece7512a125c9fd55c3a629792715c693169a24cb20",
+      "wasm": "3bb02f97ca42bd4185a9a59ad0e3bf40e7060b5faa8f0bc31a50828ea5723011",
+      "zkey": "8ca3aca806fbc269aa0caaabae12483e50e816c48f2786591df4fa50d0ee4851",
+      "vkey": "2aa45946e232cab7f5b3318bfad4eff9416e0def654998c8e9429b0231a06682",
+      "verifier": "TransferVerifier",
+      "contributions": [
+        {
+          "index": 1,
+          "name": "Claude (Curveil coordinator)",
+          "hash": "086d94c9c5c172abc48a1e8d0a50af402c12683a2a318a98b361b717a3a8cb758af4b26904b75b75fe5cf009f8104003bb92dd021c91d40fc2b874edceec033a"
+        },
+        {
+          "index": 2,
+          "name": "Raisa (Curveil)",
+          "hash": "81d681cbfd2b744a8356b9ab9a6c4de4274f59767db479cf8d77a939d9c77d2085e5252f1e18e9bff2fa43dcef57b8081f1d98968914232e1e78647dd4fcff49"
+        },
+        {
+          "index": 3,
+          "name": "Final beacon",
+          "hash": "c2c91a5e687b79508f41453e63a6392c719c0a08163fee209cdcc37476c78c3bc69648a8ffa3a35ca28683ceb4904f957cf5ba78ee74ab95f30899548c103846"
+        }
+      ]
+    },
+    "withdraw": {
+      "schema": "withdraw/v1",
+      "nPublic": 9,
+      "r1cs": "e0f7d9a5d483fd548c073c1bef34c3330f1ebe7e515aa2d72f4504311f3ff50d",
+      "wasm": "863dd991f69cb132797d1add64fe973e6fff63ddbd339400ad07b60c3917ce28",
+      "zkey": "08e151350ddce911bd009879fcc245e0c6b03b81dc4039a25b3c93bf30a07e06",
+      "vkey": "0d3fe2224781c2bed3e638f44ded71598d7cbf8024fa9d839766999b9813bf97",
+      "verifier": "WithdrawVerifier",
+      "contributions": [
+        {
+          "index": 1,
+          "name": "Claude (Curveil coordinator)",
+          "hash": "153795833d1e9eb49eca028439eec43c565a90629c288e3f73ba063e1f952a4e31b599005f97c0f6b73c3845cf6d68310b211549642b51a017d02abf62fa5708"
+        },
+        {
+          "index": 2,
+          "name": "Raisa (Curveil)",
+          "hash": "3f9dc47433148c773a0d124db5de76bbf3e0924c24b03235ddd983df45293405bab9ca83a32414602b9e95c630d57a11d2aabd4b2a56165508c0ff326e72acfa"
+        },
+        {
+          "index": 3,
+          "name": "Final beacon",
+          "hash": "40a183e72adae95617f5b14a2b3d2a28dd8c83773f1a857f874671a1e96723018f2195ec1da2074dff0395f7c8980636dc346b05800ab7a4adfc12de4fcd9163"
+        }
+      ]
+    }
+  }
+}

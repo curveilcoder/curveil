@@ -1,0 +1,19 @@
+{
+  "name": "@curveil/circuits",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "description": "Curveil vault circuits (Circom 2, Groth16 over BN254). Built artifacts and their hashes live in artifacts/<network>.",
+  "scripts": {
+    "compile": "node scripts/compile.mjs",
+    "setup:testnet": "node scripts/setup-testnet.mjs",
+    "test": "node --test test/*.test.mjs",
+    "ceremony": "node scripts/ceremony.mjs"
+  },
+  "devDependencies": {
+    "circom2": "0.2.23",
+    "circomlib": "2.0.5",
+    "poseidon-lite": "0.3.0",
+    "snarkjs": "0.7.6"
+  }
+}

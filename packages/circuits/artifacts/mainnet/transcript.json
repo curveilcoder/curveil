@@ -1,0 +1,89 @@
+{
+  "schema": "curveil-ceremony/1",
+  "startedAt": "2026-11-04T09:11:03.433Z",
+  "snarkjs": "0.7.6",
+  "compiler": "circom 2.2.3 (circom2 npm 0.2.23)",
+  "ptau": {
+    "file": "/tmp/claude-0/-home-user/d8b5f58c-7f65-55c3-87a1-b370241b7757/scratchpad/ptau-dl/ppot_0080_16.ptau",
+    "sha256": "ed3622a7c79b0b49aadd134ebbc5b77df8c8c59bccebdfd0d9bf2c1a51561cf9",
+    "source": "https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_16.ptau (PSE perpetual powers of tau, contribution 0080 with beacon, listed at https://github.com/privacy-scaling-explorations/perpetualpowersoftau; sha256 computed on download, file checked with snarkjs powersoftau verify)"
+  },
+  "circuits": {
+    "transfer": {
+      "schema": "transfer/v1",
+      "r1cs": "40b0f60cbe5f877160895ece7512a125c9fd55c3a629792715c693169a24cb20",
+      "contributions": [
+        {
+          "index": 0,
+          "name": "initial (no randomness)",
+          "zkey": "b4bf05e4ffb3ab81848f739510eaa7048ac02a538c5a935a8479e2f24378cc24",
+          "hash": null,
+          "at": "2026-11-04T09:11:03.433Z"
+        },
+        {
+          "index": 1,
+          "name": "Claude (Curveil coordinator)",
+          "zkey": "9d4b555758b826014c8bf9799df459bf98a3d34f2890fd6c09404663c9fb1523",
+          "hash": "086d94c9c5c172abc48a1e8d0a50af402c12683a2a318a98b361b717a3a8cb758af4b26904b75b75fe5cf009f8104003bb92dd021c91d40fc2b874edceec033a",
+          "at": "2026-11-04T09:12:23.664Z"
+        },
+        {
+          "index": 2,
+          "name": "Raisa (Curveil)",
+          "zkey": "ae256474d9013d45f4e709cfea64c3fbec65679330b7b984358d7902c0a9fbce",
+          "hash": "81d681cbfd2b744a8356b9ab9a6c4de4274f59767db479cf8d77a939d9c77d2085e5252f1e18e9bff2fa43dcef57b8081f1d98968914232e1e78647dd4fcff49",
+          "at": "2026-11-04T10:02:17.370Z",
+          "via": "browser"
+        },
+        {
+          "index": 3,
+          "name": "Final beacon",
+          "zkey": "8ca3aca806fbc269aa0caaabae12483e50e816c48f2786591df4fa50d0ee4851",
+          "hash": "c2c91a5e687b79508f41453e63a6392c719c0a08163fee209cdcc37476c78c3bc69648a8ffa3a35ca28683ceb4904f957cf5ba78ee74ab95f30899548c103846",
+          "at": "2026-11-04T10:19:28.266Z"
+        }
+      ]
+    },
+    "withdraw": {
+      "schema": "withdraw/v1",
+      "r1cs": "e0f7d9a5d483fd548c073c1bef34c3330f1ebe7e515aa2d72f4504311f3ff50d",
+      "contributions": [
+        {
+          "index": 0,
+          "name": "initial (no randomness)",
+          "zkey": "c5f46b5e24f6ba4a7546a523199a189af3b943c91be8091d7505268c30639724",
+          "hash": null,
+          "at": "2026-11-04T09:11:03.433Z"
+        },
+        {
+          "index": 1,
+          "name": "Claude (Curveil coordinator)",
+          "zkey": "cc653cc5a372324369d92e5c6878baac8d6cb10464f9ae48ea4faf53f3fcf885",
+          "hash": "153795833d1e9eb49eca028439eec43c565a90629c288e3f73ba063e1f952a4e31b599005f97c0f6b73c3845cf6d68310b211549642b51a017d02abf62fa5708",
+          "at": "2026-11-04T09:12:27.179Z"
+        },
+        {
+          "index": 2,
+          "name": "Raisa (Curveil)",
+          "zkey": "3d26a6310fe9a3c8b7fdf46daf374f2a9bf65683dcf18aa83543823e9e414815",
+          "hash": "3f9dc47433148c773a0d124db5de76bbf3e0924c24b03235ddd983df45293405bab9ca83a32414602b9e95c630d57a11d2aabd4b2a56165508c0ff326e72acfa",
+          "at": "2026-11-04T10:02:17.392Z",
+          "via": "browser"
+        },
+        {
+          "index": 3,
+          "name": "Final beacon",
+          "zkey": "08e151350ddce911bd009879fcc245e0c6b03b81dc4039a25b3c93bf30a07e06",
+          "hash": "40a183e72adae95617f5b14a2b3d2a28dd8c83773f1a857f874671a1e96723018f2195ec1da2074dff0395f7c8980636dc346b05800ab7a4adfc12de4fcd9163",
+          "at": "2026-11-04T10:19:31.642Z"
+        }
+      ]
+    }
+  },
+  "beacon": {
+    "hash": "5f6a7f23feb9f398df09971d36761ee8d84fe0c30de985c2752bc7254fbdb05b",
+    "iterations": 10,
+    "source": "Ethereum mainnet block 26340800 hash (announced 2026-11-04 ~10:03 UTC in the Curveil project, mined 10:17:59 UTC; read from etherscan.io and cross-checked on eth.blockscout.com)"
+  },
+  "finalized": null
+}
