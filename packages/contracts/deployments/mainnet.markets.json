@@ -1,0 +1,8 @@
+{
+  "chainId": 4663,
+  "dammFactory": "0x27464A5b14496ccC8b528bD7506f626ADCd683F0",
+  "deployBlock": 105691297,
+  "dlmmFactory": "0x7825D34c63a411A72c6cCA218d8CB51F3b8207f7",
+  "network": "mainnet",
+  "router": "0xc6297DB8038b2c6DE1E17864785BC25654F466A7"
+}

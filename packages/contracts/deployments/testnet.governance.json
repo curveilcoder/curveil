@@ -1,0 +1,16 @@
+{
+  "buybackBurner": "0xa446f12A4a59038301d8c4A594f6E13eE5e5ADF0",
+  "chainId": 46630,
+  "deployBlock": 148131073,
+  "network": "testnet",
+  "safe": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+  "timelock": "0x9D74Aa434b4031f4338E41465e6d076a870509E6",
+  "timelockDelay": 600,
+  "treasuries": {
+    "factory": "0xA38307d0795371D064202ddbdA799E9DEDcF906A",
+    "launch": "0xBa54AC7b82cC5Ee8Be64319DDB933D2914515092",
+    "markets": "0x80b76d790755E0672aEC54f202aEED03AB73f395",
+    "perps": "0x999060529e84075E8EA9Ec069B51Ed16871B3AaD",
+    "vault": "0x872a8BA55a67BE74e11f7AA20543f18dAfD66002"
+  }
+}

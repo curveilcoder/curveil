@@ -1,0 +1,8 @@
+{
+  "deployBlock": 147000149,
+  "legacyPool": "0x3Ce3f8Bf49d84ebAb164c9eF6ba2c57B1098Cf0C",
+  "liquidityAdapter": "0xE876d78170c5B9beFA80ee5710BbE605FF1aFC5A",
+  "positionHolderImplementation": "0x835939c1848Dff034c90d47aDb46f8698C54595D",
+  "shieldedPool": "0x49e0908D224cCe6EcD247DABbeb27F02327aa2b0",
+  "swapAdapter": "0x3C6Baf5a1774525643d37ACd414234E6e9Bc39bc"
+}

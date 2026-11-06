@@ -1,0 +1,10 @@
+{
+  "admissionController": "0xd21400C92c47Fe7CbDEAF01Ef328127AB1Cd57cA",
+  "chainId": 4663,
+  "deployBlock": 105691570,
+  "graduationMigrator": "0x727566a005a1D21b7498a90323481b01c68daB1E",
+  "launchFactory": "0x36666329570041Eb00B00D309b0FB5F13710a7FF",
+  "launchTemplateRegistry": "0x390a478c762994D792C15403c20D975Fe0a29788",
+  "lpEscrow": "0x5A8f89Db185EbB135823c61C173B7Ee264f3F5d3",
+  "network": "mainnet"
+}

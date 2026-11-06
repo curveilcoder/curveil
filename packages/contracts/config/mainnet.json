@@ -1,0 +1,197 @@
+{
+  "network": "mainnet",
+  "chainId": 4663,
+  "admin": "0xC865861EdBfb4A36d69F0D5110b23ce91A2619c2",
+  "deployTestAssets": false,
+  "salt": "curveil.v1",
+  "faucet": {
+    "cooldownSeconds": 0,
+    "usdgAmount": "0",
+    "wethAmount": "0"
+  },
+  "assets": {
+    "usdg": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73"
+  },
+  "markets": {
+    "feeTo": "0x0000000000000000000000000000000000000000",
+    "dlmmProtocolShareBps": 2000,
+    "dammTiers": [
+      {
+        "id": 0,
+        "label": "Standard",
+        "baseFeeBps": 30,
+        "maxFeeBps": 100,
+        "protocolShareBps": 2000,
+        "variableFeeControl": 2000,
+        "filterPeriod": 30,
+        "decayPeriod": 600,
+        "reductionBps": 5000,
+        "maxVolatilityBps": 5000
+      },
+      {
+        "id": 1,
+        "label": "Volatile",
+        "baseFeeBps": 100,
+        "maxFeeBps": 300,
+        "protocolShareBps": 2000,
+        "variableFeeControl": 4000,
+        "filterPeriod": 30,
+        "decayPeriod": 600,
+        "reductionBps": 5000,
+        "maxVolatilityBps": 5000
+      }
+    ],
+    "dlmmPresets": [
+      {
+        "binStep": 10,
+        "baseFeeBps": 20
+      },
+      {
+        "binStep": 25,
+        "baseFeeBps": 30
+      },
+      {
+        "binStep": 100,
+        "baseFeeBps": 80
+      }
+    ]
+  },
+  "launch": {
+    "protocolFeeRecipient": "0x0000000000000000000000000000000000000000",
+    "protocolLpRecipient": "0x0000000000000000000000000000000000000000",
+    "templates": [
+      {
+        "label": "Standard v1",
+        "totalSupply": "1000000000000000000000000000",
+        "curveSupply": "800000000000000000000000000",
+        "migrationSupply": "200000000000000000000000000",
+        "graduationThreshold": "25000000000",
+        "feeBps": 100,
+        "creatorFeeShareBps": 5000,
+        "dammTier": 0,
+        "priceToleranceBps": 200,
+        "creatorLpBps": 2000,
+        "creatorLockSeconds": 15552000,
+        "protocolLockSeconds": 31536000,
+        "enabled": true
+      }
+    ]
+  },
+  "perps": {
+    "_comment": "Perps (Phase 5). priceSource 'pyth' deploys PythReportVerifier over Pyth's contract (perps.pyth.address) with each market's pythId; 'curveil-test-signer' deploys SignedReportVerifier (testnet only, refuses mainnet). maxFee is the most the verifier pays Pyth per report, in wei (Pyth charges 0 on Robinhood Chain today).",
+    "priceSource": "pyth",
+    "pyth": {
+      "address": "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a",
+      "maxFee": "1000000000000"
+    },
+    "reportVerifier": "0x0000000000000000000000000000000000000000",
+    "priceSigner": "0x0000000000000000000000000000000000000000",
+    "guardian": "0x2968bFEB9273411Bd2A8cF6996F19d5aeCc01E4C",
+    "feeRecipient": "0x0000000000000000000000000000000000000000",
+    "protocolShareBps": 2000,
+    "minExecutionFee": "250000",
+    "requestTimeout": 120,
+    "navMaxAge": 600,
+    "sequencerFeed": "0x0000000000000000000000000000000000000000",
+    "sequencerGracePeriod": 3600,
+    "vault": {
+      "maxUtilizationBps": 8000,
+      "lockSeconds": 86400,
+      "depositCap": "250000000000"
+    },
+    "seedLiquidity": "0",
+    "markets": [
+      {
+        "id": 1,
+        "symbol": "ETH-USD",
+        "base": "ETH",
+        "feed": "ETH/USD",
+        "pythId": "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
+        "maxConfBps": 100,
+        "maxReportAge": 60,
+        "reference": "0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9",
+        "referenceHeartbeat": 90000,
+        "maxDeviationBps": 150,
+        "maxLeverageBps": 50000,
+        "maintenanceMarginBps": 200,
+        "openFeeBps": 8,
+        "closeFeeBps": 8,
+        "liquidationFeeBps": 50,
+        "maxProfitBps": 10000,
+        "maxOpenInterestLong": "50000000000",
+        "maxOpenInterestShort": "50000000000",
+        "minCollateral": "5000000",
+        "maxFundingRatePerHour": "100000000000000"
+      },
+      {
+        "id": 2,
+        "symbol": "BTC-USD",
+        "base": "BTC",
+        "feed": "BTC/USD",
+        "pythId": "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
+        "maxConfBps": 100,
+        "maxReportAge": 60,
+        "reference": "0xa2c5184bF03d373Dc9dE4876eb4Bce595B460251",
+        "referenceHeartbeat": 90000,
+        "maxDeviationBps": 150,
+        "maxLeverageBps": 50000,
+        "maintenanceMarginBps": 200,
+        "openFeeBps": 8,
+        "closeFeeBps": 8,
+        "liquidationFeeBps": 50,
+        "maxProfitBps": 10000,
+        "maxOpenInterestLong": "50000000000",
+        "maxOpenInterestShort": "50000000000",
+        "minCollateral": "5000000",
+        "maxFundingRatePerHour": "100000000000000"
+      },
+      {
+        "id": 3,
+        "symbol": "SOL-USD",
+        "base": "SOL",
+        "feed": "SOL/USD",
+        "pythId": "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
+        "maxConfBps": 100,
+        "maxReportAge": 60,
+        "reference": "0x0000000000000000000000000000000000000000",
+        "referenceHeartbeat": 0,
+        "maxDeviationBps": 0,
+        "maxLeverageBps": 20000,
+        "maintenanceMarginBps": 200,
+        "openFeeBps": 8,
+        "closeFeeBps": 8,
+        "liquidationFeeBps": 50,
+        "maxProfitBps": 10000,
+        "maxOpenInterestLong": "10000000000",
+        "maxOpenInterestShort": "10000000000",
+        "minCollateral": "5000000",
+        "maxFundingRatePerHour": "100000000000000"
+      }
+    ]
+  },
+  "factory": {
+    "_comment": "Launchpad operators (Phase 6). maxShareBps caps an operator's share of the protocol part of curve fees; lowering it applies to new launches only. Needs sign-off with the launch economics.",
+    "maxShareBps": 5000
+  },
+  "governance": {
+    "_comment": "Phase 7. The Safe proposes and executes through the timelock and is every module's guardian. Mainnet: a 3-of-3 Safe on hardware wallets and at least 72 hours (the timelock refuses less). Fee addresses left at zero in the module sections go to that module's treasury, and the protocol's LP locks to the timelock, so fees leave only with a Safe vote and the delay.",
+    "safe": "0x2968bFEB9273411Bd2A8cF6996F19d5aeCc01E4C",
+    "timelockDelay": 259200,
+    "treasuries": [
+      "markets",
+      "launch",
+      "vault",
+      "perps",
+      "factory"
+    ]
+  },
+  "vault": {
+    "_comment": "Phase 3 and 4. Low per-deposit caps while the vault is unaudited and its setup is the two-party ceremony (Curveil team and a random beacon). The owner raises them with configureAsset.",
+    "withdrawFeeBps": 10,
+    "protocolFeeRecipient": "0x0000000000000000000000000000000000000000",
+    "guardian": "0x2968bFEB9273411Bd2A8cF6996F19d5aeCc01E4C",
+    "maxDepositUsdg": "1000000000",
+    "maxDepositWeth": "500000000000000000"
+  }
+}

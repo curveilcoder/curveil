@@ -1,0 +1,11 @@
+{
+  "deployBlock": 148755901,
+  "oracleAdapter": "0xb2ABeE900d1Ac4f5766F21A100C5F2fb38217e58",
+  "orderManager": "0x54f9072EA8A239E4BD432C357a3e4250f90F1D19",
+  "perpEngine": "0x4a048A893DE3CC4C01d3369fc7C8F6Bb9f28f263",
+  "perpLens": "0x558B1fd5A0B27F1Ec4c4abbc6a4bA4Df0f1D50cb",
+  "perpLiquidityVault": "0x5cAF027d6D66839672437480138704C777460753",
+  "priceSource": "pyth",
+  "reportVerifier": "0x9798aAbabD034Aa1eCDf348263fC4227Cce95069",
+  "shieldedPerpsAdapter": "0x9F29BdAdF4F2106FaA320577537Bb9582a931F8C"
+}

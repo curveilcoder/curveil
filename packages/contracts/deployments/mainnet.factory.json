@@ -1,0 +1,8 @@
+{
+  "chainId": 4663,
+  "deployBlock": 105691988,
+  "feeSplitterImplementation": "0xbD2248B49344D581ad5a1B3F1DD938F384343780",
+  "launchpadRegistry": "0xd0df826B89C5eFBd316BFbD7B3f535D5ec922963",
+  "maxShareBps": 5000,
+  "network": "mainnet"
+}

@@ -1,0 +1,4 @@
+{
+  "_comment": "Libraries the vault links that were already on chain (deployed through the deterministic CREATE2 deployer 0x4e59b448… by someone else), so Forge reused them and no Curveil broadcast holds their deploy transaction.",
+  "PoseidonT3": { "address": "0x7bd63041A4a5Ae46E3c6ad1d5edF89A3937BCDF1", "deployTx": "0xa88d382084e70e0aa1e3617cc10b7790431215ffb0e15ca0a8436e9303bbd4ce", "deployBlock": 80334264 }
+}

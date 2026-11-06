@@ -1,0 +1,225 @@
+{
+  "network": "testnet",
+  "chainId": 46630,
+  "admin": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+  "deployTestAssets": true,
+  "salt": "curveil.v1",
+  "faucet": {
+    "cooldownSeconds": 86400,
+    "usdgAmount": "10000000000",
+    "wethAmount": "5000000000000000000"
+  },
+  "assets": {
+    "usdg": "0x0000000000000000000000000000000000000000",
+    "weth": "0x0000000000000000000000000000000000000000"
+  },
+  "markets": {
+    "feeTo": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+    "dlmmProtocolShareBps": 2000,
+    "dammTiers": [
+      {
+        "id": 0,
+        "label": "Standard",
+        "baseFeeBps": 30,
+        "maxFeeBps": 100,
+        "protocolShareBps": 2000,
+        "variableFeeControl": 2000,
+        "filterPeriod": 30,
+        "decayPeriod": 600,
+        "reductionBps": 5000,
+        "maxVolatilityBps": 5000
+      },
+      {
+        "id": 1,
+        "label": "Volatile",
+        "baseFeeBps": 100,
+        "maxFeeBps": 300,
+        "protocolShareBps": 2000,
+        "variableFeeControl": 4000,
+        "filterPeriod": 30,
+        "decayPeriod": 600,
+        "reductionBps": 5000,
+        "maxVolatilityBps": 5000
+      }
+    ],
+    "dlmmPresets": [
+      {
+        "binStep": 10,
+        "baseFeeBps": 20
+      },
+      {
+        "binStep": 25,
+        "baseFeeBps": 30
+      },
+      {
+        "binStep": 100,
+        "baseFeeBps": 80
+      }
+    ]
+  },
+  "seed": {
+    "priceUsdgPerWethE6": 2000000000,
+    "damm": {
+      "tier": 0,
+      "usdg": "1000000000000",
+      "weth": "500000000000000000000"
+    },
+    "dlmm": {
+      "binStep": 25,
+      "radius": 25,
+      "usdg": "1000000000000",
+      "weth": "500000000000000000000"
+    }
+  },
+  "launch": {
+    "protocolFeeRecipient": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+    "protocolLpRecipient": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+    "templates": [
+      {
+        "label": "Standard v1 (proposed)",
+        "totalSupply": "1000000000000000000000000000",
+        "curveSupply": "800000000000000000000000000",
+        "migrationSupply": "200000000000000000000000000",
+        "graduationThreshold": "25000000000",
+        "feeBps": 100,
+        "creatorFeeShareBps": 5000,
+        "dammTier": 0,
+        "priceToleranceBps": 200,
+        "creatorLpBps": 2000,
+        "creatorLockSeconds": 15552000,
+        "protocolLockSeconds": 31536000,
+        "enabled": true
+      },
+      {
+        "label": "Testnet quick: 1,000 tUSDG, short locks",
+        "totalSupply": "1000000000000000000000000000",
+        "curveSupply": "800000000000000000000000000",
+        "migrationSupply": "200000000000000000000000000",
+        "graduationThreshold": "1000000000",
+        "feeBps": 100,
+        "creatorFeeShareBps": 5000,
+        "dammTier": 0,
+        "priceToleranceBps": 200,
+        "creatorLpBps": 2000,
+        "creatorLockSeconds": 600,
+        "protocolLockSeconds": 1800,
+        "enabled": true
+      }
+    ]
+  },
+  "vault": {
+    "withdrawFeeBps": 10,
+    "protocolFeeRecipient": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+    "guardian": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+    "maxDepositUsdg": "100000000000",
+    "maxDepositWeth": "50000000000000000000"
+  },
+  "perps": {
+    "_comment": "Perps (Phase 5). priceSource 'pyth' deploys PythReportVerifier over Pyth's contract (perps.pyth.address) with each market's pythId; 'curveil-test-signer' deploys SignedReportVerifier (testnet only, refuses mainnet). maxFee is the most the verifier pays Pyth per report, in wei (Pyth charges 0 on Robinhood Chain today).",
+    "priceSource": "pyth",
+    "pyth": {
+      "address": "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a",
+      "maxFee": "1000000000000"
+    },
+    "reportVerifier": "0x0000000000000000000000000000000000000000",
+    "priceSigner": "0x34A2BfeC3a400228F764876b9b6CC573Da06378C",
+    "guardian": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+    "feeRecipient": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+    "protocolShareBps": 2000,
+    "minExecutionFee": "200000",
+    "requestTimeout": 120,
+    "navMaxAge": 900,
+    "sequencerFeed": "0x0000000000000000000000000000000000000000",
+    "sequencerGracePeriod": 3600,
+    "vault": {
+      "maxUtilizationBps": 8000,
+      "lockSeconds": 900,
+      "depositCap": "0"
+    },
+    "seedLiquidity": "250000000000",
+    "markets": [
+      {
+        "id": 1,
+        "symbol": "ETH-USD",
+        "base": "ETH",
+        "feed": "ETH/USD",
+        "pythId": "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
+        "maxConfBps": 100,
+        "maxReportAge": 60,
+        "reference": "0x0000000000000000000000000000000000000000",
+        "referenceHeartbeat": 0,
+        "maxDeviationBps": 0,
+        "maxLeverageBps": 50000,
+        "maintenanceMarginBps": 200,
+        "openFeeBps": 8,
+        "closeFeeBps": 8,
+        "liquidationFeeBps": 50,
+        "maxProfitBps": 10000,
+        "maxOpenInterestLong": "100000000000",
+        "maxOpenInterestShort": "100000000000",
+        "minCollateral": "10000000",
+        "maxFundingRatePerHour": "100000000000000"
+      },
+      {
+        "id": 2,
+        "symbol": "BTC-USD",
+        "base": "BTC",
+        "feed": "BTC/USD",
+        "pythId": "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
+        "maxConfBps": 100,
+        "maxReportAge": 60,
+        "reference": "0x0000000000000000000000000000000000000000",
+        "referenceHeartbeat": 0,
+        "maxDeviationBps": 0,
+        "maxLeverageBps": 50000,
+        "maintenanceMarginBps": 200,
+        "openFeeBps": 8,
+        "closeFeeBps": 8,
+        "liquidationFeeBps": 50,
+        "maxProfitBps": 10000,
+        "maxOpenInterestLong": "100000000000",
+        "maxOpenInterestShort": "100000000000",
+        "minCollateral": "10000000",
+        "maxFundingRatePerHour": "100000000000000"
+      },
+      {
+        "id": 3,
+        "symbol": "SOL-USD",
+        "base": "SOL",
+        "feed": "SOL/USD",
+        "pythId": "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
+        "maxConfBps": 100,
+        "maxReportAge": 60,
+        "reference": "0x0000000000000000000000000000000000000000",
+        "referenceHeartbeat": 0,
+        "maxDeviationBps": 0,
+        "maxLeverageBps": 20000,
+        "maintenanceMarginBps": 200,
+        "openFeeBps": 8,
+        "closeFeeBps": 8,
+        "liquidationFeeBps": 50,
+        "maxProfitBps": 10000,
+        "maxOpenInterestLong": "25000000000",
+        "maxOpenInterestShort": "25000000000",
+        "minCollateral": "10000000",
+        "maxFundingRatePerHour": "100000000000000"
+      }
+    ]
+  },
+  "factory": {
+    "_comment": "Launchpad operators (Phase 6). maxShareBps caps an operator's share of the protocol part of curve fees; lowering it applies to new launches only.",
+    "maxShareBps": 5000
+  },
+  "governance": {
+    "_comment": "Phase 7 rehearsal. Testnet uses the deployer as the 'Safe' and a 10-minute delay; testnet modules stay owned by the deployer.",
+    "safe": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+    "timelockDelay": 600,
+    "treasuries": [
+      "markets",
+      "launch",
+      "vault",
+      "perps",
+      "factory"
+    ]
+  }
+}

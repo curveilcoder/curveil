@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.28;
+
+import {Test} from "forge-std/Test.sol";
+import {ShieldedPerpsAdapter} from "../../src/vault/adapters/ShieldedPerpsAdapter.sol";
+
+/// @notice The client's encoding (packages/vault-core/test/perps.test.ts) equals the adapter's.
+contract PerpsParamsTest is Test {
+    function test_OpenVectorMatchesClient() public pure {
+        ShieldedPerpsAdapter.Open memory o =
+            ShieldedPerpsAdapter.Open(0xC1A1, 1, true, 10_000_000_000, 2_100_000_000, 2_010e18, 200_000);
+        bytes memory expected =
+            hex"0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000c1a10000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000002540be400000000000000000000000000000000000000000000000000000000007d2b750000000000000000000000000000000000000000000000006cf65a7e90472800000000000000000000000000000000000000000000000000000000000000030d40";
+        assertEq(abi.encode(uint8(1), abi.encode(o)), expected);
+        (uint8 op, bytes memory body) = abi.decode(expected, (uint8, bytes));
+        assertEq(op, 1);
+        assertEq(abi.decode(body, (uint256)), 0xC1A1, "every body starts with the claim id");
+    }
+}

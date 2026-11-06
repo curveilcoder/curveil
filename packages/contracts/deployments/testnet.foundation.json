@@ -1,0 +1,9 @@
+{
+  "assetRegistry": "0xbB9A1b9A5B8d12146A479dcE53Ec8ca1A4D5aC33",
+  "chainId": 46630,
+  "deployBlock": 146901622,
+  "network": "testnet",
+  "testFaucet": "0x33272479a75D4e629761Ac4e37931CFcC43667b6",
+  "usdg": "0xB80877C55B95A3998412cb0ddf40E643EDa3F102",
+  "weth": "0x229A9d59D5E3dff37b83E42Bc4899AfC1aE691CD"
+}
