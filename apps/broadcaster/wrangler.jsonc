@@ -1,0 +1,44 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "curveil-broadcaster",
+  "main": "src/index.ts",
+  "workers_dev": true,
+  "preview_urls": false,
+  "compatibility_date": "2026-10-20",
+  "compatibility_flags": ["nodejs_compat"],
+  // No request logging: the broadcaster sees timing and network metadata, and keeps none of it.
+  "observability": { "enabled": false },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["NonceManager"] }],
+  "env": {
+    "testnet": {
+      "name": "curveil-broadcaster-testnet",
+      "vars": {
+        "NETWORK": "testnet",
+        "RPC_URL": "https://rpc.testnet.chain.robinhood.com",
+        "ALLOWED_ORIGINS": "https://curveil-web-testnet.zeronym.workers.dev,http://localhost:5173",
+        // Flat testnet fees per token, in base units (tUSDG 0.05, tWETH 0.00002). Mainnet
+        // replaces this with gas-priced quotes.
+        "FEES": "{\"0xB80877C55B95A3998412cb0ddf40E643EDa3F102\":\"50000\",\"0x229A9d59D5E3dff37b83E42Bc4899AfC1aE691CD\":\"40000000000000\"}",
+        "MIN_GAS_BALANCE_WEI": "300000000000000"
+      },
+      "kv_namespaces": [{ "binding": "CONFIG", "id": "7384e92ad1884cd49946f29e2d61bdd8" }],
+      "durable_objects": { "bindings": [{ "name": "NONCES", "class_name": "NonceManager" }] },
+      "ratelimits": [{ "name": "SUBMITS", "namespace_id": "4663004", "simple": { "limit": 10, "period": 60 } }]
+    },
+    "mainnet": {
+      // Not deployed until the vault goes live: see scripts/deploy-mainnet.mjs. RPC_URL is a secret here.
+      "name": "curveil-broadcaster-mainnet",
+      "routes": [{ "pattern": "broadcaster.curveil.xyz", "custom_domain": true }],
+      "vars": {
+        "NETWORK": "mainnet",
+        "ALLOWED_ORIGINS": "https://curveil.xyz,https://curveil-web-mainnet.zeronym.workers.dev",
+        // Flat fees per token, in base units: USDG 0.05, WETH 0.00002.
+        "FEES": "{\"0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168\":\"50000\",\"0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73\":\"20000000000000\"}",
+        "MIN_GAS_BALANCE_WEI": "300000000000000"
+      },
+      "kv_namespaces": [{ "binding": "CONFIG", "id": "d0efd6b92ac84ebcb6a2e80873afa77c" }],
+      "durable_objects": { "bindings": [{ "name": "NONCES", "class_name": "NonceManager" }] },
+      "ratelimits": [{ "name": "SUBMITS", "namespace_id": "4663104", "simple": { "limit": 10, "period": 60 } }]
+    }
+  }
+}
