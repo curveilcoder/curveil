@@ -1,0 +1,48 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "curveil-keeper",
+  "main": "src/index.ts",
+  "workers_dev": true,
+  "preview_urls": false,
+  "compatibility_date": "2026-10-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Keeper"] }],
+  "env": {
+    "testnet": {
+      "name": "curveil-keeper-testnet",
+      "vars": {
+        "NETWORK": "testnet",
+        "RPC_URL": "https://rpc.testnet.chain.robinhood.com",
+        "ALLOWED_ORIGINS": "https://curveil-web-testnet.zeronym.workers.dev,http://localhost:5173",
+        // Exchange quotes a price needs, and how far (bps) one may sit from the median.
+        "MIN_SOURCES": "2",
+        "MAX_SPREAD_BPS": "100",
+        "MIN_GAS_BALANCE_WEI": "200000000000000",
+        // Watched for alerts. Alerts go to the ALERT_WEBHOOK_URL secret; none is set on testnet yet.
+        "BROADCASTER_URL": "https://curveil-broadcaster-testnet.zeronym.workers.dev",
+        // Testnet ticks at most once a minute, so it stays inside the account's Durable Object quota.
+        "MIN_TICK_MS": "60000"
+      },
+      "kv_namespaces": [{ "binding": "CONFIG", "id": "7384e92ad1884cd49946f29e2d61bdd8" }],
+      "durable_objects": { "bindings": [{ "name": "KEEPER", "class_name": "Keeper" }] }
+    },
+    "mainnet": {
+      // Not deployed until the go-ahead: see scripts/deploy-mainnet.mjs. RPC_URL is a secret here.
+      "name": "curveil-keeper-mainnet",
+      "vars": {
+        "NETWORK": "mainnet",
+        "ALLOWED_ORIGINS": "https://curveil.xyz,https://curveil-web-mainnet.zeronym.workers.dev",
+        "MIN_SOURCES": "2",
+        "MAX_SPREAD_BPS": "100",
+        "MIN_GAS_BALANCE_WEI": "1000000000000000",
+        "BROADCASTER_URL": "https://curveil-broadcaster-mainnet.zeronym.workers.dev"
+      },
+      "kv_namespaces": [{ "binding": "CONFIG", "id": "d0efd6b92ac84ebcb6a2e80873afa77c" }],
+      "durable_objects": { "bindings": [{ "name": "KEEPER", "class_name": "Keeper" }] },
+      // No backup timer: the account's free plan has no cron triggers left, and every API request
+      // restarts the keeper loop. On Workers Paid, set ["* * * * *"] to restart it every minute.
+      "triggers": { "crons": [] }
+    }
+  }
+}
