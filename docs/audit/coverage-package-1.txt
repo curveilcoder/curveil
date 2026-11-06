@@ -1,0 +1,41 @@
+forge coverage --report summary --ir-minimum --no-match-contract ShieldedExecuteTest
+Commit: tag audit-1-markets-launch. ShieldedExecuteTest is excluded (its proof fixture is tied to optimizer-built addresses), so ShieldedPool and adapter numbers here understate their real coverage.
+
+| File | % Lines | % Statements | % Branches | % Funcs |
+| src/factory/FeeSplitter.sol | 96.08% (49/51) | 98.65% (73/74) | 100.00% (9/9) | 88.89% (8/9) |
+| src/factory/LaunchpadRegistry.sol | 100.00% (92/92) | 98.97% (96/97) | 92.86% (13/14) | 100.00% (22/22) |
+| src/governance/BuybackBurner.sol | 100.00% (57/57) | 97.47% (77/79) | 87.50% (14/16) | 100.00% (9/9) |
+| src/governance/CurveilTimelock.sol | 100.00% (10/10) | 100.00% (9/9) | 100.00% (1/1) | 100.00% (4/4) |
+| src/governance/ProtocolTreasury.sol | 100.00% (9/9) | 100.00% (11/11) | 100.00% (2/2) | 100.00% (3/3) |
+| src/launch/AdmissionController.sol | 86.96% (20/23) | 84.21% (16/19) | 66.67% (2/3) | 87.50% (7/8) |
+| src/launch/BondingCurve.sol | 98.48% (130/132) | 95.06% (154/162) | 72.00% (18/25) | 93.75% (15/16) |
+| src/launch/CurveilLaunchToken.sol | 100.00% (4/4) | 100.00% (3/3) | 100.00% (0/0) | 100.00% (1/1) |
+| src/launch/GraduationMigrator.sol | 92.75% (64/69) | 88.24% (90/102) | 55.56% (10/18) | 100.00% (7/7) |
+| src/launch/LaunchFactory.sol | 100.00% (68/68) | 95.24% (80/84) | 73.33% (11/15) | 100.00% (10/10) |
+| src/launch/LaunchTemplateRegistry.sol | 100.00% (72/72) | 95.41% (104/109) | 75.00% (15/20) | 100.00% (8/8) |
+| src/launch/LpEscrow.sol | 91.21% (83/91) | 87.07% (101/116) | 47.83% (11/23) | 76.92% (10/13) |
+| src/markets/CurveilRouter.sol | 100.00% (63/63) | 90.62% (87/96) | 47.06% (8/17) | 100.00% (10/10) |
+| src/markets/DammFactory.sol | 94.12% (32/34) | 95.65% (44/46) | 87.50% (7/8) | 83.33% (5/6) |
+| src/markets/DammPool.sol | 100.00% (148/148) | 97.77% (175/179) | 79.17% (19/24) | 100.00% (24/24) |
+| src/markets/DlmmFactory.sol | 100.00% (41/41) | 100.00% (57/57) | 100.00% (13/13) | 100.00% (7/7) |
+| src/markets/DlmmPair.sol | 96.01% (265/276) | 91.24% (323/354) | 55.10% (27/49) | 93.75% (30/32) |
+| src/markets/libraries/BinBitmap.sol | 96.61% (57/59) | 96.43% (81/84) | 100.00% (12/12) | 88.89% (8/9) |
+| src/markets/libraries/BinMath.sol | 94.12% (16/17) | 92.31% (24/26) | 80.00% (4/5) | 100.00% (3/3) |
+| src/markets/libraries/LiquidityShapes.sol | 100.00% (32/32) | 100.00% (53/53) | 100.00% (10/10) | 100.00% (2/2) |
+| src/perps/OracleAdapter.sol | 91.89% (68/74) | 90.29% (93/103) | 66.67% (16/24) | 85.71% (12/14) |
+| src/perps/OrderManager.sol | 88.57% (62/70) | 82.08% (87/106) | 63.64% (14/22) | 90.00% (9/10) |
+| src/perps/PerpEngine.sol | 97.67% (378/387) | 93.98% (453/482) | 67.07% (55/82) | 97.83% (45/46) |
+| src/perps/PerpLens.sol | 82.61% (19/23) | 78.12% (25/32) | 0.00% (0/2) | 66.67% (2/3) |
+| src/perps/PerpLiquidityVault.sol | 95.00% (76/80) | 91.34% (116/127) | 57.89% (11/19) | 86.67% (13/15) |
+| src/perps/oracle/SignedReportVerifier.sol | 100.00% (17/17) | 100.00% (16/16) | 100.00% (2/2) | 100.00% (5/5) |
+| src/shared/AssetRegistry.sol | 100.00% (25/25) | 88.46% (23/26) | 50.00% (3/6) | 100.00% (7/7) |
+| src/shared/Guarded.sol | 100.00% (6/6) | 100.00% (11/11) | 100.00% (2/2) | 100.00% (2/2) |
+| src/shared/TransferHelper.sol | 100.00% (7/7) | 100.00% (9/9) | 100.00% (1/1) | 100.00% (2/2) |
+| src/vault/ShieldedPool.sol | 61.02% (180/295) | 57.11% (249/436) | 45.13% (51/113) | 66.67% (20/30) |
+| src/vault/adapters/PositionHolder.sol | 0.00% (0/9) | 0.00% (0/9) | 0.00% (0/3) | 0.00% (0/2) |
+| src/vault/adapters/ShieldedLiquidityAdapter.sol | 0.00% (0/155) | 0.00% (0/222) | 0.00% (0/30) | 0.00% (0/17) |
+| src/vault/adapters/ShieldedPerpsAdapter.sol | 96.15% (75/78) | 91.59% (98/107) | 56.67% (17/30) | 100.00% (8/8) |
+| src/vault/adapters/ShieldedSwapAdapter.sol | 0.00% (0/13) | 0.00% (0/21) | 0.00% (0/2) | 0.00% (0/2) |
+| src/vault/verifiers/TransferVerifier.sol | 1.33% (1/75) | 0.00% (0/71) | 0.00% (0/3) | 25.00% (1/4) |
+| src/vault/verifiers/WithdrawVerifier.sol | 1.33% (1/75) | 0.00% (0/71) | 0.00% (0/3) | 25.00% (1/4) |
+| Total | 72.41% (2751/3799) | 70.23% (3440/4898) | 56.28% (421/748) | 80.68% (405/502) |
