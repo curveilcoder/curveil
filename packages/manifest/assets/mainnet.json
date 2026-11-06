@@ -1,0 +1,58 @@
+[
+  {
+    "symbol": "PONS",
+    "label": "PONS",
+    "name": "Pons",
+    "logo": "/tokens/pons.png",
+    "address": "0x39dBED3a2bd333467115dE45665cC57F813C4571",
+    "decimals": 18
+  },
+  {
+    "symbol": "CASHCAT",
+    "label": "CASHCAT",
+    "name": "Cash Cat",
+    "logo": "/tokens/cashcat.png",
+    "address": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+    "decimals": 18
+  },
+  {
+    "symbol": "AI",
+    "label": "AI",
+    "name": "Artificial Inu",
+    "logo": "/tokens/ai.png",
+    "address": "0x2E8c31162b855A2ffa90F6F8634643Ad6F111e18",
+    "decimals": 18
+  },
+  {
+    "symbol": "ORBIO",
+    "label": "ORBIO",
+    "name": "Orbio",
+    "logo": "/tokens/orbio.png",
+    "address": "0xAa07A0e9209e16aC99708C3EC70159c6eF3128A3",
+    "decimals": 18
+  },
+  {
+    "symbol": "STONKBROKER",
+    "label": "STONKBROKER",
+    "name": "StonkBroker",
+    "logo": "/tokens/stonkbroker.png",
+    "address": "0xe934e36A439C94017B64a3FecE66AF12099aBF50",
+    "decimals": 18
+  },
+  {
+    "symbol": "HOOKR",
+    "label": "HOOKR",
+    "name": "Hookr",
+    "logo": "/tokens/hookr.png",
+    "address": "0x18E674231A58c239Dc7DaeDcffE15Ec3A24cff5c",
+    "decimals": 18
+  },
+  {
+    "symbol": "PRIORS",
+    "label": "PRIORS",
+    "name": "Priors Agents",
+    "logo": "/tokens/priors.png",
+    "address": "0xeDBf91223639800BCd5756815CAf908Df3b890bE",
+    "decimals": 18
+  }
+]

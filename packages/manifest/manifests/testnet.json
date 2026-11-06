@@ -1,0 +1,434 @@
+{
+  "schemaVersion": 1,
+  "version": "0.7.0-testnet.13",
+  "network": "testnet",
+  "chainId": 46630,
+  "generatedAt": "2026-11-05T05:16:14.331Z",
+  "rpc": {
+    "public": [
+      "https://rpc.testnet.chain.robinhood.com"
+    ]
+  },
+  "explorer": "https://explorer.testnet.chain.robinhood.com",
+  "token": {
+    "symbol": "CURVEIL",
+    "address": "0xd9588BCb99890935F086738f42aF419EFc736AA3"
+  },
+  "social": {
+    "x": null
+  },
+  "admin": {
+    "owner": "0x37376BC0181A818Bc3EE5Ff487aE4598a7fD26B4",
+    "safe": null,
+    "timelock": "0x9D74Aa434b4031f4338E41465e6d076a870509E6",
+    "timelockDelaySeconds": 600
+  },
+  "assets": [
+    {
+      "symbol": "tUSDG",
+      "label": "USDG",
+      "name": "Test Global Dollar",
+      "logo": "/tokens/usdg.png",
+      "address": "0xB80877C55B95A3998412cb0ddf40E643EDa3F102",
+      "decimals": 6,
+      "testOnly": true
+    },
+    {
+      "symbol": "tWETH",
+      "label": "WETH",
+      "name": "Test Wrapped Ether",
+      "logo": "/tokens/weth.png",
+      "address": "0x229A9d59D5E3dff37b83E42Bc4899AfC1aE691CD",
+      "decimals": 18,
+      "testOnly": true
+    }
+  ],
+  "contracts": {
+    "AssetRegistry": {
+      "address": "0xbB9A1b9A5B8d12146A479dcE53Ec8ca1A4D5aC33",
+      "deployBlock": 146901647,
+      "deployTx": "0x35ce59ffb43855aa98811cf529b14e0595c0aaf3d18902eeb761f619bf828fb1",
+      "codeHash": "0x504a357b38f6b8cbff322c810e958ee8846dde5d4e231c245b7657544111fa6f",
+      "abiHash": "0x57a9d09149c83164a3eb4c39694dfc96e5446dcc41a44c6f852207900e25a12c",
+      "source": "src/shared/AssetRegistry.sol",
+      "verified": true
+    },
+    "TestUSDG": {
+      "address": "0xB80877C55B95A3998412cb0ddf40E643EDa3F102",
+      "deployBlock": 146901660,
+      "deployTx": "0x66eaaa0e4617a0375e397ccae23829a903c5f2f2738cf8233ff20b864765bd79",
+      "codeHash": "0xc01c847702829a130705621f7449c95535457faeec22a2d83a052c4ca8974c3c",
+      "abiHash": "0xd680338f7860ee1114c495d6c9607f9ca945b1653109ab68d57a01881c54e56f",
+      "source": "src/testnet/TestToken.sol",
+      "verified": true
+    },
+    "TestWETH": {
+      "address": "0x229A9d59D5E3dff37b83E42Bc4899AfC1aE691CD",
+      "deployBlock": 146901671,
+      "deployTx": "0xdd3cf89465eeac695cba3455bb35180cb2d3f89e49d89692a2668b99e98cfba8",
+      "codeHash": "0xbf60aa866d0403de96f5fb66ff4b0f36a48c1d449bb6e91e1434c59776ab626f",
+      "abiHash": "0xd680338f7860ee1114c495d6c9607f9ca945b1653109ab68d57a01881c54e56f",
+      "source": "src/testnet/TestToken.sol",
+      "verified": true
+    },
+    "TestFaucet": {
+      "address": "0x33272479a75D4e629761Ac4e37931CFcC43667b6",
+      "deployBlock": 146901684,
+      "deployTx": "0x82ce7a001838216ea90e2167cd252a779af3648e82e8fc6eb81e526a12011f41",
+      "codeHash": "0x6d485e48cf1df52762391cdf5a6633679f3fd928ce70a53ac46afc594f01bb45",
+      "abiHash": "0x6c9f2dd0a007abf072afe1aac003ca31780eedef8679a2a62ba64562067dae34",
+      "source": "src/testnet/TestFaucet.sol",
+      "verified": true
+    },
+    "DammFactory": {
+      "address": "0xC2571698Df0CF9F2FBdA2EEB57E88Be45824AC21",
+      "deployBlock": 146916512,
+      "deployTx": "0xc3b01f6967688b337d6502e0a5c5199f7d9fe0b039bce7eb9a15e411fdd9b0b9",
+      "codeHash": "0x1458beca6585cd1727ecbcbcde810eb23979b882a6dab079dc38d38d2ceb2902",
+      "abiHash": "0x38e3cd8f3a48862e3aedf7a29a0808d5cf75676fcf973908d5405882eaacc73f",
+      "source": "src/markets/DammFactory.sol",
+      "verified": true
+    },
+    "DlmmFactory": {
+      "address": "0xEc1BcD7a0d66BaC43025A9eC0bD7378A86B55824",
+      "deployBlock": 146916547,
+      "deployTx": "0xcb04446c74f21845f205f3fb78355773e08a10e2895aebe71fc728c8e213fa5e",
+      "codeHash": "0xc1461dbf46d69fc33585497da2f111d0c85f65cca46889aafb4849302bcc9e18",
+      "abiHash": "0xf36bdc83cdc8c25cb145e83705b4531fd110dd6952f4977dd3021e1185094c1e",
+      "source": "src/markets/DlmmFactory.sol",
+      "verified": true
+    },
+    "CurveilRouter": {
+      "address": "0xabAd6ED157bC054e824C78C454AAd2a15DA6608e",
+      "deployBlock": 146916618,
+      "deployTx": "0xab6197fd957371565d94edab4150272fcae0f6332d4040d47988e6d5579242a6",
+      "codeHash": "0x130e14e9a1e3359f6198589ebe422d80f99d688cda39ccec036fde39bd87af50",
+      "abiHash": "0x7d11dcefd36df517c10a76572b87423323c072e11afe08734eaf6059bb3f3445",
+      "source": "src/markets/CurveilRouter.sol",
+      "verified": true
+    },
+    "AdmissionController": {
+      "address": "0xc4F59Cd524AC3412050d572CA452e3CcC74AF238",
+      "deployBlock": 146935631,
+      "deployTx": "0xf788859daa1130d6b730f0f02def09451373f32ba9c6fa9b24fe67841de7fbdd",
+      "codeHash": "0x37633093d33b97cc5f4d32a856369b6732cde1d35fe60b60427c17d115261157",
+      "abiHash": "0x8e5e7fa768989d4c65add5097d1a9412085160b6c4bfe4d367f646b5efbda213",
+      "source": "src/launch/AdmissionController.sol",
+      "verified": true
+    },
+    "LaunchTemplateRegistry": {
+      "address": "0x21345941F18432A32d857128A0A78EE776725B06",
+      "deployBlock": 146935643,
+      "deployTx": "0x5c1cf7f854b7119b40bf8419bf86830d638de7a79060a4357b5ba2810908e529",
+      "codeHash": "0x359b7f60c46ab940718c4bfd975e7e98ef44fdb20e37e8e635cdc7ce3d5ee667",
+      "abiHash": "0xaf0d85e8fd7a8f56bbb3c9ceac6aa7f3cd0a97e05ab50cf1f53a96f665878bae",
+      "source": "src/launch/LaunchTemplateRegistry.sol",
+      "verified": true
+    },
+    "LaunchFactory": {
+      "address": "0x8085E9791787e50A2049e76c97d1F5bde50f4045",
+      "deployBlock": 146935673,
+      "deployTx": "0xa8d0a00e5963ce11debfe9a380e82ced9bae7d8de32fcab9b67d48540456ec78",
+      "codeHash": "0x680534b17cf12a96dcc844f818ce3b58b0440662df06263a283585d380bf3149",
+      "abiHash": "0xea0e8c42fadadfb76de6d4e023ea29dc5f2fb25902adc2515aee8584ba08be59",
+      "source": "src/launch/LaunchFactory.sol",
+      "verified": true
+    },
+    "GraduationMigrator": {
+      "address": "0x0917da2d2F3B8924406f8965B9FE616FC2304535",
+      "deployBlock": 146935681,
+      "deployTx": "0x784137e03153eee8782d736771eaffb92d23462ad6e56ad4fae640b840e7ce22",
+      "codeHash": "0x579f28e128045e9f5c218d70ae98a1b6522c5eaf05265459d6593711fa041dc8",
+      "abiHash": "0xb3de68146af7ec4443ec0b5f13806d08c6f47e54f1e50e125b4c48dc5a7108f1",
+      "source": "src/launch/GraduationMigrator.sol",
+      "verified": true
+    },
+    "LpEscrow": {
+      "address": "0x1dc0812a780BF4129D223D46fB751152fCDaaa83",
+      "deployBlock": 146935655,
+      "deployTx": "0xd9869a423ab6b4424bb3de2ad2d4cc499ea1e7ac1645f942be1fbdacfe56f2b5",
+      "codeHash": "0x1683720c657b7dd5b26709cb5e007965cdc2c86cdaccc47cd07024ec8d2c6a1f",
+      "abiHash": "0x10cd89978f53e650624fc46764834cc50e08c449e15073464d0c469841e3008b",
+      "source": "src/launch/LpEscrow.sol",
+      "verified": true
+    },
+    "TransferVerifier": {
+      "address": "0x0Ca57124aC0B71a0f30F8c3ce8D1191Eac67f4F9",
+      "deployBlock": 146967800,
+      "deployTx": "0x8dce2ce5aafb26179575325721d6dedfb2f6794f43d56d59a9a3e2d288631411",
+      "codeHash": "0xc7b7d8b171935d728e9361c58bc05bcff1fe79e0cbf653753429b40b2f27faa9",
+      "abiHash": "0x7169f1b0060d29a4e15da82df7e8834c4d7e4ccbc9c226d66a474dba61c68fd1",
+      "source": "src/vault/verifiers/TransferVerifier.sol",
+      "verified": true
+    },
+    "WithdrawVerifier": {
+      "address": "0x532b88246C241666484d4EDa14d3978A889bAd08",
+      "deployBlock": 146967817,
+      "deployTx": "0x2fa07c7a46d7a2399dd80358159257d4eefbe4a3b271319dece65aef02f4a958",
+      "codeHash": "0xc195027a511b6de3c34f83731c17c7e25f5805de5f11bab93b9866cdc9f2a6fc",
+      "abiHash": "0x7169f1b0060d29a4e15da82df7e8834c4d7e4ccbc9c226d66a474dba61c68fd1",
+      "source": "src/vault/verifiers/WithdrawVerifier.sol",
+      "verified": true
+    },
+    "ShieldedPool": {
+      "address": "0x49e0908D224cCe6EcD247DABbeb27F02327aa2b0",
+      "deployBlock": 147000188,
+      "deployTx": "0xdb4a0f991a5c2fa28b338a5c4f8ab03cbad6cbf02db8fea4d3e20532574dbf5d",
+      "codeHash": "0xee11dc87fa696cc6002f125c94a8a9cb3e7d14a7cb5d6f2b74453a3e2a111334",
+      "abiHash": "0x80f4819645a719bddd232b12452d4abbc33c6608f9084bfd8d4ef71989cc16fd",
+      "source": "src/vault/ShieldedPool.sol",
+      "verified": true
+    },
+    "ShieldedPoolV1": {
+      "address": "0x3Ce3f8Bf49d84ebAb164c9eF6ba2c57B1098Cf0C",
+      "deployBlock": 146967831,
+      "deployTx": "0xcd177a3ad9b0c630dbb89b5ddfc6a98915f6e43cbd63341f04da35e3e335b7ee",
+      "codeHash": "0x842ea02a6786d864d39f95e3fe725457ded64b6463701a84c7dfe58d4c0e373f",
+      "abiHash": "0x6189d90b770b01b666015f0276374e95d5a3021907df7d2a9eadd9967e9fec71",
+      "source": "src/vault/ShieldedPool.sol (v1)",
+      "verified": true
+    },
+    "ShieldedSwapAdapter": {
+      "address": "0x3C6Baf5a1774525643d37ACd414234E6e9Bc39bc",
+      "deployBlock": 147000205,
+      "deployTx": "0xd1760fae0c71eb10050f44e61bdbfda191e7a2856ccb97927be042d956f79331",
+      "codeHash": "0x339a71d677420df34b4e30efa8e5fae5e9e23c3a71f1e29d18cad1ea127383a6",
+      "abiHash": "0xaaba815a1649c26b549fc81967c435b0506b44e6acd5856e04d0191f0203ba50",
+      "source": "src/vault/adapters/ShieldedSwapAdapter.sol",
+      "verified": true
+    },
+    "ShieldedLiquidityAdapter": {
+      "address": "0xE876d78170c5B9beFA80ee5710BbE605FF1aFC5A",
+      "deployBlock": 147000226,
+      "deployTx": "0xa5087c845354aec640a4c3a134ee97769e67846cd55f66b53039c7e22684ea6f",
+      "codeHash": "0x9873586c9808c9bad55c656e3aaff1d9dbfd3dfbfaec16d9ca6bf9b58294ecb4",
+      "abiHash": "0x4102273444c4d9bb9f9cb053d8c8ea786b695e9df8d30c6c894205de51224706",
+      "source": "src/vault/adapters/ShieldedLiquidityAdapter.sol",
+      "verified": true
+    },
+    "PositionHolder": {
+      "address": "0x835939c1848Dff034c90d47aDb46f8698C54595D",
+      "deployBlock": 147000226,
+      "deployTx": "0xa5087c845354aec640a4c3a134ee97769e67846cd55f66b53039c7e22684ea6f",
+      "codeHash": "0x9cddfdeac5d7989edc1571f16fa6060cb64701e5c0cadbfb81dc2c0ede5fdd4d",
+      "abiHash": "0xc0308fd4cfe4b625a869607fccdc5685175e25adc6846b4d14e5af14683490a5",
+      "source": "src/vault/adapters/PositionHolder.sol",
+      "verified": true
+    },
+    "PythReportVerifier": {
+      "address": "0x9798aAbabD034Aa1eCDf348263fC4227Cce95069",
+      "deployBlock": 148755978,
+      "deployTx": "0xc6b8603172ad88565c5eac3c0385d6979b3b6a167b71fa7a852a8600c1e27af0",
+      "codeHash": "0x948c794e97cb6a1df2239c97a0ad8049a9269cb6b665a777d946dfa41890fde2",
+      "abiHash": "0x44abfc09453ef19a7746e93ec044e560168ce0d10b9d385911c7f3f9a0cace66",
+      "source": "src/perps/oracle/PythReportVerifier.sol",
+      "verified": false
+    },
+    "OracleAdapter": {
+      "address": "0xb2ABeE900d1Ac4f5766F21A100C5F2fb38217e58",
+      "deployBlock": 148756044,
+      "deployTx": "0x574bd748c56976f06da9f5a656ab1556f80690fceb870d8f6d387f94edc95ff4",
+      "codeHash": "0x0c90865f8e9a38ad502daf38a4ec4c771d288566d98c9f4137d4476e2b302cd1",
+      "abiHash": "0x476186c606c78c1ed918c420310d256b88e129158857bd6ab0701f1e8b99094a",
+      "source": "src/perps/OracleAdapter.sol",
+      "verified": false
+    },
+    "PerpLiquidityVault": {
+      "address": "0x5cAF027d6D66839672437480138704C777460753",
+      "deployBlock": 148756078,
+      "deployTx": "0x979f5fe2b508deefbb34aea949cc289afb0fbb8c2e8cc590ec8b33aee0217cf0",
+      "codeHash": "0x512eee1ab80071bcea1d1bdde499cbe706edc1c77246479dcf98346d49083be1",
+      "abiHash": "0x617474fcf451ea5421cb14ce143434bd8d0780de5bac452147f27f1c87331595",
+      "source": "src/perps/PerpLiquidityVault.sol",
+      "verified": false
+    },
+    "PerpEngine": {
+      "address": "0x4a048A893DE3CC4C01d3369fc7C8F6Bb9f28f263",
+      "deployBlock": 148756096,
+      "deployTx": "0xd34bcb03112ba79ad1f3b60eb72b265864587c6cb8dfc18464c1cba694f0514d",
+      "codeHash": "0x7d18f7ad88ebd4287baa84754703e45d46e4505cc162028df5db0084af00f236",
+      "abiHash": "0x7d6ca68d8fb8953cf9642456699aef5b03f18b3ab1b34335cd160fd58d9e6876",
+      "source": "src/perps/PerpEngine.sol",
+      "verified": false
+    },
+    "OrderManager": {
+      "address": "0x54f9072EA8A239E4BD432C357a3e4250f90F1D19",
+      "deployBlock": 148756132,
+      "deployTx": "0x38fda5ace24dafb0e15c67cbc17fc1fc9ab02bcdae9d4c3be5b34629a6c4360a",
+      "codeHash": "0x9f655041f0dbe9f8c49349cd9e97d1820524f28a3aba4439d9fcafe013dbe212",
+      "abiHash": "0x1da8df24c48cf11db62aa143a7c4e0f06fc16deabc3d28ad00fa20ab7b50c7d5",
+      "source": "src/perps/OrderManager.sol",
+      "verified": false
+    },
+    "PerpLens": {
+      "address": "0x558B1fd5A0B27F1Ec4c4abbc6a4bA4Df0f1D50cb",
+      "deployBlock": 148756161,
+      "deployTx": "0x243dc297129bd5cab2c64166a60f1ffe542e0a15be92ccc05c0649388d94cf66",
+      "codeHash": "0xe4e90237affb84f63d69a8038189c8de95c5bb836271ab3ff033eb4a5c95e948",
+      "abiHash": "0x7e730eeea092e4ca8654813bc14641dc55393f21506c92f1298cfcb8176a078f",
+      "source": "src/perps/PerpLens.sol",
+      "verified": false
+    },
+    "ShieldedPerpsAdapter": {
+      "address": "0x9F29BdAdF4F2106FaA320577537Bb9582a931F8C",
+      "deployBlock": 148756179,
+      "deployTx": "0x19171c61ff469f1d34d3460ea88c7bd4e316822580c3dc086c8f30acfda66ad8",
+      "codeHash": "0x38d43d8df6ec81967eb131f8ec20f569dccd21b040ff1fa7fe8ce41d411bcefc",
+      "abiHash": "0x831f075a26f332d0849df10efd60a90494623b4cd3ea97ce3e066c1f8126a2ea",
+      "source": "src/vault/adapters/ShieldedPerpsAdapter.sol",
+      "verified": false
+    },
+    "LaunchpadRegistry": {
+      "address": "0xDE74faf148b1E6a74045874EfCc846C8311B030a",
+      "deployBlock": 147105886,
+      "deployTx": "0x67c025e16b1767d78de17dc1e83d2c12f13da3eef7fc4c586351c4b940d19bd5",
+      "codeHash": "0x1ac4033cd203f45be5475144665be0964b14705629665d48150c95e65797029a",
+      "abiHash": "0x758adfe710410a5c40f07558ee788c9bfd71d5e6742f55552ecd054011d1893d",
+      "source": "src/factory/LaunchpadRegistry.sol",
+      "verified": true
+    },
+    "FeeSplitter": {
+      "address": "0x4C1cEA044ef446105df237e14d0c0D1B7025fF5C",
+      "deployBlock": 147105886,
+      "deployTx": "0x67c025e16b1767d78de17dc1e83d2c12f13da3eef7fc4c586351c4b940d19bd5",
+      "codeHash": "0xe0ba65dcbef3cb9cfb55fe87df02f0e94feab887943b1cf48ffae929af1b7993",
+      "abiHash": "0xb55106925d0fb31c1307639765ad1356bd1418341bdfa4838528068fec619c76",
+      "source": "src/factory/FeeSplitter.sol",
+      "verified": true
+    },
+    "CurveilTimelock": {
+      "address": "0x9D74Aa434b4031f4338E41465e6d076a870509E6",
+      "deployBlock": 148131114,
+      "deployTx": "0xd4161e00d3e7924a9833bb2dbaadba95a0b5d90915d2ce337c171b3290ae1620",
+      "codeHash": "0x310e9de04435de71e103d22263fba927c9c210771977e4556b7a7af15c9b7446",
+      "abiHash": "0x1f4a4cd4417649d15065c9dfc4a1fa45e3ee599498c06c90efaf0b90be12c5b0",
+      "source": "src/governance/CurveilTimelock.sol",
+      "verified": true
+    },
+    "BuybackBurner": {
+      "address": "0xa446f12A4a59038301d8c4A594f6E13eE5e5ADF0",
+      "deployBlock": 148131204,
+      "deployTx": "0x4d2e9d9edb04358fc3455f959c629ca7765d3168902a71980255c585890ffcb5",
+      "codeHash": "0x3a8929e2fe202addb08309421b92f80eee52825fcbfe1a828365fbdfd76772c3",
+      "abiHash": "0x118ae60d40fcc5c2dfffea58ab955ee639a5d9b2f281c8591830700c05ce7b30",
+      "source": "src/governance/BuybackBurner.sol",
+      "verified": true
+    },
+    "TreasuryFactory": {
+      "address": "0xA38307d0795371D064202ddbdA799E9DEDcF906A",
+      "deployBlock": 148131193,
+      "deployTx": "0x052a38dbf6b88396c13a5623504ed7223ea79555dfb068234d86fb065489473b",
+      "codeHash": "0xd893bc6a45aad53a70122fdb5d00e26c05dbcfb37037ef00de58df3a75fd2098",
+      "abiHash": "0x1621643e3ed2c816bba8448b06ea9e41bc36fe1d02ce1d63393046999546bb29",
+      "source": "src/governance/ProtocolTreasury.sol",
+      "verified": true
+    },
+    "TreasuryLaunch": {
+      "address": "0xBa54AC7b82cC5Ee8Be64319DDB933D2914515092",
+      "deployBlock": 148131149,
+      "deployTx": "0x71880fffebca9facd84eed99ac5db5a78d9e9529787ec1ce096a474073e644ea",
+      "codeHash": "0xcf7fcf4f2bd208729121227885b3d076233b2827d79a87ff9a88371747dd39dd",
+      "abiHash": "0x1621643e3ed2c816bba8448b06ea9e41bc36fe1d02ce1d63393046999546bb29",
+      "source": "src/governance/ProtocolTreasury.sol",
+      "verified": true
+    },
+    "TreasuryMarkets": {
+      "address": "0x80b76d790755E0672aEC54f202aEED03AB73f395",
+      "deployBlock": 148131131,
+      "deployTx": "0x5ba9b461ef54b94a646dd70413ab882c71f735f56eba71b6ab16094f510238ff",
+      "codeHash": "0x0d1bb63e3131d7da8894e208697ef0afa5950969d398a9b4d27ae70fcc00f8f9",
+      "abiHash": "0x1621643e3ed2c816bba8448b06ea9e41bc36fe1d02ce1d63393046999546bb29",
+      "source": "src/governance/ProtocolTreasury.sol",
+      "verified": true
+    },
+    "TreasuryPerps": {
+      "address": "0x999060529e84075E8EA9Ec069B51Ed16871B3AaD",
+      "deployBlock": 148131181,
+      "deployTx": "0x07a284977df65f4f1f0c7a607edab429c22d06cbee8467c2d26943acdfd763fc",
+      "codeHash": "0x659b7af30d5058e5452e796f522ca9cfd2deb8245c5892621dc7240b6048272a",
+      "abiHash": "0x1621643e3ed2c816bba8448b06ea9e41bc36fe1d02ce1d63393046999546bb29",
+      "source": "src/governance/ProtocolTreasury.sol",
+      "verified": true
+    },
+    "TreasuryVault": {
+      "address": "0x872a8BA55a67BE74e11f7AA20543f18dAfD66002",
+      "deployBlock": 148131167,
+      "deployTx": "0x24261894b6d10a5b233e86947fb203d9a692efe4fe1509e73fc1a5f2b7dc5e47",
+      "codeHash": "0x447d8f81b89ead3b4faae3aec75fb721ba2f95e18459198f49c0aacc503cef9c",
+      "abiHash": "0x1621643e3ed2c816bba8448b06ea9e41bc36fe1d02ce1d63393046999546bb29",
+      "source": "src/governance/ProtocolTreasury.sol",
+      "verified": true
+    },
+    "PoseidonT3": {
+      "address": "0x7bd63041A4a5Ae46E3c6ad1d5edF89A3937BCDF1",
+      "deployBlock": 146967770,
+      "deployTx": "0x2fb24a78def8956622865b353a4b15314f10db5366e633babfd0fba8eb3515b8",
+      "codeHash": "0x4c9172d60d19d915cebd44cb2413117e68947469bf01d1cddc31fbbea366dd61",
+      "abiHash": "0x291c842aba1268315572b9e21026840b40bd8041a3cc5421d59b334519d22757",
+      "source": "node_modules/poseidon-solidity/PoseidonT3.sol",
+      "verified": true
+    },
+    "PoseidonT5": {
+      "address": "0x00c19c8240604216f22240B36BF689980fc83C1B",
+      "deployBlock": 146967787,
+      "deployTx": "0x5d3caa9881dce1cd814fc446d71bdf1894e071433cb1923006b6acbb967fc08f",
+      "codeHash": "0x25460173b297916d619e35d433b9e127cfc617c8339e3c666eb1f0c39f965d30",
+      "abiHash": "0x5475d093a8518779e912e93490347badea9372ea8e14d431326c368fa5449c25",
+      "source": "node_modules/poseidon-solidity/PoseidonT5.sol",
+      "verified": true
+    }
+  },
+  "circuits": [
+    {
+      "name": "transfer",
+      "version": "transfer/v1",
+      "wasmHash": "0x3bb02f97ca42bd4185a9a59ad0e3bf40e7060b5faa8f0bc31a50828ea5723011",
+      "zkeyHash": "0xbafb5917dedeee16954170e47360cc3ae1d45217f827b354edca5c8649714026",
+      "vkeyHash": "0xc2ed39db3de872fc317d1e269f753e5836e81f5aa46abaa1d0a76c5dc990c825",
+      "setup": "Curveil testnet single-party setup (not for mainnet)"
+    },
+    {
+      "name": "withdraw",
+      "version": "withdraw/v1",
+      "wasmHash": "0x863dd991f69cb132797d1add64fe973e6fff63ddbd339400ad07b60c3917ce28",
+      "zkeyHash": "0xca17e7d7e00a5187ece586ceccb0454a3935b15b388db549a7d87f15b4cad0b7",
+      "vkeyHash": "0x593625902a3e786edcec96a3050df8af674174993b10ec4d2b81f9b5daae4923",
+      "setup": "Curveil testnet single-party setup (not for mainnet)"
+    }
+  ],
+  "perps": {
+    "priceSource": "pyth",
+    "reportVerifier": "0x9798aAbabD034Aa1eCDf348263fC4227Cce95069",
+    "pyth": "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a",
+    "priceSigner": null,
+    "markets": [
+      {
+        "id": 1,
+        "symbol": "ETH-USD",
+        "base": "ETH",
+        "feed": "ETH/USD",
+        "feedId": "0x0b43555ace6b39aae1b894097d0a9fc17f504c62fea598fa206cc6f5088e6e45",
+        "reference": null,
+        "pythId": "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace"
+      },
+      {
+        "id": 2,
+        "symbol": "BTC-USD",
+        "base": "BTC",
+        "feed": "BTC/USD",
+        "feedId": "0xee62665949c883f9e0f6f002eac32e00bd59dfe6c34e92a91c37d6a8322d6489",
+        "reference": null,
+        "pythId": "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43"
+      },
+      {
+        "id": 3,
+        "symbol": "SOL-USD",
+        "base": "SOL",
+        "feed": "SOL/USD",
+        "feedId": "0x2b1b43ec7f6691d6bf679978bab5c093fa45ee74c0baac6cc75649dc59cc21d3",
+        "reference": null,
+        "pythId": "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"
+      }
+    ]
+  }
+}

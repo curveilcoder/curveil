@@ -1,0 +1,16 @@
+{
+  "testnet": {
+    "chainId": 46630,
+    "rpc": ["https://rpc.testnet.chain.robinhood.com"],
+    "explorer": "https://explorer.testnet.chain.robinhood.com",
+    "token": { "symbol": "CURVEIL", "address": "0xd9588BCb99890935F086738f42aF419EFc736AA3" },
+    "social": { "x": null }
+  },
+  "mainnet": {
+    "chainId": 4663,
+    "rpc": ["https://rpc.mainnet.chain.robinhood.com"],
+    "explorer": "https://robinhoodchain.blockscout.com",
+    "token": { "symbol": "CURVEIL", "address": "0xb9fd927f8EBdC35A83274324B138a242A8b37674" },
+    "social": { "x": "https://x.com/Curveil_app" }
+  }
+}

@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 1,
+  "version": "0.7.0-mainnet.9",
+  "network": "mainnet",
+  "chainId": 4663,
+  "generatedAt": "2026-11-06T05:13:39.554Z",
+  "rpc": {
+    "public": [
+      "https://rpc.mainnet.chain.robinhood.com"
+    ]
+  },
+  "explorer": "https://robinhoodchain.blockscout.com",
+  "token": {
+    "symbol": "CURVEIL",
+    "address": "0xb9fd927f8EBdC35A83274324B138a242A8b37674"
+  },
+  "social": {
+    "x": "https://x.com/Curveil_app"
+  },
+  "admin": {
+    "owner": "0x833ca814192D35778801A4E955e00F0DfCBc53d9",
+    "safe": "0x2968bFEB9273411Bd2A8cF6996F19d5aeCc01E4C",
+    "timelock": "0xC865861EdBfb4A36d69F0D5110b23ce91A2619c2",
+    "timelockDelaySeconds": 259200
+  },
+  "assets": [
+    {
+      "symbol": "USDG",
+      "label": "USDG",
+      "name": "Global Dollar",
+      "logo": "/tokens/usdg.png",
+      "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "decimals": 6,
+      "testOnly": false
+    },
+    {
+      "symbol": "WETH",
+      "label": "WETH",
+      "name": "Wrapped Ether",
+      "logo": "/tokens/weth.png",
+      "address": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      "decimals": 18,
+      "testOnly": false
+    },
+    {
+      "symbol": "PONS",
+      "label": "PONS",
+      "name": "Pons",
+      "logo": "/tokens/pons.png",
+      "address": "0x39dBED3a2bd333467115dE45665cC57F813C4571",
+      "decimals": 18,
+      "testOnly": false
+    },
+    {
+      "symbol": "CASHCAT",
+      "label": "CASHCAT",
+      "name": "Cash Cat",
+      "logo": "/tokens/cashcat.png",
+      "address": "0x020bfC650A365f8BB26819deAAbF3E21291018b4",
+      "decimals": 18,
+      "testOnly": false
+    },
+    {
+      "symbol": "AI",
+      "label": "AI",
+      "name": "Artificial Inu",
+      "logo": "/tokens/ai.png",
+      "address": "0x2E8c31162b855A2ffa90F6F8634643Ad6F111e18",
+      "decimals": 18,
+      "testOnly": false
+    },
+    {
+      "symbol": "ORBIO",
+      "label": "ORBIO",
+      "name": "Orbio",
+      "logo": "/tokens/orbio.png",
+      "address": "0xAa07A0e9209e16aC99708C3EC70159c6eF3128A3",
+      "decimals": 18,
+      "testOnly": false
+    },
+    {
+      "symbol": "STONKBROKER",
+      "label": "STONKBROKER",
+      "name": "StonkBroker",
+      "logo": "/tokens/stonkbroker.png",
+      "address": "0xe934e36A439C94017B64a3FecE66AF12099aBF50",
+      "decimals": 18,
+      "testOnly": false
+    },
+    {
+      "symbol": "HOOKR",
+      "label": "HOOKR",
+      "name": "Hookr",
+      "logo": "/tokens/hookr.png",
+      "address": "0x18E674231A58c239Dc7DaeDcffE15Ec3A24cff5c",
+      "decimals": 18,
+      "testOnly": false
+    },
+    {
+      "symbol": "PRIORS",
+      "label": "PRIORS",
+      "name": "Priors Agents",
+      "logo": "/tokens/priors.png",
+      "address": "0xeDBf91223639800BCd5756815CAf908Df3b890bE",
+      "decimals": 18,
+      "testOnly": false
+    }
+  ],
+  "contracts": {
+    "AssetRegistry": {
+      "address": "0x86a041EAF91a003d525A921Fda1f2C74B0733F4c",
+      "deployBlock": 105691219,
+      "deployTx": "0x74de3758375df30495695f3a85dcc6ccfc22cc20ef89954907d1e85b572a24a4",
+      "codeHash": "0x504a357b38f6b8cbff322c810e958ee8846dde5d4e231c245b7657544111fa6f",
+      "abiHash": "0x57a9d09149c83164a3eb4c39694dfc96e5446dcc41a44c6f852207900e25a12c",
+      "source": "src/shared/AssetRegistry.sol",
+      "verified": true
+    },
+    "DammFactory": {
+      "address": "0x27464A5b14496ccC8b528bD7506f626ADCd683F0",
+      "deployBlock": 105691360,
+      "deployTx": "0xc78bb08c52312ee8181d16bb1c27cfa5ba7acee8a54ad16c5246e34eb9a774b3",
+      "codeHash": "0x31fcf4a5e5d4695ce43df27bd0fd0b7abd0f61718282eab5a7e53e25abad4452",
+      "abiHash": "0x38e3cd8f3a48862e3aedf7a29a0808d5cf75676fcf973908d5405882eaacc73f",
+      "source": "src/markets/DammFactory.sol",
+      "verified": true
+    },
+    "DlmmFactory": {
+      "address": "0x7825D34c63a411A72c6cCA218d8CB51F3b8207f7",
+      "deployBlock": 105691423,
+      "deployTx": "0x8fbb891e607968c4820831ed1038f378045c34cd45205e49cfc47e99125da802",
+      "codeHash": "0x6fc20f957c5f3446719637638831a59a6026d98cc1c5b8df6bfffe2211243fef",
+      "abiHash": "0xf36bdc83cdc8c25cb145e83705b4531fd110dd6952f4977dd3021e1185094c1e",
+      "source": "src/markets/DlmmFactory.sol",
+      "verified": true
+    },
+    "CurveilRouter": {
+      "address": "0xc6297DB8038b2c6DE1E17864785BC25654F466A7",
+      "deployBlock": 105691506,
+      "deployTx": "0x6000c4d153db2dda1d9bfeb11fb97f5b4309e20453a61cc20893897bb2aee81f",
+      "codeHash": "0x9efbf06d64f33355b4b05190882c3c7038fa69225993d3f732934e667accc694",
+      "abiHash": "0x7d11dcefd36df517c10a76572b87423323c072e11afe08734eaf6059bb3f3445",
+      "source": "src/markets/CurveilRouter.sol",
+      "verified": true
+    },
+    "AdmissionController": {
+      "address": "0xd21400C92c47Fe7CbDEAF01Ef328127AB1Cd57cA",
+      "deployBlock": 105691633,
+      "deployTx": "0x5b9574778c0c09a30e1cd3ba95db73f4c8878b1bc094ea737113ab0e9dbdbd83",
+      "codeHash": "0x625a5f93a9e326056c061aabd64c9a36b9e765dbd43e87c2b26a0fa03c92b50b",
+      "abiHash": "0x8e5e7fa768989d4c65add5097d1a9412085160b6c4bfe4d367f646b5efbda213",
+      "source": "src/launch/AdmissionController.sol",
+      "verified": true
+    },
+    "LaunchTemplateRegistry": {
+      "address": "0x390a478c762994D792C15403c20D975Fe0a29788",
+      "deployBlock": 105691654,
+      "deployTx": "0xe0176f2b993e334afb92287f149b914f9a34cc04f4aed1f7ee653d2e5ab88937",
+      "codeHash": "0x0e5a871fb029a132bfc1ef255b524b3acfe5d5854af4a80f3abc9d62ae02d806",
+      "abiHash": "0xaf0d85e8fd7a8f56bbb3c9ceac6aa7f3cd0a97e05ab50cf1f53a96f665878bae",
+      "source": "src/launch/LaunchTemplateRegistry.sol",
+      "verified": true
+    },
+    "LaunchFactory": {
+      "address": "0x36666329570041Eb00B00D309b0FB5F13710a7FF",
+      "deployBlock": 105691695,
+      "deployTx": "0x0f3f07390b53dae5c6965491f71713e36fde9004498444823d7bafad275f041c",
+      "codeHash": "0xce82f29fbc0e93bc0941c98c979862cbbd039d2c7750c23d77fc87d36f49bc2d",
+      "abiHash": "0xea0e8c42fadadfb76de6d4e023ea29dc5f2fb25902adc2515aee8584ba08be59",
+      "source": "src/launch/LaunchFactory.sol",
+      "verified": true
+    },
+    "GraduationMigrator": {
+      "address": "0x727566a005a1D21b7498a90323481b01c68daB1E",
+      "deployBlock": 105691718,
+      "deployTx": "0xa326cb46a8c7c3fea4e7a3256d1a0fdc6f147d79b9fc90001d024d8e66512a67",
+      "codeHash": "0x0f86968cf0767962479d4274fe5f8ee33f367f4c66054b949f33403738228906",
+      "abiHash": "0xb3de68146af7ec4443ec0b5f13806d08c6f47e54f1e50e125b4c48dc5a7108f1",
+      "source": "src/launch/GraduationMigrator.sol",
+      "verified": true
+    },
+    "LpEscrow": {
+      "address": "0x5A8f89Db185EbB135823c61C173B7Ee264f3F5d3",
+      "deployBlock": 105691675,
+      "deployTx": "0x48e8af6b2867d9699d1eb400dfdcca50b3fe615f2bcfc4f85d4ba3873d777378",
+      "codeHash": "0x1683720c657b7dd5b26709cb5e007965cdc2c86cdaccc47cd07024ec8d2c6a1f",
+      "abiHash": "0x10cd89978f53e650624fc46764834cc50e08c449e15073464d0c469841e3008b",
+      "source": "src/launch/LpEscrow.sol",
+      "verified": true
+    },
+    "TransferVerifier": {
+      "address": "0x33BC2680fD34eEC322Eb0AB75EdA6cA8BBf6545F",
+      "deployBlock": 105827244,
+      "deployTx": "0x930ef82916d21b211f6d1d797301379e600295877479adfbdd4fac97b9f98d1a",
+      "codeHash": "0x8f1dbe4b92cb8a956e9b68a836dc8e07f57c764c8e1c23681d018086f6ba56d2",
+      "abiHash": "0x7169f1b0060d29a4e15da82df7e8834c4d7e4ccbc9c226d66a474dba61c68fd1",
+      "source": "src/vault/verifiers/TransferVerifier.sol",
+      "verified": true
+    },
+    "WithdrawVerifier": {
+      "address": "0x2AaDa901E8Bffc256f400f45434b725b8B342D25",
+      "deployBlock": 105827265,
+      "deployTx": "0x0bd8752ecc0f19de6093cecdcbb80ae78be815d4565b38f7128cd0e1acf4492a",
+      "codeHash": "0x718b2f3f0591ba7569e9f7cd883a252f03a996c5476bf0f8898e0fa4eb4ad89d",
+      "abiHash": "0x7169f1b0060d29a4e15da82df7e8834c4d7e4ccbc9c226d66a474dba61c68fd1",
+      "source": "src/vault/verifiers/WithdrawVerifier.sol",
+      "verified": true
+    },
+    "ShieldedPool": {
+      "address": "0x171ff5050a6C12476c495FbE4B65Bdf25cFa0696",
+      "deployBlock": 105827793,
+      "deployTx": "0xa2edb5bb53c59ea2d2d8057e516eb1322d3ecf8a37cd39df7bd5e4e2f5466113",
+      "codeHash": "0x40790368ca8030f76f236f87c17a4a70e8c75adfedff161c495d8b1e9a52266e",
+      "abiHash": "0x80f4819645a719bddd232b12452d4abbc33c6608f9084bfd8d4ef71989cc16fd",
+      "source": "src/vault/ShieldedPool.sol",
+      "verified": true
+    },
+    "ShieldedPoolV1": {
+      "address": "0xE5250D39A7fB371EAF2E75a0fFDE191A696F3e03",
+      "deployBlock": 105827287,
+      "deployTx": "0xc350a089b3c95363b331fd91a77437cd03cc797bc00c501ba2df0c6eec06819a",
+      "codeHash": "0x3613304c60fa58d44492b9cd9eed3a4224563cef15266a6c6aec5ba25fe3e3ac",
+      "abiHash": "0x6189d90b770b01b666015f0276374e95d5a3021907df7d2a9eadd9967e9fec71",
+      "source": "src/vault/ShieldedPool.sol (v1)",
+      "verified": true
+    },
+    "ShieldedSwapAdapter": {
+      "address": "0x91F697B8EECd71D4305bEe94D8116169DD64CA4c",
+      "deployBlock": 105827814,
+      "deployTx": "0x40e804e4aabdda5cfd94891c5aed63612db76fefc04bde624a90998753790771",
+      "codeHash": "0xd68e905f76f9861912fae72a36a86a66b5581b25b4d0dbb5fc65cc2bd7a3838c",
+      "abiHash": "0xaaba815a1649c26b549fc81967c435b0506b44e6acd5856e04d0191f0203ba50",
+      "source": "src/vault/adapters/ShieldedSwapAdapter.sol",
+      "verified": true
+    },
+    "ShieldedLiquidityAdapter": {
+      "address": "0xCBeBd0cA3Afb1F7F9447DeFC74Dfd6CC4572df4B",
+      "deployBlock": 105827835,
+      "deployTx": "0xce228ada11e775779883ba0305fe618b47c80e4acf6b1d7adb54208452f01350",
+      "codeHash": "0x9452e32d6563ef4425ec3cc9685a7c0b7ffba077b7e67804e149d59e342f5711",
+      "abiHash": "0x4102273444c4d9bb9f9cb053d8c8ea786b695e9df8d30c6c894205de51224706",
+      "source": "src/vault/adapters/ShieldedLiquidityAdapter.sol",
+      "verified": true
+    },
+    "PositionHolder": {
+      "address": "0x55dB91AB169b09Bb06d4F32ceE16f7EeE48629A5",
+      "deployBlock": 105827835,
+      "deployTx": "0xce228ada11e775779883ba0305fe618b47c80e4acf6b1d7adb54208452f01350",
+      "codeHash": "0x9cddfdeac5d7989edc1571f16fa6060cb64701e5c0cadbfb81dc2c0ede5fdd4d",
+      "abiHash": "0xc0308fd4cfe4b625a869607fccdc5685175e25adc6846b4d14e5af14683490a5",
+      "source": "src/vault/adapters/PositionHolder.sol",
+      "verified": true
+    },
+    "PythReportVerifier": {
+      "address": "0x07Fb095DaE9406A3fC73889DB709e465f35f6201",
+      "deployBlock": 106446238,
+      "deployTx": "0x5c3699fe725e5a3a56b1b29d1f7b7aa67c8ee6e5acee9ce20941d1038c47b65b",
+      "codeHash": "0x948c794e97cb6a1df2239c97a0ad8049a9269cb6b665a777d946dfa41890fde2",
+      "abiHash": "0x44abfc09453ef19a7746e93ec044e560168ce0d10b9d385911c7f3f9a0cace66",
+      "source": "src/perps/oracle/PythReportVerifier.sol",
+      "verified": true
+    },
+    "OracleAdapter": {
+      "address": "0x91C7ec40F772ee22DbBb6D6bb10805A5b95089Bb",
+      "deployBlock": 106446322,
+      "deployTx": "0x81175367189b43d332c405fb53abd996057f9b20ae0615f0e54ba352b6ee6120",
+      "codeHash": "0x0c90865f8e9a38ad502daf38a4ec4c771d288566d98c9f4137d4476e2b302cd1",
+      "abiHash": "0x476186c606c78c1ed918c420310d256b88e129158857bd6ab0701f1e8b99094a",
+      "source": "src/perps/OracleAdapter.sol",
+      "verified": true
+    },
+    "PerpLiquidityVault": {
+      "address": "0x451290E247438bda2eFDFC224669f38d8207FfA8",
+      "deployBlock": 106446381,
+      "deployTx": "0x4f03efe5c7a98a6346371323dac250bf3e9acbc4b21c28a789795ef0f9e96aed",
+      "codeHash": "0xa075d009455530b400e8638e0c65e1591925b014b5ed5a4e875fbfd47c4948e9",
+      "abiHash": "0x617474fcf451ea5421cb14ce143434bd8d0780de5bac452147f27f1c87331595",
+      "source": "src/perps/PerpLiquidityVault.sol",
+      "verified": true
+    },
+    "PerpEngine": {
+      "address": "0x4653297459629D3Bf7f8f147cC1dc4F48F8BC5Cb",
+      "deployBlock": 106446396,
+      "deployTx": "0xf8dbb0c04d1ca0690d9f0df10504e33112ca34f8383eeae150a915d098854e85",
+      "codeHash": "0x8912f6895ad025b0bc77c97cbb0bbab21ff6f4e3d79b06ad82c3d8c2b7ba9732",
+      "abiHash": "0x7d6ca68d8fb8953cf9642456699aef5b03f18b3ab1b34335cd160fd58d9e6876",
+      "source": "src/perps/PerpEngine.sol",
+      "verified": true
+    },
+    "OrderManager": {
+      "address": "0x57CC5EbfB82ba6653f8dBa6585353F06F06caE37",
+      "deployBlock": 106446451,
+      "deployTx": "0x22ce2b3a0998ceba87e52f65620333623f43e34380f2190f02433d54f6131619",
+      "codeHash": "0x7bcef9100c37c87a40427c332acd308cd0401dc9628d3d698486753f2c987c14",
+      "abiHash": "0x1da8df24c48cf11db62aa143a7c4e0f06fc16deabc3d28ad00fa20ab7b50c7d5",
+      "source": "src/perps/OrderManager.sol",
+      "verified": true
+    },
+    "PerpLens": {
+      "address": "0x5c097EbEfFBECcD0eff973147420A1bA244644B3",
+      "deployBlock": 106446484,
+      "deployTx": "0x34d1d241394a101fd105c7069240b6a61f1b5792f521a901eed79617e0ed6840",
+      "codeHash": "0x2b4fd5468394e14cdcdda499a2e5beadc243c9d5b81b59c8b4a4aca0a4ff5612",
+      "abiHash": "0x7e730eeea092e4ca8654813bc14641dc55393f21506c92f1298cfcb8176a078f",
+      "source": "src/perps/PerpLens.sol",
+      "verified": true
+    },
+    "ShieldedPerpsAdapter": {
+      "address": "0xd36861A5ec8f0C1be1E30e05b1312C295F2a2EEC",
+      "deployBlock": 106446505,
+      "deployTx": "0x92399e14362398463896ccd787009a0c799030455be6c5dd9a8aa06f261f0969",
+      "codeHash": "0x224e08a98bddc63c14b401f4270d62e213cb988605eb4add6c39f93c97d3a082",
+      "abiHash": "0x831f075a26f332d0849df10efd60a90494623b4cd3ea97ce3e066c1f8126a2ea",
+      "source": "src/vault/adapters/ShieldedPerpsAdapter.sol",
+      "verified": true
+    },
+    "LaunchpadRegistry": {
+      "address": "0xd0df826B89C5eFBd316BFbD7B3f535D5ec922963",
+      "deployBlock": 105692029,
+      "deployTx": "0x22525093ced3806fd8ddfd9ab79876cd401d8d9bde34281339cbfc0b61925be7",
+      "codeHash": "0x21bf0e7583ea4cdc0f6b7aabb8bc4e7862265326c9f8b32b668c1db37ca9c9fa",
+      "abiHash": "0x758adfe710410a5c40f07558ee788c9bfd71d5e6742f55552ecd054011d1893d",
+      "source": "src/factory/LaunchpadRegistry.sol",
+      "verified": true
+    },
+    "FeeSplitter": {
+      "address": "0xbD2248B49344D581ad5a1B3F1DD938F384343780",
+      "deployBlock": 105692029,
+      "deployTx": "0x22525093ced3806fd8ddfd9ab79876cd401d8d9bde34281339cbfc0b61925be7",
+      "codeHash": "0xe0ba65dcbef3cb9cfb55fe87df02f0e94feab887943b1cf48ffae929af1b7993",
+      "abiHash": "0xb55106925d0fb31c1307639765ad1356bd1418341bdfa4838528068fec619c76",
+      "source": "src/factory/FeeSplitter.sol",
+      "verified": true
+    },
+    "CurveilTimelock": {
+      "address": "0xC865861EdBfb4A36d69F0D5110b23ce91A2619c2",
+      "deployBlock": 105690862,
+      "deployTx": "0xd890c4998ff7ac905bde4782627f68397a71511c3ee1ff8ceb1c9d530b070f27",
+      "codeHash": "0x310e9de04435de71e103d22263fba927c9c210771977e4556b7a7af15c9b7446",
+      "abiHash": "0x1f4a4cd4417649d15065c9dfc4a1fa45e3ee599498c06c90efaf0b90be12c5b0",
+      "source": "src/governance/CurveilTimelock.sol",
+      "verified": true
+    },
+    "BuybackBurner": {
+      "address": "0xB506Ac9c233361b8a1c6c2Cf0cA2028530FCeC35",
+      "deployBlock": 105690988,
+      "deployTx": "0x114a2b2e4c8e021b34ceed941ca73b8b1dffa676ce3e8c7d968bfc18f2367dc5",
+      "codeHash": "0xacdcc6c9d8198e3d8d83b7198096307ad8d2a71fc9d24a1512f0ecd59bdcb12e",
+      "abiHash": "0x118ae60d40fcc5c2dfffea58ab955ee639a5d9b2f281c8591830700c05ce7b30",
+      "source": "src/governance/BuybackBurner.sol",
+      "verified": true
+    },
+    "TreasuryFactory": {
+      "address": "0x76eE5dab43D28b8C06689B309A6ece4bF559F61F",
+      "deployBlock": 105690967,
+      "deployTx": "0xbc166d87a0ef11d05d9fb6a402753566074f3ecd64c485e67835dd48c5090c7e",
+      "codeHash": "0xd893bc6a45aad53a70122fdb5d00e26c05dbcfb37037ef00de58df3a75fd2098",
+      "abiHash": "0x1621643e3ed2c816bba8448b06ea9e41bc36fe1d02ce1d63393046999546bb29",
+      "source": "src/governance/ProtocolTreasury.sol",
+      "verified": true
+    },
+    "TreasuryLaunch": {
+      "address": "0x59300c81078a4Cd1199E35E4F56224516d8a6c71",
+      "deployBlock": 105690904,
+      "deployTx": "0x4e42a964148e221ad3215798c26d174d7faa47a2407d333aff4ef4310ae9c698",
+      "codeHash": "0xcf7fcf4f2bd208729121227885b3d076233b2827d79a87ff9a88371747dd39dd",
+      "abiHash": "0x1621643e3ed2c816bba8448b06ea9e41bc36fe1d02ce1d63393046999546bb29",
+      "source": "src/governance/ProtocolTreasury.sol",
+      "verified": true
+    },
+    "TreasuryMarkets": {
+      "address": "0x1de63CC8C4bb66282f050c663dD2251F92993Efd",
+      "deployBlock": 105690883,
+      "deployTx": "0xfaa0a70c43b091dffb2c720bab840ace5d3a88328e221dd2c55c3c5648b91761",
+      "codeHash": "0x0d1bb63e3131d7da8894e208697ef0afa5950969d398a9b4d27ae70fcc00f8f9",
+      "abiHash": "0x1621643e3ed2c816bba8448b06ea9e41bc36fe1d02ce1d63393046999546bb29",
+      "source": "src/governance/ProtocolTreasury.sol",
+      "verified": true
+    },
+    "TreasuryPerps": {
+      "address": "0x30165FE555aBD57509116B80F707769889Cde212",
+      "deployBlock": 105690946,
+      "deployTx": "0x4c053c2399a9fe846c7fd646e69fdab09c53dd69053456421d84fff25b5049a6",
+      "codeHash": "0x659b7af30d5058e5452e796f522ca9cfd2deb8245c5892621dc7240b6048272a",
+      "abiHash": "0x1621643e3ed2c816bba8448b06ea9e41bc36fe1d02ce1d63393046999546bb29",
+      "source": "src/governance/ProtocolTreasury.sol",
+      "verified": true
+    },
+    "TreasuryVault": {
+      "address": "0xE469B520e712339c825A8d3BA6Aa74ca7690b34f",
+      "deployBlock": 105690925,
+      "deployTx": "0x0f1391958f8a9fd1259150b88a9bba4c1012e270f3ee51f6d560d63d5fdae8a1",
+      "codeHash": "0x447d8f81b89ead3b4faae3aec75fb721ba2f95e18459198f49c0aacc503cef9c",
+      "abiHash": "0x1621643e3ed2c816bba8448b06ea9e41bc36fe1d02ce1d63393046999546bb29",
+      "source": "src/governance/ProtocolTreasury.sol",
+      "verified": true
+    },
+    "PoseidonT3": {
+      "address": "0x7bd63041A4a5Ae46E3c6ad1d5edF89A3937BCDF1",
+      "deployBlock": 80334264,
+      "deployTx": "0xa88d382084e70e0aa1e3617cc10b7790431215ffb0e15ca0a8436e9303bbd4ce",
+      "codeHash": "0x4c9172d60d19d915cebd44cb2413117e68947469bf01d1cddc31fbbea366dd61",
+      "abiHash": "0x291c842aba1268315572b9e21026840b40bd8041a3cc5421d59b334519d22757",
+      "source": "node_modules/poseidon-solidity/PoseidonT3.sol",
+      "verified": true
+    },
+    "PoseidonT5": {
+      "address": "0x00c19c8240604216f22240B36BF689980fc83C1B",
+      "deployBlock": 105827223,
+      "deployTx": "0xe3efac5a745895ddf9309bed14e2660d3737589acccfb67ac568692ef0f0ed8c",
+      "codeHash": "0x25460173b297916d619e35d433b9e127cfc617c8339e3c666eb1f0c39f965d30",
+      "abiHash": "0x5475d093a8518779e912e93490347badea9372ea8e14d431326c368fa5449c25",
+      "source": "node_modules/poseidon-solidity/PoseidonT5.sol",
+      "verified": true
+    }
+  },
+  "circuits": [
+    {
+      "name": "transfer",
+      "version": "transfer/v1",
+      "wasmHash": "0x3bb02f97ca42bd4185a9a59ad0e3bf40e7060b5faa8f0bc31a50828ea5723011",
+      "zkeyHash": "0x8ca3aca806fbc269aa0caaabae12483e50e816c48f2786591df4fa50d0ee4851",
+      "vkeyHash": "0x2aa45946e232cab7f5b3318bfad4eff9416e0def654998c8e9429b0231a06682",
+      "setup": "Curveil mainnet setup (2 contributors from the Curveil team and a random beacon)"
+    },
+    {
+      "name": "withdraw",
+      "version": "withdraw/v1",
+      "wasmHash": "0x863dd991f69cb132797d1add64fe973e6fff63ddbd339400ad07b60c3917ce28",
+      "zkeyHash": "0x08e151350ddce911bd009879fcc245e0c6b03b81dc4039a25b3c93bf30a07e06",
+      "vkeyHash": "0x0d3fe2224781c2bed3e638f44ded71598d7cbf8024fa9d839766999b9813bf97",
+      "setup": "Curveil mainnet setup (2 contributors from the Curveil team and a random beacon)"
+    }
+  ],
+  "perps": {
+    "priceSource": "pyth",
+    "reportVerifier": "0x07Fb095DaE9406A3fC73889DB709e465f35f6201",
+    "pyth": "0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a",
+    "priceSigner": null,
+    "markets": [
+      {
+        "id": 1,
+        "symbol": "ETH-USD",
+        "base": "ETH",
+        "feed": "ETH/USD",
+        "feedId": "0x0b43555ace6b39aae1b894097d0a9fc17f504c62fea598fa206cc6f5088e6e45",
+        "reference": "0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9",
+        "pythId": "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace"
+      },
+      {
+        "id": 2,
+        "symbol": "BTC-USD",
+        "base": "BTC",
+        "feed": "BTC/USD",
+        "feedId": "0xee62665949c883f9e0f6f002eac32e00bd59dfe6c34e92a91c37d6a8322d6489",
+        "reference": "0xa2c5184bF03d373Dc9dE4876eb4Bce595B460251",
+        "pythId": "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43"
+      },
+      {
+        "id": 3,
+        "symbol": "SOL-USD",
+        "base": "SOL",
+        "feed": "SOL/USD",
+        "feedId": "0x2b1b43ec7f6691d6bf679978bab5c093fa45ee74c0baac6cc75649dc59cc21d3",
+        "reference": null,
+        "pythId": "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"
+      }
+    ]
+  }
+}
