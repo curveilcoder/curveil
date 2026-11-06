@@ -1,0 +1,60 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "curveil-webhooks",
+  "main": "src/index.ts",
+  "workers_dev": true,
+  "preview_urls": false,
+  "compatibility_date": "2026-10-20",
+  // Deliveries always go over the public internet, never to same-zone routes or origins. This also
+  // lets endpoints on the same workers.dev subdomain (such as the example launchpad) receive them.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "observability": { "enabled": true },
+  "env": {
+    "testnet": {
+      "name": "curveil-webhooks-testnet",
+      "vars": { "NETWORK": "testnet", "TIMEOUT_MS": "10000" },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "curveil-testnet", "database_id": "f2513eb5-df11-4056-8dc0-27ab71f6b8b5" }
+      ],
+      "queues": {
+        "producers": [
+          { "binding": "QUEUE", "queue": "curveil-webhooks-testnet" },
+          { "binding": "DLQ", "queue": "curveil-webhooks-dlq-testnet" }
+        ],
+        "consumers": [
+          {
+            "queue": "curveil-webhooks-testnet",
+            "max_batch_size": 10,
+            "max_batch_timeout": 1,
+            "max_retries": 100,
+            "dead_letter_queue": "curveil-webhooks-dlq-testnet"
+          }
+        ]
+      }
+      // Secret: WEBHOOK_MASTER_KEY (the same value as the API's).
+    },
+    "mainnet": {
+      // Not deployed until the go-ahead: see scripts/deploy-mainnet.mjs.
+      "name": "curveil-webhooks-mainnet",
+      "vars": { "NETWORK": "mainnet", "TIMEOUT_MS": "10000" },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "curveil-mainnet", "database_id": "3f0d0272-4eb7-4d45-8ebf-31acb49b24a3" }
+      ],
+      "queues": {
+        "producers": [
+          { "binding": "QUEUE", "queue": "curveil-webhooks-mainnet" },
+          { "binding": "DLQ", "queue": "curveil-webhooks-dlq-mainnet" }
+        ],
+        "consumers": [
+          {
+            "queue": "curveil-webhooks-mainnet",
+            "max_batch_size": 10,
+            "max_batch_timeout": 1,
+            "max_retries": 100,
+            "dead_letter_queue": "curveil-webhooks-dlq-mainnet"
+          }
+        ]
+      }
+    }
+  }
+}

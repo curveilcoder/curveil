@@ -1,0 +1,25 @@
+{
+  "name": "@curveil/webhooks",
+  "private": true,
+  "type": "module",
+  "description": "Curveil webhook delivery: a Queues consumer that signs and POSTs each delivery, retries with exponential backoff for 24 hours, then dead-letters it.",
+  "exports": {
+    "./secrets": "./src/secrets.ts",
+    "./retry": "./src/retry.ts"
+  },
+  "scripts": {
+    "dev": "wrangler dev --env testnet --port 8790",
+    "deploy:testnet": "wrangler deploy --env testnet",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@curveil/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261102.1",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5",
+    "wrangler": "4.156.1"
+  }
+}
