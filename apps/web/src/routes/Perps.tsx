@@ -358,7 +358,9 @@ function MarketPicker({ o, market, onPick, onClose }: { o: PerpsOverview; market
 }
 
 /** Official logos for perps markets, served by the site. A market without one shows its first letter. */
-const COIN_LOGOS: Record<string, string> = { ETH: "/tokens/eth.png", BTC: "/tokens/btc.png", SOL: "/tokens/sol.png", LINK: "/tokens/link.png" };
+const COIN_LOGOS: Record<string, string> = Object.fromEntries(
+  ["ETH", "BTC", "SOL", "LINK", "XRP", "BNB", "DOGE", "AVAX", "SUI", "LTC", "ADA", "HYPE"].map((b) => [b, `/tokens/${b.toLowerCase()}.png`]),
+);
 
 function CoinMark({ base, large }: { base: string; large?: boolean }) {
   const cls = `px-coin${large ? " px-coin-lg" : ""} px-coin-${base.toLowerCase()}`;

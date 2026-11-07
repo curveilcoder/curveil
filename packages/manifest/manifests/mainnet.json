@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "version": "0.7.0-mainnet.9",
+  "version": "0.7.0-mainnet.10",
   "network": "mainnet",
   "chainId": 4663,
-  "generatedAt": "2026-11-06T05:13:39.554Z",
+  "generatedAt": "2026-11-07T09:43:05.823Z",
   "rpc": {
     "public": [
       "https://rpc.mainnet.chain.robinhood.com"
@@ -464,6 +464,87 @@
         "feedId": "0x2b1b43ec7f6691d6bf679978bab5c093fa45ee74c0baac6cc75649dc59cc21d3",
         "reference": null,
         "pythId": "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"
+      },
+      {
+        "id": 4,
+        "symbol": "XRP-USD",
+        "base": "XRP",
+        "feed": "XRP/USD",
+        "feedId": "0xcee9ef626e0e51af00f547361de8015348d47d9189f1c12c69297dbe06e98bb5",
+        "reference": null,
+        "pythId": "0xec5d399846a9209f3fe5881d70aae9268c94339ff9817e8d18ff19fa05eea1c8"
+      },
+      {
+        "id": 5,
+        "symbol": "BNB-USD",
+        "base": "BNB",
+        "feed": "BNB/USD",
+        "feedId": "0x160a9630e8b9343f7fccdecf67bf1a59fe8d2b58e4e8d3246a74f5cd6d6fed5d",
+        "reference": null,
+        "pythId": "0x2f95862b045670cd22bee3114c39763a4a08beeb663b145d283c31d7d1101c4f"
+      },
+      {
+        "id": 6,
+        "symbol": "DOGE-USD",
+        "base": "DOGE",
+        "feed": "DOGE/USD",
+        "feedId": "0x1a54d1883f9671d8c8e5f8adc57d9e086a16ceb0d9c854fe8d7ed5c2369daabe",
+        "reference": null,
+        "pythId": "0xdcef50dd0a4cd2dcc17e45df1676dcb336a11a61c69df7a0299b0150c672d25c"
+      },
+      {
+        "id": 7,
+        "symbol": "LINK-USD",
+        "base": "LINK",
+        "feed": "LINK/USD",
+        "feedId": "0x062e57bcf79ec1579df888e32a3f07cc899dc60a904a55e6d5b9d83e5bfb7564",
+        "reference": null,
+        "pythId": "0x8ac0c70fff57e9aefdf5edf44b51d62c2d433653cbb2cf5cc06bb115af04d221"
+      },
+      {
+        "id": 8,
+        "symbol": "AVAX-USD",
+        "base": "AVAX",
+        "feed": "AVAX/USD",
+        "feedId": "0xf6993c04cda85f392b2692bf0e068a0207c9693bab10d3ba31c84e9430ef718a",
+        "reference": null,
+        "pythId": "0x93da3352f9f1d105fdfe4971cfa80e9dd777bfc5d0f683ebb6e1294b92137bb7"
+      },
+      {
+        "id": 9,
+        "symbol": "SUI-USD",
+        "base": "SUI",
+        "feed": "SUI/USD",
+        "feedId": "0x6df098ac2087ddd7401a9a9f19e0d60d4f07bb17b4d06d091d71e66304f0fcf9",
+        "reference": null,
+        "pythId": "0x23d7315113f5b1d3ba7a83604c44b94d79f4fd69af77f804fc7f920a6dc65744"
+      },
+      {
+        "id": 10,
+        "symbol": "LTC-USD",
+        "base": "LTC",
+        "feed": "LTC/USD",
+        "feedId": "0x01aa24a5f3a7c6a9e4c8653f585a4076e7f740e72a66bab9decab3e4ba4a5156",
+        "reference": null,
+        "pythId": "0x6e3f3fa8253588df9326580180233eb791e03b443a3ba7a1d892e73874e19a54"
+      },
+      {
+        "id": 11,
+        "symbol": "ADA-USD",
+        "base": "ADA",
+        "feed": "ADA/USD",
+        "feedId": "0xe9d95d048d2a009f6286570e4ad419dbba8490ef0fc549cb6cc524f7d1ec3a56",
+        "reference": null,
+        "pythId": "0x2a01deaec9e51a579277b34b122399984d0bbf57e2458a7e42fecd2829867a0d"
+      },
+      {
+        "id": 12,
+        "symbol": "HYPE-USD",
+        "base": "HYPE",
+        "feed": "HYPE/USD",
+        "feedId": "0xc5f3d8462b1cf323f17cd65568a8349b94a47e414db695620043be926eb5fbfd",
+        "reference": null,
+        "pythId": "0x4279e31cc369bbcc2faf022b382b080e32a8e689ff20fbc530d2a603eb6cd98b"
       }
     ]
   }
