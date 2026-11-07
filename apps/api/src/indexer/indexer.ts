@@ -464,7 +464,12 @@ export class Indexer extends DurableObject<Env> {
       );
     }
     if (finalizedBlock !== null && finalizedBlock !== this.lastFinalized) {
-      stmts.push(db.prepare("UPDATE blocks SET finality = 'final' WHERE number <= ? AND finality != 'final'").bind(finalizedBlock));
+      // Bounded below so it reads only the newly finalized range. Unbounded, it walked every stored
+      // block each tick and used up the account's daily D1 read allowance.
+      const from = this.lastFinalized ?? finalizedBlock - CHECKPOINTS_KEPT;
+      stmts.push(
+        db.prepare("UPDATE blocks SET finality = 'final' WHERE number > ? AND number <= ? AND finality != 'final'").bind(from, finalizedBlock),
+      );
       this.lastFinalized = finalizedBlock;
     }
     if (this.ticks % PRUNE_EVERY === 0) {
