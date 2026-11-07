@@ -206,7 +206,10 @@
 .pxt-search input { flex: 1; min-width: 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: 14px; outline: none; }
 .pxt-watch-cols { display: flex; justify-content: space-between; padding: 0 8px 6px; font-size: 12px; color: var(--faint); }
 .pxt-watch-cols span:nth-child(2) { display: none; }
-.pxt-watch-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.pxt-watch-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; position: relative; max-height: var(--watch-max, 340px); overflow-y: auto; overscroll-behavior: contain; }
+.pxt-watch-list[data-more="down"] { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 44px), transparent); }
+.pxt-watch-list[data-more="up"] { -webkit-mask-image: linear-gradient(to bottom, transparent, #000 28px); mask-image: linear-gradient(to bottom, transparent, #000 28px); }
+.pxt-watch-list[data-more="up down"] { -webkit-mask-image: linear-gradient(to bottom, transparent, #000 28px, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(to bottom, transparent, #000 28px, #000 calc(100% - 44px), transparent); }
 .pxt-watch-row { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 8px; border: 1px solid transparent; border-radius: var(--radius-field); background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .pxt-watch-row:hover { background: var(--surface-2); }
 .pxt-watch-row[aria-current="true"] { background: rgba(37, 99, 255, 0.12); border-color: rgba(37, 99, 255, 0.5); }

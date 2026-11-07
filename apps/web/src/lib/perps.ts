@@ -53,6 +53,8 @@ export type PerpMarket = {
   fundingRatePerHour: string;
   markPrice: string | null;
   markSources: string[];
+  /** Pyth refuses this market's feed for the keeper's API key, so it cannot be priced for now. */
+  priceFeedDenied?: boolean;
   recordedPrice: { price: string; priceWad: string; timestamp: number; ageSeconds: number | null } | null;
   volume24h: string;
   trades24h: number;

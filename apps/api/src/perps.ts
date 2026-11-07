@@ -60,7 +60,7 @@ async function perpsOf(env: Env): Promise<Perps | null> {
   };
 }
 
-type KeeperPrice = { market: number; price: string | null; priceWad: string | null; timestamp: number | null; sources: string[]; report: Hex | null };
+type KeeperPrice = { market: number; price: string | null; priceWad: string | null; timestamp: number | null; sources: string[]; report: Hex | null; error?: string };
 
 /** Current mark prices from the keeper (Pyth, or the testnet signer). Null when the keeper is unreachable. */
 async function keeperPrices(env: Env): Promise<{ reports: KeeperPrice[]; signer: string | null; verifier: string } | null> {
@@ -127,6 +127,9 @@ perps.get("/perps/markets", async (c) => {
       fundingRatePerHour: formatUnits(rate * 3600n, 18),
       markPrice: mark?.price ?? null,
       markSources: mark?.sources ?? [],
+      // Pyth refuses this feed for the keeper's API key (its plan does not cover it), so the market
+      // cannot be priced until the plan changes. The site hides such markets.
+      priceFeedDenied: Boolean(mark?.error?.startsWith("Hermes answered 403")),
       recordedPrice: lp ? { price: formatUnits(lp[0], 18), priceWad: lp[0].toString(), timestamp: Number(lp[1]), ageSeconds: lp[1] ? now - Number(lp[1]) : null } : null,
       volume24h: stats?.volume ? (stats.volume / 1e6).toFixed(2) : "0",
       trades24h: stats?.trades ?? 0,

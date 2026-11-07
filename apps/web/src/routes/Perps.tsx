@@ -104,7 +104,7 @@ function PerpsPage() {
   const overview = usePerpsOverview();
   const [marketId, setMarketId] = useState<number | null>(null);
   const [side, setSide] = useState<"long" | "short">("long");
-  const markets = overview.data?.markets ?? [];
+  const markets = overview.data ? listedMarkets(overview.data) : [];
   const market = markets.find((m) => m.id === marketId) ?? markets[0];
   const shielded = useFunding() === "shielded" && Boolean(PERPS_ADAPTER);
   const vault = useShieldedVault(shielded);
@@ -214,21 +214,59 @@ function Spark({ values, up }: { values: number[]; up: boolean | null }) {
   );
 }
 
+/**
+ * Markets to list: open ones that can be priced. A closed market, or one whose Pyth feed the plan
+ * does not cover, is left out unless it still holds positions, so traders can always reach those.
+ */
+function listedMarkets(o: PerpsOverview): PerpMarket[] {
+  const held = (m: PerpMarket) => Boolean(m.state && (BigInt(m.state.oiLong) > 0n || BigInt(m.state.oiShort) > 0n));
+  const open = o.markets.filter((m) => held(m) || ((!m.config || m.config.enabled) && !m.priceFeedDenied));
+  return open.length ? open : o.markets;
+}
+
 /** Every perps market, searchable, with its last day at a glance. Picking one switches the page. */
 function Watchlist({ o, market, onPick }: { o: PerpsOverview; market: PerpMarket; onPick: (id: number) => void }) {
   const [q, setQ] = useState("");
   const term = q.trim().toLowerCase();
-  const list = o.markets.filter((m) => !term || m.symbol.toLowerCase().includes(term) || m.base.toLowerCase().includes(term));
+  const all = listedMarkets(o);
+  const list = all.filter((m) => !term || m.symbol.toLowerCase().includes(term) || m.base.toLowerCase().includes(term));
+  // The list has a fixed maximum height and scrolls; a fade marks the edge that has more rows.
+  const listRef = useRef<HTMLUListElement>(null);
+  const [more, setMore] = useState("");
+  const measure = () => {
+    const el = listRef.current;
+    if (!el) return;
+    const up = el.scrollTop > 2;
+    const down = el.scrollTop + el.clientHeight < el.scrollHeight - 2;
+    setMore([up && "up", down && "down"].filter(Boolean).join(" "));
+  };
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [list.length]);
+  // Keep the picked market in view when it is chosen from the chart header.
+  useEffect(() => {
+    const el = listRef.current;
+    const row = el?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!el || !row) return;
+    const top = row.offsetTop - el.offsetTop;
+    if (top < el.scrollTop) el.scrollTop = top - 4;
+    else if (top + row.offsetHeight > el.scrollTop + el.clientHeight) el.scrollTop = top + row.offsetHeight - el.clientHeight + 4;
+  }, [market.id]);
   return (
     <>
-      <div className="pxt-card-head"><h2>Markets</h2><span className="pxt-count">{o.markets.length}</span></div>
+      <div className="pxt-card-head"><h2>Markets</h2><span className="pxt-count">{all.length}</span></div>
       <label className="pxt-search">
         <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="M10.5 10.5L14 14" /></svg>
         <span className="sr-only">Search markets</span>
         <input type="search" placeholder="Search markets" value={q} onChange={(e) => setQ(e.target.value)} />
       </label>
       <div className="pxt-watch-cols" aria-hidden="true"><span>Market</span><span>Mark</span><span>24h</span></div>
-      <ul className="pxt-watch-list">
+      <ul className="pxt-watch-list" ref={listRef} onScroll={measure} data-more={more || undefined}>
         {list.map((m) => <WatchRow key={m.id} m={m} on={m.id === market.id} onPick={onPick} />)}
         {list.length === 0 && <li className="small muted pxt-watch-none">No market matches “{q}”.</li>}
       </ul>
@@ -332,7 +370,7 @@ function MarketPicker({ o, market, onPick, onClose }: { o: PerpsOverview; market
     if (d && !d.open) d.showModal();
   }, []);
   const term = q.trim().toLowerCase();
-  const list = o.markets.filter((m) => !term || m.symbol.toLowerCase().includes(term) || m.base.toLowerCase().includes(term));
+  const list = listedMarkets(o).filter((m) => !term || m.symbol.toLowerCase().includes(term) || m.base.toLowerCase().includes(term));
   return (
     <dialog ref={ref} className="px-dlg" aria-label="Choose a market" onClose={onClose} onClick={(e) => { if (e.target === ref.current) ref.current?.close(); }}>
       <div className="px-dlg-in">
@@ -586,8 +624,8 @@ function PerpsSkeleton() {
               <input type="search" placeholder="Search markets" disabled tabIndex={-1} />
             </label>
             <div className="pxt-watch-cols"><span>Market</span><span>Mark</span><span>24h</span></div>
-            <ul className="pxt-watch-list">
-              {[0, 1, 2].map((i) => (
+            <ul className="pxt-watch-list" data-more="down">
+              {[0, 1, 2, 3, 4, 5, 6].map((i) => (
                 <li key={i}>
                   <div className="pxt-watch-row" aria-current={i === 0 ? "true" : undefined}>
                     <span className="pxt-watch-mk">
