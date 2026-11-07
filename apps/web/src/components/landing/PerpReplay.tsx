@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePlayhead, useNarrow, seeded, fmt } from "./play";
 import { DotPattern } from "../Dither";
 import { usePerpCandles, usePerpsOverview } from "../../lib/perps";
+import { useT } from "../../lib/i18n";
 
 const SAMPLE_PTS = 120;
 
@@ -32,6 +33,8 @@ const COLL = 1_000;
 const priceDigits = (p: number) => (p >= 1_000 ? 0 : p >= 10 ? 2 : 4);
 
 export function PerpReplay({ head }: { head?: ReactNode }) {
+  const t = useT();
+  const sideName = (s: "long" | "short") => (s === "long" ? t("long", "做多") : t("short", "做空"));
   const ref = useRef<HTMLDivElement>(null);
   const [idx, setIdx] = useState(0);
   const { market, base, side, lev, ref: refPrice } = PRESETS[idx]!;
@@ -90,25 +93,25 @@ export function PerpReplay({ head }: { head?: ReactNode }) {
         {head}
       </div>
       <div className="split-main">
-        <div className="stage-row pos-row" role="group" aria-label="Positions, 1,000 USDG margin each">
+        <div className="stage-row pos-row" role="group" aria-label={t("Positions, 1,000 USDG margin each", "示例仓位，每个保证金 1,000 USDG")}>
           {PRESETS.map((x, n) => (
-            <button key={n} type="button" aria-pressed={idx === n} data-state={idx === n ? "active" : undefined} onClick={() => setIdx(n)} title={`${x.base} ${x.side} at ${x.lev}×, opened at the start of the chart`}>
+            <button key={n} type="button" aria-pressed={idx === n} data-state={idx === n ? "active" : undefined} onClick={() => setIdx(n)} title={t(`${x.base} ${x.side} at ${x.lev}×, opened at the start of the chart`, `${x.base} ${x.lev} 倍${sideName(x.side)}，在图表起点开仓`)}>
               {idx === n && !reduced && <i className="rule-timer" style={{ width: `${ph.t * 100}%` }} />}
-              <span className="mono">{String(n + 1).padStart(2, "0")}</span> {x.base} {x.side} {x.lev}×
+              <span className="mono">{String(n + 1).padStart(2, "0")}</span> {x.base} {sideName(x.side)} {x.lev}×
             </button>
           ))}
         </div>
-        <figure className="demo-chart perp-chart" aria-label={`${base} price over the last ${days} days, with entry and liquidation price`}>
-          <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={liquidated ? `Liquidated on day ${dayOf(hitAt)}` : `Position open, ${pnl >= 0 ? "up" : "down"} ${fmt(Math.abs(pnl))} USDG`}>
+        <figure className="demo-chart perp-chart" aria-label={t(`${base} price over the last ${days} days, with entry and liquidation price`, `${base} 过去 ${days} 天的价格，含开仓价和强平价`)}>
+          <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={liquidated ? t(`Liquidated on day ${dayOf(hitAt)}`, `第 ${dayOf(hitAt)} 天被强平`) : t(`Position open, ${pnl >= 0 ? "up" : "down"} ${fmt(Math.abs(pnl))} USDG`, `仓位持有中，${pnl >= 0 ? "盈利" : "亏损"} ${fmt(Math.abs(pnl))} USDG`)}>
             <defs><DotPattern id="liq-zone" color="#ff7a7a" density={0.22} cell={3} /></defs>
             {!offChart && (
               <rect x={x0} width={x1 - x0} y={side === "long" ? ly : y1} height={side === "long" ? y0 - ly : ly - y1} fill="url(#liq-zone)" opacity={0.45} />
             )}
             <line x1={x0} x2={x1} y1={sy(E)} y2={sy(E)} stroke="var(--muted)" strokeDasharray="3 5" />
-            <text x={x1 - 4} y={sy(E) - 7} textAnchor="end" fontSize={fs} fill="var(--muted)" stroke="var(--bg-deep)" strokeWidth={5} paintOrder="stroke">Entry {fmt(E, d)}</text>
+            <text x={x1 - 4} y={sy(E) - 7} textAnchor="end" fontSize={fs} fill="var(--muted)" stroke="var(--bg-deep)" strokeWidth={5} paintOrder="stroke">{t("Entry", "开仓价")} {fmt(E, d)}</text>
             <line x1={x0} x2={x1} y1={ly} y2={ly} stroke="#ff7a7a" strokeDasharray="6 4" />
             <text x={x1 - 4} y={side === "long" && !offChart ? ly + 16 : ly - 7} textAnchor="end" fontSize={fs} fill="#ff7a7a" stroke="var(--bg-deep)" strokeWidth={5} paintOrder="stroke">
-              Liquidation {fmt(liq, d)}{offChart ? " · off chart" : ""}
+              {t("Liquidation", "强平价")} {fmt(liq, d)}{offChart ? t(" · off chart", " · 超出图表") : ""}
             </text>
             {path.slice(0, end + 1).map((p, n) => (
               <rect key={n} x={sx(n) - 2.2} y={sy(p) - 2.2} width={4.4} height={4.4} fill={n === end ? "#ffffff" : n > end - 12 ? "#eef2fa" : "#7aa2ff"} />
@@ -119,31 +122,31 @@ export function PerpReplay({ head }: { head?: ReactNode }) {
                 <path d="M -4.5 -4.5 L 4.5 4.5 M 4.5 -4.5 L -4.5 4.5" stroke="#ff7a7a" strokeWidth={1.8} />
               </g>
             )}
-            <text x={x0 + 2} y={H - 6} fontSize={fs} fill="var(--faint)">{live ? `${days} days ago` : "Day 1"}</text>
-            <text x={x1 - 2} y={H - 6} fontSize={fs} fill="var(--faint)" textAnchor="end">{live ? "Now" : `Day ${days}`}</text>
+            <text x={x0 + 2} y={H - 6} fontSize={fs} fill="var(--faint)">{live ? t(`${days} days ago`, `${days} 天前`) : t("Day 1", "第 1 天")}</text>
+            <text x={x1 - 2} y={H - 6} fontSize={fs} fill="var(--faint)" textAnchor="end">{live ? t("Now", "现在") : t(`Day ${days}`, `第 ${days} 天`)}</text>
           </svg>
           <div className="timeline" aria-hidden="true">
             <span className="timeline-bar"><i style={{ width: `${(end / (PTS - 1)) * 100}%` }} /></span>
-            <span className="mono small demo-scrub-val">Day {dayOf(end)} of {days}</span>
+            <span className="mono small demo-scrub-val">{t(`Day ${dayOf(end)} of ${days}`, `第 ${dayOf(end)} / ${days} 天`)}</span>
           </div>
         </figure>
         <div className="stat-row">
-          <div className="stat"><span className="stat-label">Position size</span><span className="stat-value">{fmt(coll * lev)} USDG</span><span className="stat-sub">{fmt(coll)} × {lev.toFixed(1)}</span></div>
-          <div className="stat"><span className="stat-label">Liquidation price</span><span className="stat-value bad-text">{fmt(liq, d)}</span><span className="stat-sub">{dist.toFixed(1)}% {side === "long" ? "below" : "above"} entry</span></div>
+          <div className="stat"><span className="stat-label">{t("Position size", "仓位规模")}</span><span className="stat-value">{fmt(coll * lev)} USDG</span><span className="stat-sub">{fmt(coll)} × {lev.toFixed(1)}</span></div>
+          <div className="stat"><span className="stat-label">{t("Liquidation price", "强平价格")}</span><span className="stat-value bad-text">{fmt(liq, d)}</span><span className="stat-sub">{t(`${dist.toFixed(1)}% ${side === "long" ? "below" : "above"} entry`, `${side === "long" ? "低于" : "高于"}开仓价 ${dist.toFixed(1)}%`)}</span></div>
           <div className={`stat outcome ${liquidated ? "is-bad" : ""}`}>
-            <span className="stat-label">{liquidated ? "Outcome" : `Day ${dayOf(end)}`}</span>
+            <span className="stat-label">{liquidated ? t("Outcome", "结果") : t(`Day ${dayOf(end)}`, `第 ${dayOf(end)} 天`)}</span>
             <span className={`stat-value ${liquidated ? "bad-text" : pnl >= 0 ? "good-text" : ""}`}>
-              {liquidated ? `Liquidated, day ${dayOf(hitAt)}` : `${pnl >= 0 ? "+" : "−"}${fmt(Math.abs(pnl))} USDG`}
+              {liquidated ? t(`Liquidated, day ${dayOf(hitAt)}`, `第 ${dayOf(hitAt)} 天强平`) : `${pnl >= 0 ? "+" : "−"}${fmt(Math.abs(pnl))} USDG`}
             </span>
-            <span className="stat-sub">{liquidated ? "Collateral lost to the liquidation" : "Unrealised, before fees and funding"}</span>
+            <span className="stat-sub">{liquidated ? t("Collateral lost to the liquidation", "保证金因强平而损失") : t("Unrealised, before fees and funding", "未实现盈亏，未计手续费和资金费")}</span>
           </div>
         </div>
         <p className="demo-note small">
           {live
-            ? `Real ${base} prices from the last ${days} days (6-hour closes from Coinbase, one of the oracle's sources), with the market's ${(MM * 100).toFixed(0)}% maintenance margin. Fees and funding are left out.`
+            ? t(`Real ${base} prices from the last ${days} days (6-hour closes from Coinbase, one of the oracle's sources), with the market's ${(MM * 100).toFixed(0)}% maintenance margin. Fees and funding are left out.`, `过去 ${days} 天的真实 ${base} 价格（来自预言机数据源之一 Coinbase 的 6 小时收盘价），按该市场 ${(MM * 100).toFixed(0)}% 的维持保证金计算，未计手续费和资金费。`)
             : loading
-              ? "Loading real prices…"
-              : "Live prices could not be loaded, so this shows a sample path. Fees and funding are left out."}
+              ? t("Loading real prices…", "正在加载真实价格…")
+              : t("Live prices could not be loaded, so this shows a sample path. Fees and funding are left out.", "无法加载实时价格，因此这里显示的是示例走势，未计手续费和资金费。")}
         </p>
       </div>
     </div>

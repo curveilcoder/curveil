@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePublicClient } from "wagmi";
 import { useId } from "react";
 import { useTxToast, type ToastEntry } from "./TxToasts";
+import { useT } from "../lib/i18n";
 
 export type TxPhase =
   | { kind: "idle" }
@@ -27,8 +28,9 @@ export function useFinalizedBlock(enabled = true) {
  * success exists.
  */
 export function TxStatus({ phase }: { phase: TxPhase }) {
+  const t = useT();
   const id = useId();
-  const step = "step" in phase && phase.step ? phase.step : "Transaction";
+  const step = "step" in phase && phase.step ? phase.step : t("Transaction", "交易");
   const entry: ToastEntry | null =
     phase.kind === "idle"
       ? null
@@ -38,11 +40,11 @@ export function TxStatus({ phase }: { phase: TxPhase }) {
           hash: "hash" in phase ? phase.hash : null,
           message:
             phase.kind === "awaiting_wallet"
-              ? "Confirm it in your wallet."
+              ? t("Confirm it in your wallet.", "请在钱包中确认。")
               : phase.kind === "submitted"
-                ? "Submitted. Waiting for confirmation."
+                ? t("Submitted. Waiting for confirmation.", "已提交，等待确认。")
                 : phase.kind === "confirmed"
-                  ? `Confirmed in block ${phase.block.toString()}.`
+                  ? t(`Confirmed in block ${phase.block.toString()}.`, `已在区块 ${phase.block.toString()} 中确认。`)
                   : phase.message,
         };
   useTxToast(id, entry);

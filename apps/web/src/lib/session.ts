@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useConnection, useSignMessage } from "wagmi";
 import { CurveilClient, CurveilApiError } from "@curveil/sdk";
 import { API_URL, NETWORK } from "./config";
+import { tNow } from "./i18n";
 
 /**
  * Sign-In with Ethereum for the developer console and launchpad settings. The session token is
@@ -66,7 +67,7 @@ export function useSession() {
       }
       setStored(next);
     } catch (e) {
-      setError(e instanceof CurveilApiError ? e.message : /reject|denied/i.test(String(e)) ? "You cancelled the signature. Nothing was shared." : "Sign-in failed. Try again.");
+      setError(e instanceof CurveilApiError ? e.message : /reject|denied/i.test(String(e)) ? tNow("You cancelled the signature. Nothing was shared.", "你取消了签名。没有共享任何内容。") : tNow("Sign-in failed. Try again.", "登录失败，请重试。"));
     } finally {
       setSigningIn(false);
     }

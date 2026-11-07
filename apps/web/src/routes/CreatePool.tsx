@@ -14,9 +14,11 @@ import { fmtPrice } from "../lib/format";
 import { same, ETH, WETH, isNative } from "../lib/tokens";
 import { useTxRunner } from "../lib/tx";
 import { markCreated } from "../lib/launch";
+import { useT } from "../lib/i18n";
 
 const TIER_IDS = [0, 1, 2, 3] as const;
 const TIER_NAMES = ["Standard", "Volatile", "Tier 2", "Tier 3"];
+const TIER_NAMES_ZH = ["标准", "高波动", "档位 2", "档位 3"];
 const ADMITTED = manifest.assets.map((a) => ({ address: a.address as `0x${string}`, symbol: a.symbol, decimals: a.decimals, name: a.name ?? null, logo: a.logo ?? null }));
 // Pools hold WETH, not plain ETH, but ETH is what people look for: it is offered too and stands for WETH.
 const PICKABLE = ETH ? [ETH, ...ADMITTED] : ADMITTED;
@@ -24,6 +26,7 @@ const onChain = (x: `0x${string}` | undefined) => (isNative(x) ? WETH : x);
 
 /** Create a public pool from an admitted pair and a configuration the factory allows. Adds no liquidity. */
 export function CreatePool() {
+  const t = useT();
   const qc = useQueryClient();
   const tx = useTxRunner();
   const [kind, setKind] = useState<"damm" | "dlmm">("dlmm");
@@ -83,8 +86,8 @@ export function CreatePool() {
     if (!a || !b) return;
     const receipt =
       kind === "damm"
-        ? await tx.run([{ label: "Create DAMM pool", params: { address: DAMM_FACTORY!, abi: dammFactoryAbi, functionName: "createPool", args: [a, b, tier], chainId: curveilChain.id } }])
-        : await tx.run([{ label: "Create DLMM pair", params: { address: DLMM_FACTORY!, abi: dlmmFactoryAbi, functionName: "createPair", args: [a, b, binStep!, activeId!], chainId: curveilChain.id } }]);
+        ? await tx.run([{ label: t("Create DAMM pool", "创建 DAMM 资金池"), params: { address: DAMM_FACTORY!, abi: dammFactoryAbi, functionName: "createPool", args: [a, b, tier], chainId: curveilChain.id } }])
+        : await tx.run([{ label: t("Create DLMM pair", "创建 DLMM 交易对"), params: { address: DLMM_FACTORY!, abi: dlmmFactoryAbi, functionName: "createPair", args: [a, b, binStep!, activeId!], chainId: curveilChain.id } }]);
     if (receipt) {
       const r = await existing.refetch();
       qc.invalidateQueries({ queryKey: ["markets"] });
@@ -95,59 +98,59 @@ export function CreatePool() {
   }
 
   const blocker = !ta || !tb
-    ? "Select two assets"
+    ? t("Select two assets", "请选择两种资产")
     : same(a, b)
-      ? isNative(pickA) !== isNative(pickB) ? "ETH and WETH are the same asset here: pick another one" : "Pick two different assets"
+      ? isNative(pickA) !== isNative(pickB) ? t("ETH and WETH are the same asset here: pick another one", "在这里 ETH 和 WETH 是同一种资产：请换一个") : t("Pick two different assets", "请选择两种不同的资产")
       : exists
-        ? kind === "damm" ? "A DAMM pool already exists for this pair" : "A pair with this bin step already exists"
+        ? kind === "damm" ? t("A DAMM pool already exists for this pair", "该交易对已有 DAMM 资金池") : t("A pair with this bin step already exists", "该区间步长的交易对已存在")
         : kind === "dlmm" && binStep === null
-          ? "No bin step is enabled"
+          ? t("No bin step is enabled", "没有启用的区间步长")
           : kind === "dlmm" && activeId === null
-            ? "Enter a starting price"
+            ? t("Enter a starting price", "请输入初始价格")
             : kind === "dlmm" && !priceInRange
-              ? "That starting price is out of range"
+              ? t("That starting price is out of range", "该初始价格超出范围")
             : kind === "damm" && !tiersRead
-              ? tiers.isPending ? "Reading fee tiers…" : "Could not read the fee tiers. Refresh the page"
-            : kind === "damm" && !enabledTiers.some((t) => t.id === tier)
-              ? "This fee tier is not enabled"
+              ? tiers.isPending ? t("Reading fee tiers…", "正在读取费率档位…") : t("Could not read the fee tiers. Refresh the page", "无法读取费率档位，请刷新页面")
+            : kind === "damm" && !enabledTiers.some((x) => x.id === tier)
+              ? t("This fee tier is not enabled", "该费率档位未启用")
               : null;
 
   return (
     <div className="add-layout">
       <div className="panel stack">
         <section className="form-step">
-        <div className="form-step-head"><span className="step-n">01</span><h3>Pool type</h3></div>
-        <div className="choice-grid" role="group" aria-label="Pool type">
+        <div className="form-step-head"><span className="step-n">01</span><h3>{t("Pool type", "资金池类型")}</h3></div>
+        <div className="choice-grid" role="group" aria-label={t("Pool type", "资金池类型")}>
           <button type="button" className="choice" aria-pressed={kind === "dlmm"} onClick={() => setKind("dlmm")}>
-            <strong>DLMM pair</strong><span>Liquidity sits in price bins that providers choose. Best for focused ranges.</span>
+            <strong>{t("DLMM pair", "DLMM 交易对")}</strong><span>{t("Liquidity sits in price bins that providers choose. Best for focused ranges.", "流动性分布在提供者选择的价格区间中，适合集中在某个范围。")}</span>
           </button>
           <button type="button" className="choice" aria-pressed={kind === "damm"} onClick={() => setKind("damm")}>
-            <strong>DAMM pool</strong><span>Full-range liquidity with a fee that rises when the price is volatile.</span>
+            <strong>{t("DAMM pool", "DAMM 资金池")}</strong><span>{t("Full-range liquidity with a fee that rises when the price is volatile.", "全区间流动性，价格波动时费率会上升。")}</span>
           </button>
         </div>
         </section>
         <section className="form-step">
-        <div className="form-step-head"><span className="step-n">02</span><h3>Assets</h3></div>
+        <div className="form-step-head"><span className="step-n">02</span><h3>{t("Assets", "资产")}</h3></div>
         <div className="grid-2" style={{ gap: 12 }}>
           <div className="field">
-            <span className="small muted">Base asset</span>
-            <TokenPicker wide tokens={PICKABLE} value={ta} onChange={setA} label="Base asset" />
+            <span className="small muted">{t("Base asset", "基础资产")}</span>
+            <TokenPicker wide tokens={PICKABLE} value={ta} onChange={setA} label={t("Base asset", "基础资产")} />
           </div>
           <div className="field">
-            <span className="small muted">Quote asset</span>
-            <TokenPicker wide tokens={PICKABLE} value={tb} onChange={setB} label="Quote asset" />
+            <span className="small muted">{t("Quote asset", "计价资产")}</span>
+            <TokenPicker wide tokens={PICKABLE} value={tb} onChange={setB} label={t("Quote asset", "计价资产")} />
           </div>
         </div>
-        {(isNative(pickA) || isNative(pickB)) && <p className="small muted" style={{ margin: 0 }}>The pool holds ETH as WETH. When you add liquidity or swap, your ETH is wrapped for you.</p>}
+        {(isNative(pickA) || isNative(pickB)) && <p className="small muted" style={{ margin: 0 }}>{t("The pool holds ETH as WETH. When you add liquidity or swap, your ETH is wrapped for you.", "资金池以 WETH 的形式持有 ETH。添加流动性或兑换时，你的 ETH 会自动包装。")}</p>}
         </section>
 
         {kind === "damm" ? (
           <section className="form-step">
-            <div className="form-step-head"><span className="step-n">03</span><h3>Fee tier</h3><p>Fixed for the life of the pool. The fee starts at the base rate and rises toward the maximum while the price is volatile. The first deposit sets the starting price.</p></div>
-            <div className="choice-grid" role="group" aria-label="Fee tier">
-              {enabledTiers.map((t) => (
-                <button key={t.id} type="button" className="choice" aria-pressed={tier === t.id} onClick={() => setTier(t.id)}>
-                  <strong>{TIER_NAMES[t.id]}</strong><span>{t.baseFeeBps / 100}% rising to {t.maxFeeBps / 100}%</span>
+            <div className="form-step-head"><span className="step-n">03</span><h3>{t("Fee tier", "费率档位")}</h3><p>{t("Fixed for the life of the pool. The fee starts at the base rate and rises toward the maximum while the price is volatile. The first deposit sets the starting price.", "在资金池整个生命周期内固定不变。费率从基础费率开始，价格波动时向最高费率上升。首笔存入决定初始价格。")}</p></div>
+            <div className="choice-grid" role="group" aria-label={t("Fee tier", "费率档位")}>
+              {enabledTiers.map((x) => (
+                <button key={x.id} type="button" className="choice" aria-pressed={tier === x.id} onClick={() => setTier(x.id)}>
+                  <strong>{t(TIER_NAMES[x.id], TIER_NAMES_ZH[x.id])}</strong><span>{t(`${x.baseFeeBps / 100}% rising to ${x.maxFeeBps / 100}%`, `${x.baseFeeBps / 100}%，最高升至 ${x.maxFeeBps / 100}%`)}</span>
                 </button>
               ))}
             </div>
@@ -155,19 +158,19 @@ export function CreatePool() {
         ) : (
           <>
             <section className="form-step">
-              <div className="form-step-head"><span className="step-n">03</span><h3>Bin step</h3><p>Fixed for the life of the pair. Smaller bins suit stable prices; larger bins suit volatile ones.</p></div>
-              <div className="choice-grid" role="group" aria-label="Bin step">
+              <div className="form-step-head"><span className="step-n">03</span><h3>{t("Bin step", "区间步长")}</h3><p>{t("Fixed for the life of the pair. Smaller bins suit stable prices; larger bins suit volatile ones.", "在交易对整个生命周期内固定不变。较小的区间适合稳定的价格，较大的区间适合波动大的价格。")}</p></div>
+              <div className="choice-grid" role="group" aria-label={t("Bin step", "区间步长")}>
                 {enabledSteps.map((s) => (
                   <button key={s.binStep} type="button" className="choice" aria-pressed={binStep === s.binStep} onClick={() => setStep(s.binStep)}>
-                    <strong>{(s.binStep / 100).toFixed(2)}% bins</strong><span>{s.baseFeeBps / 100}% fee per trade</span>
+                    <strong>{t(`${(s.binStep / 100).toFixed(2)}% bins`, `${(s.binStep / 100).toFixed(2)}% 区间`)}</strong><span>{t(`${s.baseFeeBps / 100}% fee per trade`, `每笔交易手续费 ${s.baseFeeBps / 100}%`)}</span>
                   </button>
                 ))}
               </div>
             </section>
             <section className="form-step">
-              <div className="form-step-head"><span className="step-n">04</span><h3>Starting price</h3></div>
+              <div className="form-step-head"><span className="step-n">04</span><h3>{t("Starting price", "初始价格")}</h3></div>
               <AmountField
-                label={`${tb?.symbol ?? ""} per 1 ${ta?.symbol ?? ""}`}
+                label={t(`${tb?.symbol ?? ""} per 1 ${ta?.symbol ?? ""}`, `每 1 ${ta?.symbol ?? ""} 兑 ${tb?.symbol ?? ""}`)}
                 value={price}
                 onChange={setPrice}
                 hint={binP !== null ? (
@@ -175,9 +178,9 @@ export function CreatePool() {
                     {/* Both ways, so a price typed for the wrong side stands out before it is fixed on-chain. */}
                     <span className="mono">1 {ta?.symbol} = {fmtPrice(binP)} {tb?.symbol}</span> · <span className="mono">1 {tb?.symbol} = {fmtPrice(1 / binP)} {ta?.symbol}</span>
                     <br />
-                    Opens in bin <span className="mono">{activeId?.toLocaleString("en-US")}</span>, the nearest bin price not above yours. Check it against the market price: it cannot be changed once the pair exists.
+                    {t(<>Opens in bin <span className="mono">{activeId?.toLocaleString("en-US")}</span>, the nearest bin price not above yours. Check it against the market price: it cannot be changed once the pair exists.</>, <>将在区间 <span className="mono">{activeId?.toLocaleString("en-US")}</span> 开盘，即不高于你所填价格的最近区间价格。请与市场价格核对：交易对创建后无法更改。</>)}
                   </>
-                ) : `How many ${tb?.symbol ?? "units"} one ${ta?.symbol ?? "unit"} is worth. Liquidity added later is placed around it.`}
+                ) : t(`How many ${tb?.symbol ?? "units"} one ${ta?.symbol ?? "unit"} is worth. Liquidity added later is placed around it.`, `1 个 ${ta?.symbol ?? "单位"} 值多少 ${tb?.symbol ?? "单位"}。之后添加的流动性会围绕这个价格分布。`)}
               >
                 <span className="token-tag">{tb && <TokenDisc token={tb} size={20} />}{tb?.symbol}</span>
               </AmountField>
@@ -188,23 +191,23 @@ export function CreatePool() {
         {exists && (
           <p className="notice good" style={{ margin: 0 }}>
             <span>
-              This pool exists at <a href={explorerAddress(exists)} target="_blank" rel="noreferrer" className="mono">{exists.slice(0, 10)}…</a>.{" "}
-              <Link to="/app/pools/$pool/add" params={{ pool: exists }}>Add liquidity to it</Link>
+              {t("This pool exists at", "该资金池已存在，地址")} <a href={explorerAddress(exists)} target="_blank" rel="noreferrer" className="mono">{exists.slice(0, 10)}…</a>{t(".", "。")}{" "}
+              <Link to="/app/pools/$pool/add" params={{ pool: exists }}>{t("Add liquidity to it", "向它添加流动性")}</Link>
             </span>
           </p>
         )}
-        <WalletAction verb="create a pool">
-          <button className="btn btn-primary btn-block" disabled={Boolean(blocker) || tx.busy} onClick={create}>{tx.busy ? "Check your wallet…" : blocker ?? (kind === "damm" ? "Create DAMM pool" : "Create DLMM pair")}</button>
+        <WalletAction verb={t("create a pool", "创建资金池")}>
+          <button className="btn btn-primary btn-block" disabled={Boolean(blocker) || tx.busy} onClick={create}>{tx.busy ? t("Check your wallet…", "请在钱包中确认…") : blocker ?? (kind === "damm" ? t("Create DAMM pool", "创建 DAMM 资金池") : t("Create DLMM pair", "创建 DLMM 交易对"))}</button>
         </WalletAction>
         <TxStatus phase={tx.phase} />
       </div>
       <div className="panel stack">
-        <p className="eyebrow" style={{ margin: 0 }}>Before you create</p>
+        <p className="eyebrow" style={{ margin: 0 }}>{t("Before you create", "创建之前")}</p>
         <ul className="checklist small">
-          <li>Anyone can create a pool from admitted assets. Creation is not an endorsement and Curveil does not review new pools.</li>
-          <li>Creating a pool adds no liquidity. Add liquidity next, or the pool cannot trade.</li>
-          <li>Fee settings are fixed when the pool is created. {kind === "dlmm" ? "A different bin step makes a separate pair." : "There is one DAMM pool per pair."}</li>
-          {protoBps !== undefined && <li>Every fee is split {100 - protoBps / 100}% to liquidity providers and {protoBps / 100}% to the protocol.</li>}
+          <li>{t("Anyone can create a pool from admitted assets. Creation is not an endorsement and Curveil does not review new pools.", "任何人都可以用准入资产创建资金池。创建并不代表认可，Curveil 也不会审核新资金池。")}</li>
+          <li>{t("Creating a pool adds no liquidity. Add liquidity next, or the pool cannot trade.", "创建资金池不会添加流动性。接下来请添加流动性，否则资金池无法交易。")}</li>
+          <li>{t("Fee settings are fixed when the pool is created.", "费率设置在资金池创建时固定。")} {kind === "dlmm" ? t("A different bin step makes a separate pair.", "不同的区间步长会形成单独的交易对。") : t("There is one DAMM pool per pair.", "每个交易对只有一个 DAMM 资金池。")}</li>
+          {protoBps !== undefined && <li>{t(`Every fee is split ${100 - protoBps / 100}% to liquidity providers and ${protoBps / 100}% to the protocol.`, `每笔手续费中 ${100 - protoBps / 100}% 分给流动性提供者，${protoBps / 100}% 分给协议。`)}</li>}
         </ul>
       </div>
     </div>

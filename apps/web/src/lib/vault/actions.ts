@@ -16,6 +16,7 @@ import { getAddress, zeroAddress, type Address } from "viem";
 import { BROADCASTER_URL, NETWORK } from "../config";
 import { prove, type ProveStage } from "./prover";
 import { spendableNotes, vaultKeys, vaultTree, type VaultStatus } from "./store";
+import { tNow } from "../i18n";
 
 export const DEADLINE_SECONDS = 20 * 60;
 
@@ -51,7 +52,7 @@ async function bjson<T>(path: string, init?: RequestInit): Promise<T> {
     // request with no CORS preflight, the same way the site reaches the API.
     r = await fetch(`${BROADCASTER_URL}${path}`, { ...init, headers: { accept: "application/json" } });
   } catch {
-    throw new Error("The broadcaster could not be reached. You can submit from your own wallet instead.");
+    throw new Error(tNow("The broadcaster could not be reached. You can submit from your own wallet instead.", "无法连接广播器。你也可以改用自己的钱包提交。"));
   }
   const body = (await r.json().catch(() => null)) as (T & { message?: string }) | null;
   if (!r.ok) throw new Error(body?.message ?? `The broadcaster answered ${r.status}.`);
@@ -122,9 +123,9 @@ export function artifacts(status: VaultStatus, name: "transfer" | "withdraw") {
 export function ready(status: VaultStatus) {
   const keys = vaultKeys();
   const tree = vaultTree();
-  if (!keys) throw new Error("Unlock the vault first.");
-  if (!tree) throw new Error("The vault has not synced yet.");
-  if (status.spendPaused) throw new Error("Vault spending is paused right now.");
+  if (!keys) throw new Error(tNow("Unlock the vault first.", "请先解锁金库。"));
+  if (!tree) throw new Error(tNow("The vault has not synced yet.", "金库尚未同步。"));
+  if (status.spendPaused) throw new Error(tNow("Vault spending is paused right now.", "金库支出目前已暂停。"));
   return { keys, tree };
 }
 
@@ -135,14 +136,14 @@ export function pick(resource: string, needed: bigint) {
   const sel = selectNotes(notes, needed);
   if (!sel) {
     const total = notes.reduce((s, n) => s + n.amount, 0n);
-    if (total < needed) throw new Error("Your spendable balance does not cover this amount and fee.");
-    throw new Error("This amount needs more than two of your notes. Combine notes first (Notes tab), then try again.");
+    if (total < needed) throw new Error(tNow("Your spendable balance does not cover this amount and fee.", "你的可用余额不足以支付该金额和费用。"));
+    throw new Error(tNow("This amount needs more than two of your notes. Combine notes first (Notes tab), then try again.", "该金额需要用到你两张以上的票据。请先合并票据（票据标签页），然后重试。"));
   }
   return sel;
 }
 
 export function checkSignals(plan: { publicSignals: bigint[] }, publicSignals: string[]) {
-  if (plan.publicSignals.map(String).join() !== publicSignals.join()) throw new Error("The proof's public inputs do not match the plan. Nothing was sent.");
+  if (plan.publicSignals.map(String).join() !== publicSignals.join()) throw new Error(tNow("The proof's public inputs do not match the plan. Nothing was sent.", "证明的公开输入与计划不符。没有发送任何内容。"));
 }
 
 export async function prepareTransfer(o: {
@@ -159,7 +160,7 @@ export async function prepareTransfer(o: {
   const { keys, tree } = ready(o.status);
   const asset = o.token ? o.status.assets.find((a) => getAddress(a.address) === getAddress(o.token!)) : null;
   const resource = asset?.resource ?? o.resource;
-  if (!resource) throw new Error("The vault does not hold that asset.");
+  if (!resource) throw new Error(tNow("The vault does not hold that asset.", "金库不持有该资产。"));
   const inputs = pick(resource, o.amount + o.fee);
   const plan = planTransfer({
     spendingKey: keys.spendingKey,
@@ -192,7 +193,7 @@ export async function prepareWithdraw(o: {
 }): Promise<Prepared<WithdrawPlan>> {
   const { keys, tree } = ready(o.status);
   const asset = o.status.assets.find((a) => getAddress(a.address) === getAddress(o.token));
-  if (!asset) throw new Error("The vault does not hold that asset.");
+  if (!asset) throw new Error(tNow("The vault does not hold that asset.", "金库不持有该资产。"));
   const inputs = pick(asset.resource, o.amount + o.fee);
   const plan = planWithdraw({
     spendingKey: keys.spendingKey,

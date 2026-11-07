@@ -1,3 +1,4 @@
+import { tNow } from "../i18n";
 /** Minimal IndexedDB key-value store for the vault. One object store, string keys. */
 const DB_NAME = "curveil-vault";
 const STORE = "kv";
@@ -10,7 +11,7 @@ function db(): Promise<IDBDatabase> {
       const req = indexedDB.open(DB_NAME, 1);
       req.onupgradeneeded = () => req.result.createObjectStore(STORE);
       req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error ?? new Error("IndexedDB is not available in this browser."));
+      req.onerror = () => reject(req.error ?? new Error(tNow("IndexedDB is not available in this browser.", "此浏览器不支持 IndexedDB。")));
     });
     dbPromise.catch(() => (dbPromise = null));
   }

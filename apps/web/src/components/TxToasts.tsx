@@ -1,5 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { explorerTx } from "../lib/config";
+import { useT } from "../lib/i18n";
 
 /**
  * Transaction progress lives in toasts in the corner of the screen, not under the form that
@@ -61,21 +62,22 @@ function Icon({ tone }: { tone: ToastEntry["tone"] }) {
 }
 
 export function TxToasts() {
+  const t = useT();
   const list = useSyncExternalStore(subscribe, () => items, () => items);
   if (list.length === 0) return null;
   return (
-    <div className="txt-stack" aria-live="polite" aria-label="Transactions">
-      {list.map((t) => (
-        <div key={t.id} className={`txt txt-${t.tone}`} role={t.tone === "bad" ? "alert" : "status"}>
-          <Icon tone={t.tone} />
+    <div className="txt-stack" aria-live="polite" aria-label={t("Transactions", "交易")}>
+      {list.map((it) => (
+        <div key={it.id} className={`txt txt-${it.tone}`} role={it.tone === "bad" ? "alert" : "status"}>
+          <Icon tone={it.tone} />
           <div className="txt-body">
-            <p className="txt-title">{t.title}</p>
+            <p className="txt-title">{it.title}</p>
             <p className="txt-msg">
-              {t.message}
-              {t.hash && <> <a href={explorerTx(t.hash)} target="_blank" rel="noreferrer">View transaction ↗</a></>}
+              {it.message}
+              {it.hash && <> <a href={explorerTx(it.hash)} target="_blank" rel="noreferrer">{t("View transaction ↗", "查看交易 ↗")}</a></>}
             </p>
           </div>
-          <button type="button" className="txt-close" aria-label="Dismiss" onClick={() => setToast(t.id, null)}>
+          <button type="button" className="txt-close" aria-label={t("Dismiss", "关闭")} onClick={() => setToast(it.id, null)}>
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" /></svg>
           </button>
         </div>

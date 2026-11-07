@@ -2,12 +2,14 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { Tok } from "../lib/tokens";
 import { same, tokenLook } from "../lib/tokens";
 import { TokenDisc } from "./TokenPair";
+import { useT } from "../lib/i18n";
 
 /**
  * Token chooser with each token's logo and full name. A button opens a list; arrow keys move,
  * Enter picks, Escape closes. Typing filters by symbol, name or address.
  */
 export function TokenPicker({ tokens, value, onChange, label, wide }: { tokens: Tok[]; value: Tok | undefined; onChange: (address: `0x${string}`) => void; label: string; wide?: boolean }) {
+  const tr = useT();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
@@ -54,12 +56,12 @@ export function TokenPicker({ tokens, value, onChange, label, wide }: { tokens: 
         ref={button}
         type="button"
         className="tpick-btn"
-        aria-label={`${label}: ${value ? value.symbol : "none"}`}
+        aria-label={`${label}: ${value ? value.symbol : tr("none", "无")}`}
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        {value ? <><TokenDisc token={value} size={22} /><span>{value.symbol}</span></> : <span>Select</span>}
+        {value ? <><TokenDisc token={value} size={22} /><span>{value.symbol}</span></> : <span>{tr("Select", "选择")}</span>}
         <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
       </button>
       {open && (
@@ -67,8 +69,8 @@ export function TokenPicker({ tokens, value, onChange, label, wide }: { tokens: 
           <input
             ref={search}
             className="tpick-search"
-            placeholder="Search name or symbol"
-            aria-label="Search tokens"
+            placeholder={tr("Search name or symbol", "搜索名称或符号")}
+            aria-label={tr("Search tokens", "搜索代币")}
             aria-controls={listId}
             aria-activedescendant={shown[active] ? `${listId}-${active}` : undefined}
             value={q}
@@ -93,7 +95,7 @@ export function TokenPicker({ tokens, value, onChange, label, wide }: { tokens: 
                 </li>
               );
             })}
-            {shown.length === 0 && <li className="tpick-none" aria-disabled="true">No token matches.</li>}
+            {shown.length === 0 && <li className="tpick-none" aria-disabled="true">{tr("No token matches.", "没有匹配的代币。")}</li>}
           </ul>
         </div>
       )}

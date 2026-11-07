@@ -1,10 +1,18 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import type { DocPage } from "../../lib/docs";
+import { useT } from "../../lib/i18n";
 
 /** Building blocks for the docs pages: sections, steps, code with copy, tabs, callouts and cards. */
 
-export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+/** An anchor for a heading. Chinese titles have no Latin letters, so they get a short hash instead. */
+export const slug = (s: string) => {
+  const latin = s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  if (latin.replace(/-/g, "").length >= 3) return latin;
+  let h = 0;
+  for (const ch of s) h = (h * 31 + ch.codePointAt(0)!) >>> 0;
+  return `s-${h.toString(36)}`;
+};
 
 export function Section({ title, id, children }: { title: string; id?: string; children: ReactNode }) {
   const anchor = id ?? slug(title);
@@ -35,34 +43,36 @@ export function Step({ title, id, children }: { title: string; id?: string; chil
 }
 
 function CopyButton({ text }: { text: string }) {
+  const t = useT();
   const [done, setDone] = useState(false);
   useEffect(() => {
     if (!done) return;
-    const t = setTimeout(() => setDone(false), 1500);
-    return () => clearTimeout(t);
+    const id = setTimeout(() => setDone(false), 1500);
+    return () => clearTimeout(id);
   }, [done]);
   return (
     <button
       type="button"
       className="dk-copy"
       onClick={() => navigator.clipboard?.writeText(text).then(() => setDone(true), () => {})}
-      aria-label={done ? "Copied" : "Copy code"}
+      aria-label={done ? t("Copied", "已复制") : t("Copy code", "复制代码")}
     >
       {done ? (
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" /></svg>
       ) : (
         <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5" /><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1" /></svg>
       )}
-      <span>{done ? "Copied" : "Copy"}</span>
+      <span>{done ? t("Copied", "已复制") : t("Copy", "复制")}</span>
     </button>
   );
 }
 
 export function Code({ children, lang = "ts", title }: { children: string; lang?: string; title?: string }) {
+  const t = useT();
   return (
     <div className="dk-code">
       <div className="dk-code-head">
-        <span className="dk-code-title">{title ?? LANG[lang] ?? lang}</span>
+        <span className="dk-code-title">{title ?? (lang === "sh" ? t("Terminal", "终端") : lang === "txt" ? t("Text", "文本") : LANG[lang]) ?? lang}</span>
         <CopyButton text={children} />
       </div>
       <pre tabIndex={0}><code>{children}</code></pre>
@@ -91,13 +101,15 @@ export function CodeTabs({ tabs }: { tabs: { label: string; lang?: string; code:
 }
 
 const CALLOUT_LABEL = { note: "Note", tip: "Tip", warn: "Important", example: "Example" } as const;
+const CALLOUT_LABEL_ZH = { note: "说明", tip: "提示", warn: "重要", example: "示例" } as const;
 
 export function Callout({ kind = "note", title, children }: { kind?: keyof typeof CALLOUT_LABEL; title?: string; children: ReactNode }) {
+  const t = useT();
   return (
     <div role="note" className={`dk-callout dk-${kind}`}>
       <p className="dk-callout-title">
         <CalloutIcon kind={kind} />
-        {title ?? CALLOUT_LABEL[kind]}
+        {title ?? t<string>(CALLOUT_LABEL[kind], CALLOUT_LABEL_ZH[kind])}
       </p>
       <div className="dk-callout-body">{children}</div>
     </div>

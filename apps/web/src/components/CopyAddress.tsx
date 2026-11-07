@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { explorerAddress, shortAddress } from "../lib/config";
+import { tNow } from "../lib/i18n";
 
 /** Copies an address and says so for a moment. */
 export function CopyAddress({ value, label }: { value: string; label?: string }) {
@@ -10,7 +11,7 @@ export function CopyAddress({ value, label }: { value: string; label?: string })
       <button
         type="button"
         className="tk-copy"
-        aria-label={`Copy ${value}`}
+        aria-label={tNow(`Copy ${value}`, `复制 ${value}`)}
         onClick={() => {
           void navigator.clipboard?.writeText(value).then(() => {
             setDone(true);

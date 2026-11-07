@@ -23,6 +23,7 @@ import { FundingRow, SyncNote, VaultGate, useShieldedVault } from "../components
 import { ShieldedSwapAction } from "../components/ShieldedSwap";
 import { SHIELDED_EXECUTION, useFunding } from "../lib/funding";
 import { balances } from "../lib/vault/store";
+import { useT } from "../lib/i18n";
 
 type Hop = { pool: `0x${string}`; tokenIn: `0x${string}`; tokenOut: `0x${string}` };
 type Route = { key: string; hops: Hop[]; pools: MarketPool[] };
@@ -58,6 +59,7 @@ function buildRoutes(pools: MarketPool[], a: `0x${string}`, b: `0x${string}`): R
 }
 
 export function Swap() {
+  const t = useT();
   const search = useSearch({ from: "/app/swap" });
   const navigate = useNavigate({ from: "/app/swap" });
   const shielded = useFunding() === "shielded" && SHIELDED_EXECUTION;
@@ -147,8 +149,8 @@ export function Swap() {
     if (!tokIn || !tokOut || !address || !amountIn || !WETH && (ethIn || ethOut)) return;
     if (wrapOnly) {
       const step: TxStep = ethIn
-        ? { label: `Wrap ${fmtAmount(amountIn, 18)} ETH`, params: wrapParams(amountIn) }
-        : { label: `Unwrap ${fmtAmount(amountIn, 18)} WETH`, params: { address: WETH!, abi: wethAbi, functionName: "withdraw", args: [amountIn], chainId: curveilChain.id } };
+        ? { label: t(`Wrap ${fmtAmount(amountIn, 18)} ETH`, `包装 ${fmtAmount(amountIn, 18)} ETH`), params: wrapParams(amountIn) }
+        : { label: t(`Unwrap ${fmtAmount(amountIn, 18)} WETH`, `解包 ${fmtAmount(amountIn, 18)} WETH`), params: { address: WETH!, abi: wethAbi, functionName: "withdraw", args: [amountIn], chainId: curveilChain.id } };
       const r = await tx.run([step]);
       await wallet.refetch();
       if (r) setInput("");
@@ -157,12 +159,12 @@ export function Swap() {
     if (!best || !ROUTER || minOut === null) return;
     const steps: TxStep[] = [];
     const pulled = ethIn ? WETH! : tokIn.address;
-    if (ethIn) steps.push({ label: `Wrap ${fmtAmount(amountIn, 18)} ETH`, params: wrapParams(amountIn) });
+    if (ethIn) steps.push({ label: t(`Wrap ${fmtAmount(amountIn, 18)} ETH`, `包装 ${fmtAmount(amountIn, 18)} ETH`), params: wrapParams(amountIn) });
     if ((routerAllowance ?? 0n) < amountIn) {
-      steps.push({ label: `Approve ${fmtAmount(amountIn, tokIn.decimals)} ${ethIn ? "WETH" : tokIn.symbol} for the router`, params: { address: pulled, abi: erc20Abi, functionName: "approve", args: [ROUTER, amountIn], chainId: curveilChain.id } });
+      steps.push({ label: t(`Approve ${fmtAmount(amountIn, tokIn.decimals)} ${ethIn ? "WETH" : tokIn.symbol} for the router`, `授权路由器使用 ${fmtAmount(amountIn, tokIn.decimals)} ${ethIn ? "WETH" : tokIn.symbol}`), params: { address: pulled, abi: erc20Abi, functionName: "approve", args: [ROUTER, amountIn], chainId: curveilChain.id } });
     }
     steps.push({
-      label: "Swap",
+      label: t("Swap", "兑换"),
       params: { address: ROUTER, abi: routerAbi, functionName: "swapExactIn", args: [best.route.hops, amountIn, minOut, address, deadlineIn(DEADLINE_MIN)], chainId: curveilChain.id },
     });
     let receipt = await tx.run(steps);
@@ -171,7 +173,7 @@ export function Swap() {
       const got = parseEventLogs({ abi: erc20Events, eventName: "Transfer", logs: receipt.logs })
         .filter((l) => same(l.address, WETH) && same(l.args.to, address))
         .reduce((sum, l) => sum + l.args.value, 0n);
-      if (got > 0n) receipt = await tx.run([{ label: `Unwrap ${fmtAmount(got, 18)} WETH to ETH`, params: { address: WETH!, abi: wethAbi, functionName: "withdraw", args: [got], chainId: curveilChain.id } }]);
+      if (got > 0n) receipt = await tx.run([{ label: t(`Unwrap ${fmtAmount(got, 18)} WETH to ETH`, `把 ${fmtAmount(got, 18)} WETH 解包为 ETH`), params: { address: WETH!, abi: wethAbi, functionName: "withdraw", args: [got], chainId: curveilChain.id } }]);
     }
     await wallet.refetch();
     if (receipt) {
@@ -203,22 +205,34 @@ export function Swap() {
                   ? `Swap (${steps} wallet confirmations)`
                   : "Swap";
   const disabled = !(label === "Swap" || label === "Wrap" || label === "Unwrap" || label.startsWith("Swap ("));
-  const shieldedBlocked = !tokIn || !tokOut ? "Select tokens" : !amountIn || amountIn === 0n ? "Enter an amount" : routes.length === 0 ? "No pool for this pair" : noRoute ? "Not enough liquidity" : !best ? "Getting a quote…" : null;
+  const shieldedBlockedEn = !tokIn || !tokOut ? "Select tokens" : !amountIn || amountIn === 0n ? "Enter an amount" : routes.length === 0 ? "No pool for this pair" : noRoute ? "Not enough liquidity" : !best ? "Getting a quote…" : null;
+  /** The button text in Chinese; the English text above also drives which states can be pressed. */
+  const say = (l: string) => {
+    const zh: Record<string, string> = {
+      "Select tokens": "请选择代币", "Enter an amount": "请输入金额", Wrap: "包装", Unwrap: "解包", "No pool for this pair": "该交易对没有资金池",
+      "Not enough liquidity": "流动性不足", "Getting a quote…": "正在获取报价…", Swap: "兑换",
+    };
+    if (zh[l]) return t(l, zh[l]);
+    if (l.startsWith("Swap (")) return t(l, `兑换（需在钱包确认 ${steps} 次）`);
+    if (l.startsWith("Not enough ")) return t(l, `${l.slice(11)} 余额不足`);
+    return l;
+  };
+  const shieldedBlocked = shieldedBlockedEn && say(shieldedBlockedEn);
 
   return (
     <div className="wrap">
       <PageHead
-        kicker="Trade" label="Best route" title="Swap" art="route"
-        lead="Exact-input swaps across public DAMM and DLMM pools, routed through at most one middle token. Every figure below is quoted on-chain at a stated block."
+        kicker={t("Trade", "交易")} label={t("Best route", "最优路由")} title={t("Swap", "兑换")} art="route"
+        lead={t("Exact-input swaps across public DAMM and DLMM pools, routed through at most one middle token. Every figure below is quoted on-chain at a stated block.", "在公开的 DAMM 和 DLMM 资金池之间按精确输入兑换，最多经过一个中间代币。下方每个数字都在指定区块上从链上报价。")}
       />
       <div className="swap-layout">
         <div className="stack">
           <ModuleStatus id="swap" />
           <div className={`panel stack swap-card${shielded ? " shielded-panel" : ""}`}>
-            {SHIELDED_EXECUTION && <FundingRow what="The swap's amounts are public; who swapped is not." />}
+            {SHIELDED_EXECUTION && <FundingRow what={t("The swap's amounts are public; who swapped is not.", "兑换金额是公开的，但谁在兑换不公开。")} />}
             {shielded && <SyncNote v={vault} />}
             <AmountField
-              label="You pay"
+              label={t("You pay", "你支付")}
               value={input}
               onChange={setInput}
               symbol={tokIn?.symbol}
@@ -230,37 +244,37 @@ export function Swap() {
                 const max = ethIn ? (balIn.balance > GAS_RESERVE ? balIn.balance - GAS_RESERVE : 0n) : balIn.balance;
                 setInput(formatUnits(max, tokIn.decimals));
               }}
-              balanceLabel={shielded ? "Vault" : undefined}
-              error={insufficient && tokIn ? `More than your ${shielded ? "vault" : "wallet"} balance of ${fmtAmount(balIn.balance!, tokIn.decimals)} ${tokIn.symbol}` : null}
+              balanceLabel={shielded ? t("Vault", "金库") : undefined}
+              error={insufficient && tokIn ? t(`More than your ${shielded ? "vault" : "wallet"} balance of ${fmtAmount(balIn.balance!, tokIn.decimals)} ${tokIn.symbol}`, `超过你的${shielded ? "金库" : "钱包"}余额 ${fmtAmount(balIn.balance!, tokIn.decimals)} ${tokIn.symbol}`) : null}
             >
-              <TokenPicker tokens={tokens} value={tokIn} onChange={(a) => pick("from", a)} label="Token to pay" />
+              <TokenPicker tokens={tokens} value={tokIn} onChange={(a) => pick("from", a)} label={t("Token to pay", "支付的代币")} />
             </AmountField>
-            <button type="button" className="flip" onClick={flip} aria-label="Swap the pay and receive tokens">
+            <button type="button" className="flip" onClick={flip} aria-label={t("Swap the pay and receive tokens", "交换支付和收到的代币")}>
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 2.5v11M2.5 11 5 13.5 7.5 11M11 13.5v-11M8.5 5 11 2.5 13.5 5" /></svg>
             </button>
             <AmountField
-              label="You receive"
+              label={t("You receive", "你收到")}
               value={wrapOnly && amountIn ? formatUnits(amountIn, 18) : best && tokOut ? formatUnits(best.amountOut, tokOut.decimals) : ""}
               readOnly
               symbol={tokOut?.symbol}
               balance={tokOut && balOut.balance !== undefined ? fmtAmount(balOut.balance, tokOut.decimals) : undefined}
-              balanceLabel={shielded ? "Vault" : undefined}
-              hint={wrapOnly ? <>ETH and WETH are always one to one. No pool or fee is involved.</> : best && tokOut && minOut !== null ? <>Expected amount. At least <span className="mono">{fmtAmount(minOut, tokOut.decimals, 6)} {tokOut.symbol}</span> with {slippageBps / 100}% slippage, or the swap reverts.</> : undefined}
+              balanceLabel={shielded ? t("Vault", "金库") : undefined}
+              hint={wrapOnly ? t("ETH and WETH are always one to one. No pool or fee is involved.", "ETH 和 WETH 始终一比一兑换，不经过资金池，也没有手续费。") : best && tokOut && minOut !== null ? t(<>Expected amount. At least <span className="mono">{fmtAmount(minOut, tokOut.decimals, 6)} {tokOut.symbol}</span> with {slippageBps / 100}% slippage, or the swap reverts.</>, <>预期数量。在 {slippageBps / 100}% 滑点下至少收到 <span className="mono">{fmtAmount(minOut, tokOut.decimals, 6)} {tokOut.symbol}</span>，否则兑换会回滚。</>) : undefined}
             >
-              <TokenPicker tokens={tokens} value={tokOut} onChange={(a) => pick("to", a)} label="Token to receive" />
+              <TokenPicker tokens={tokens} value={tokOut} onChange={(a) => pick("to", a)} label={t("Token to receive", "收到的代币")} />
             </AmountField>
 
             <div className="slippage">
-              <span className="field-label">Slippage tolerance</span>
-              <div className="seg" role="group" aria-label="Slippage tolerance" style={{ marginTop: 0 }}>
+              <span className="field-label">{t("Slippage tolerance", "滑点容差")}</span>
+              <div className="seg" role="group" aria-label={t("Slippage tolerance", "滑点容差")} style={{ marginTop: 0 }}>
                 {SLIPPAGES.map((b) => (
                   <button key={b} type="button" aria-pressed={slippageBps === b && !customSlip} onClick={() => { setSlippageBps(b); setCustomSlip(""); }}>{b / 100}%</button>
                 ))}
                 <input
                   className="slip-input mono"
                   inputMode="decimal"
-                  placeholder="Custom"
-                  aria-label="Custom slippage in percent"
+                  placeholder={t("Custom", "自定义")}
+                  aria-label={t("Custom slippage in percent", "自定义滑点（百分比）")}
                   value={customSlip}
                   onChange={(e) => {
                     const raw = cleanAmount(e.target.value, 2);
@@ -271,11 +285,11 @@ export function Swap() {
                 />
               </div>
             </div>
-            {slipWarn && <p className="notice warn" style={{ margin: 0 }}>A tolerance above 3% lets the trade fill at a much worse price if the pool moves before it lands.</p>}
+            {slipWarn && <p className="notice warn" style={{ margin: 0 }}>{t("A tolerance above 3% lets the trade fill at a much worse price if the pool moves before it lands.", "容差超过 3% 时，如果资金池在交易上链前发生变动，交易可能以差得多的价格成交。")}</p>}
 
             {best && tokIn && tokOut && amountIn ? (
               <p className="quote-line" style={{ margin: 0 }}>
-                <span>Rate</span>
+                <span>{t("Rate", "汇率")}</span>
                 <span className="mono">1 {tokIn.symbol} = {fmtPrice(Number(formatUnits(best.amountOut, tokOut.decimals)) / Number(formatUnits(amountIn, tokIn.decimals)))} {tokOut.symbol}</span>
               </p>
             ) : null}
@@ -298,17 +312,17 @@ export function Swap() {
                       }}
                     />
                   ) : (
-                    <p className="small muted" style={{ margin: 0 }}>Shield an asset in the <Link to="/app/vault">vault</Link> first.</p>
+                    <p className="small muted" style={{ margin: 0 }}>{t(<>Shield an asset in the <Link to="/app/vault">vault</Link> first.</>, <>请先在<Link to="/app/vault">金库</Link>中存入一种隐私资产。</>)}</p>
                   )
                 }
               </VaultGate>
             ) : (
               <>
-                <WalletAction verb="swap">
-                  <button className="btn btn-primary btn-block" disabled={disabled || tx.busy} onClick={swap}>{tx.busy ? "Check your wallet…" : label}</button>
+                <WalletAction verb={t("swap", "兑换")}>
+                  <button className="btn btn-primary btn-block" disabled={disabled || tx.busy} onClick={swap}>{tx.busy ? t("Check your wallet…", "请在钱包中确认…") : say(label)}</button>
                 </WalletAction>
                 {insufficient && IS_TESTNET && tokIn?.symbol.startsWith("t") && (
-                  <p className="small muted" style={{ margin: 0 }}>Test tokens are free from the <Link to="/docs" search={{ page: "testnet" }} hash="faucet">testnet faucet</Link>.</p>
+                  <p className="small muted" style={{ margin: 0 }}>{t(<>Test tokens are free from the <Link to="/docs" search={{ page: "testnet" }} hash="faucet">testnet faucet</Link>.</>, <>可以从<Link to="/docs" search={{ page: "testnet" }} hash="faucet">测试网水龙头</Link>免费领取测试代币。</>)}</p>
                 )}
                 <TxStatus phase={tx.phase} />
               </>
@@ -319,9 +333,9 @@ export function Swap() {
         <div className="stack">
           {wrapOnly ? (
             <div className="panel stack">
-              <p className="eyebrow" style={{ margin: 0 }}>Wrap</p>
+              <p className="eyebrow" style={{ margin: 0 }}>{t("Wrap", "包装")}</p>
               <p className="small muted" style={{ margin: 0 }}>
-                {ethIn ? "ETH goes into the WETH contract and the same amount of WETH comes back." : "WETH goes back into its contract and the same amount of ETH comes back."} No pool, fee or slippage is involved. Pools trade WETH, so paying with ETH elsewhere on this page wraps it for you first.
+                {ethIn ? t("ETH goes into the WETH contract and the same amount of WETH comes back.", "ETH 存入 WETH 合约，并换回等量的 WETH。") : t("WETH goes back into its contract and the same amount of ETH comes back.", "WETH 存回其合约，并换回等量的 ETH。")} {t("No pool, fee or slippage is involved. Pools trade WETH, so paying with ETH elsewhere on this page wraps it for you first.", "不经过资金池，没有手续费和滑点。资金池交易的是 WETH，所以在本页其他地方用 ETH 付款时会先自动帮你包装。")}
               </p>
             </div>
           ) : <QuoteDetails tokIn={tokIn} tokOut={tokOut} amountIn={amountIn} best={best} alternatives={okQuotes.slice(1)} failed={(quotes.data?.quotes ?? []).filter((q) => !q.ok).length} minOut={minOut} slippageBps={slippageBps} block={quotes.data?.block} loading={quotes.isFetching && !quotes.data} error={quotes.isError} />}
@@ -344,30 +358,31 @@ function QuoteDetails({ tokIn, tokOut, amountIn, best, alternatives, failed, min
   loading: boolean;
   error: boolean;
 }) {
+  const t = useT();
   if (!tokIn || !tokOut) return null;
-  if (error) return <p className="notice bad" role="alert">The quote could not be read from the chain. Swapping is blocked until a fresh quote arrives.</p>;
+  if (error) return <p className="notice bad" role="alert">{t("The quote could not be read from the chain. Swapping is blocked until a fresh quote arrives.", "无法从链上读取报价。在拿到新报价之前，兑换暂不可用。")}</p>;
   if (!amountIn || amountIn === 0n) {
     return (
       <div className="panel">
-        <p className="eyebrow">Quote</p>
-        <p className="small muted" style={{ marginBottom: 0 }}>Enter an amount to see the route, expected and minimum output, fees and price impact.</p>
+        <p className="eyebrow">{t("Quote", "报价")}</p>
+        <p className="small muted" style={{ marginBottom: 0 }}>{t("Enter an amount to see the route, expected and minimum output, fees and price impact.", "输入金额即可查看路由、预期和最低输出、手续费以及价格影响。")}</p>
       </div>
     );
   }
   if (loading) {
     return (
       <div className="panel stack" aria-busy="true">
-        <Loading label="Quoting every route on-chain" />
+        <Loading label={t("Quoting every route on-chain", "正在链上为每条路由报价")} />
         <div className="row-between">
-          <p className="eyebrow" style={{ margin: 0 }}>Quote</p>
+          <p className="eyebrow" style={{ margin: 0 }}>{t("Quote", "报价")}</p>
           <span className="small muted mono"><Sk w="22ch" /></span>
         </div>
         <dl className="rows">
-          {["Rate", "Expected output", "Minimum received", "Price impact"].map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="12ch" /></dd></div>)}
-          <div><dt>Deadline</dt><dd>{DEADLINE_MIN} minutes after you sign</dd></div>
+          {t(["Rate", "Expected output", "Minimum received", "Price impact"], ["汇率", "预期输出", "最低到账", "价格影响"]).map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="12ch" /></dd></div>)}
+          <div><dt>{t("Deadline", "截止时间")}</dt><dd>{t(`${DEADLINE_MIN} minutes after you sign`, `签名后 ${DEADLINE_MIN} 分钟`)}</dd></div>
         </dl>
         <div>
-          <p className="small muted" style={{ margin: "0 0 8px" }}>Route and fees</p>
+          <p className="small muted" style={{ margin: "0 0 8px" }}>{t("Route and fees", "路由与手续费")}</p>
           <Sk block w="100%" h={44} />
         </div>
       </div>
@@ -376,8 +391,8 @@ function QuoteDetails({ tokIn, tokOut, amountIn, best, alternatives, failed, min
   if (!best) {
     return (
       <div className="panel">
-        <p className="eyebrow">Quote</p>
-        <p className="small muted" style={{ marginBottom: 0 }}>No route can fill this amount at the current liquidity.</p>
+        <p className="eyebrow">{t("Quote", "报价")}</p>
+        <p className="small muted" style={{ marginBottom: 0 }}>{t("No route can fill this amount at the current liquidity.", "按当前流动性，没有路由能成交这个金额。")}</p>
       </div>
     );
   }
@@ -398,23 +413,23 @@ function QuoteDetails({ tokIn, tokOut, amountIn, best, alternatives, failed, min
   return (
     <div className="panel stack">
       <div className="row-between">
-        <p className="eyebrow" style={{ margin: 0 }}>Quote</p>
-        <span className="small muted mono">block {block?.toLocaleString("en-US")} · refreshes every 8s</span>
+        <p className="eyebrow" style={{ margin: 0 }}>{t("Quote", "报价")}</p>
+        <span className="small muted mono">{t(`block ${block?.toLocaleString("en-US")} · refreshes every 8s`, `区块 ${block?.toLocaleString("en-US")} · 每 8 秒刷新`)}</span>
       </div>
       <dl className="rows">
-        <div><dt>Rate</dt><dd className="mono">1 {tokIn.symbol} = {fmtPrice(outH / inH)} {tokOut.symbol}</dd></div>
-        <div><dt>Expected output</dt><dd className="mono">{fmtAmount(best.amountOut, tokOut.decimals, 6)} {tokOut.symbol}</dd></div>
-        <div><dt>Minimum received</dt><dd className="mono">{minOut !== null ? fmtAmount(minOut, tokOut.decimals, 6) : "–"} {tokOut.symbol} <span className="muted">({slippageBps / 100}% tolerance)</span></dd></div>
+        <div><dt>{t("Rate", "汇率")}</dt><dd className="mono">1 {tokIn.symbol} = {fmtPrice(outH / inH)} {tokOut.symbol}</dd></div>
+        <div><dt>{t("Expected output", "预期输出")}</dt><dd className="mono">{fmtAmount(best.amountOut, tokOut.decimals, 6)} {tokOut.symbol}</dd></div>
+        <div><dt>{t("Minimum received", "最低到账")}</dt><dd className="mono">{minOut !== null ? fmtAmount(minOut, tokOut.decimals, 6) : "–"} {tokOut.symbol} <span className="muted">{t(`(${slippageBps / 100}% tolerance)`, `（${slippageBps / 100}% 容差）`)}</span></dd></div>
         <div>
-          <dt>Price impact</dt>
+          <dt>{t("Price impact", "价格影响")}</dt>
           <dd className={`mono ${impact !== null && impact > 0.05 ? "bad-text" : impact !== null && impact > 0.01 ? "warn-text" : ""}`}>
             {impact === null ? "–" : impact < 0.0001 ? "<0.01%" : `${(impact * 100).toFixed(2)}%`}
           </dd>
         </div>
-        <div><dt>Deadline</dt><dd>{DEADLINE_MIN} minutes after you sign</dd></div>
+        <div><dt>{t("Deadline", "截止时间")}</dt><dd>{t(`${DEADLINE_MIN} minutes after you sign`, `签名后 ${DEADLINE_MIN} 分钟`)}</dd></div>
       </dl>
       <div>
-        <p className="small muted" style={{ margin: "0 0 8px" }}>Route and fees</p>
+        <p className="small muted" style={{ margin: "0 0 8px" }}>{t("Route and fees", "路由与手续费")}</p>
         <ol className="route-hops">
           {best.route.pools.map((p, i) => {
             const hop = best.route.hops[i]!;
@@ -430,7 +445,7 @@ function QuoteDetails({ tokIn, tokOut, amountIn, best, alternatives, failed, min
                   <Link to="/app/pools/$pool" params={{ pool: p.address }} className="small">{kindLabel(p)}</Link>
                 </div>
                 <span className="small muted">
-                  Fee {fmtAmount(fee, hin.decimals, 6)} {hin.symbol}{pct !== null ? ` (${pct.toFixed(2)}%)` : ` (${fmtBps(p.fees.currentBps)})`}: {fmtAmount(fee - proto, hin.decimals, 6)} to LPs, {fmtAmount(proto, hin.decimals, 6)} to the protocol
+                  {t("Fee", "手续费")} {fmtAmount(fee, hin.decimals, 6)} {hin.symbol}{pct !== null ? ` (${pct.toFixed(2)}%)` : ` (${fmtBps(p.fees.currentBps)})`}: {t(`${fmtAmount(fee - proto, hin.decimals, 6)} to LPs, ${fmtAmount(proto, hin.decimals, 6)} to the protocol`, `${fmtAmount(fee - proto, hin.decimals, 6)} 给 LP，${fmtAmount(proto, hin.decimals, 6)} 给协议`)}
                 </span>
               </li>
             );
@@ -439,19 +454,19 @@ function QuoteDetails({ tokIn, tokOut, amountIn, best, alternatives, failed, min
       </div>
       {(alternatives.length > 0 || failed > 0) && (
         <details>
-          <summary className="small">Other routes checked ({alternatives.length + failed})</summary>
+          <summary className="small">{t(`Other routes checked (${alternatives.length + failed})`, `已检查的其他路由（${alternatives.length + failed}）`)}</summary>
           <ul className="small muted alt-routes">
             {alternatives.map((q) => (
               <li key={q.route.key}>
                 {q.route.pools.map((p) => kindLabel(p)).join(" → ")}: <span className="mono">{fmtAmount(q.amountOut, tokOut.decimals, 6)}</span> {tokOut.symbol}
               </li>
             ))}
-            {failed > 0 && <li>{failed} route{failed > 1 ? "s" : ""} cannot fill this amount.</li>}
+            {failed > 0 && <li>{t(`${failed} route${failed > 1 ? "s" : ""} cannot fill this amount.`, `${failed} 条路由无法成交这个金额。`)}</li>}
           </ul>
         </details>
       )}
       <p className="small muted" style={{ margin: 0 }}>
-        Price impact compares the quote with the last indexed pool price, after fees. The swap reverts rather than fill below the minimum.
+        {t("Price impact compares the quote with the last indexed pool price, after fees. The swap reverts rather than fill below the minimum.", "价格影响是把扣除手续费后的报价与最近索引的资金池价格相比。兑换宁可回滚，也不会以低于最低值的价格成交。")}
       </p>
     </div>
   );

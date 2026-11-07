@@ -49,3 +49,11 @@ export const STATUS_LABEL: Record<ModuleStatus["status"], string> = {
   degraded: "Degraded",
   paused: "Paused",
 };
+
+export const STATUS_LABEL_ZH: Record<ModuleStatus["status"], string> = {
+  live: "已上线",
+  testnet: "已在测试网上线",
+  not_live: "尚未上线",
+  degraded: "运行降级",
+  paused: "已暂停",
+};

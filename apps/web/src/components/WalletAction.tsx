@@ -2,14 +2,16 @@ import { useId, type ReactNode } from "react";
 import { useConnection } from "wagmi";
 import { ConnectButton } from "./ConnectButton";
 import { curveilChain } from "../lib/config";
+import { useT } from "../lib/i18n";
 
 /** Shows the action only once a wallet is connected on the Curveil chain. */
 export function WalletAction({ verb, children }: { verb: string; children: ReactNode }) {
+  const t = useT();
   const { isConnected, chainId } = useConnection();
   if (!isConnected) {
     return (
       <div className="wallet-gate">
-        <p className="small muted" style={{ margin: 0 }}>Connect a wallet to {verb}. Nothing is signed until you confirm a step.</p>
+        <p className="small muted" style={{ margin: 0 }}>{t(`Connect a wallet to ${verb}. Nothing is signed until you confirm a step.`, `连接钱包后即可${verb}。在你确认每一步之前，不会签署任何内容。`)}</p>
         <ConnectButton />
       </div>
     );
@@ -17,7 +19,7 @@ export function WalletAction({ verb, children }: { verb: string; children: React
   if (chainId !== curveilChain.id) {
     return (
       <div className="wallet-gate">
-        <p className="small muted" style={{ margin: 0 }}>Your wallet is on another network.</p>
+        <p className="small muted" style={{ margin: 0 }}>{t("Your wallet is on another network.", "你的钱包当前在其他网络上。")}</p>
         <ConnectButton />
       </div>
     );
@@ -39,7 +41,7 @@ export function cleanAmount(raw: string, decimals?: number): string {
  * Amount box: label and balance on top, a large number with the token beside it, and a line
  * underneath for a hint or an error. `error` marks the box red and says what is wrong.
  */
-export function AmountField({ label, value, onChange, symbol, balance, balanceLabel = "Balance", decimals, onMax, readOnly, hint, error, placeholder = "0", children }: {
+export function AmountField({ label, value, onChange, symbol, balance, balanceLabel, decimals, onMax, readOnly, hint, error, placeholder = "0", children }: {
   label: string;
   /** "Balance" by default; "Vault" when the amount comes from vault notes. */
   balanceLabel?: string;
@@ -55,7 +57,9 @@ export function AmountField({ label, value, onChange, symbol, balance, balanceLa
   placeholder?: string;
   children?: ReactNode;
 }) {
+  const t = useT();
   const id = useId();
+  balanceLabel ??= t("Balance", "余额");
   return (
     <div className="tbox" data-invalid={error ? "true" : undefined} data-readonly={readOnly ? "true" : undefined}>
       <div className="tbox-top">
@@ -64,7 +68,7 @@ export function AmountField({ label, value, onChange, symbol, balance, balanceLa
           <span className="tbox-bal">
             <span>{balanceLabel} <span className="mono">{balance}</span></span>
             {onMax && !readOnly && (
-              <button type="button" className="tbox-max" onClick={onMax} aria-label={`Use the full ${balanceLabel.toLowerCase()}`}>Max</button>
+              <button type="button" className="tbox-max" onClick={onMax} aria-label={t(`Use the full ${balanceLabel.toLowerCase()}`, `使用全部${balanceLabel}`)}>{t("Max", "最大")}</button>
             )}
           </span>
         )}
@@ -77,7 +81,7 @@ export function AmountField({ label, value, onChange, symbol, balance, balanceLa
           autoComplete="off"
           spellCheck={false}
           placeholder={placeholder}
-          aria-label={`${label}${symbol ? ` in ${symbol}` : ""}`}
+          aria-label={`${label}${symbol ? t(` in ${symbol}`, `（${symbol}）`) : ""}`}
           aria-invalid={error ? true : undefined}
           aria-describedby={error || hint ? `${id}-foot` : undefined}
           value={value}

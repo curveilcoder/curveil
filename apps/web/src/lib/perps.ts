@@ -342,6 +342,17 @@ export const REASON_TEXT: Record<string, string> = {
   not_open: "the position was no longer open",
   liquidatable: "the position was liquidatable at that price",
 };
+export const REASON_TEXT_ZH: Record<string, string> = {
+  timeout: "没有人及时执行，已全额退款",
+  price: "价格超出了你的限价，扣除执行费后退款",
+  market_closed: "市场已关闭",
+  leverage: "杠杆超过了该市场的上限",
+  min_collateral: "扣除费用后保证金低于最低要求",
+  open_interest: "已达到该市场的未平仓量上限",
+  capacity: "流动性金库没有空间承接该仓位的最大盈利",
+  not_open: "该仓位已不再持有",
+  liquidatable: "该仓位在该价格下可被强平",
+};
 
 /** Note resource of each claim (shareResource of the adapter and claim id), for matching notes locally. */
 export function claimResources(claims: ApiClaim[] | undefined, adapter: Address | undefined, shareResource: (a: Address, id: bigint) => bigint) {

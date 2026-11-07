@@ -11,6 +11,7 @@ import "./styles/forms.css";
 import "./styles/token.css";
 import { wagmiConfig } from "./lib/wagmi";
 import { router } from "./router";
+import { TITLES_ZH, tNow, useLocale } from "./lib/i18n";
 
 // A page's stylesheet that fails to preload (a blocked or flaky request) should not stop the page
 // from rendering. A script that fails must still throw: swallowing it hands the router an empty
@@ -24,15 +25,16 @@ window.addEventListener("vite:preloadError", (e) => {
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 5_000, refetchOnWindowFocus: true } } });
 
 function TitleSync() {
-  useEffect(
-    () =>
-      router.subscribe("onResolved", () => {
-        const match = router.state.matches.at(-1);
-        const title = (match?.meta?.find((m) => m && "title" in m) as { title?: string } | undefined)?.title;
-        if (title) document.title = title;
-      }),
-    [],
-  );
+  const locale = useLocale();
+  useEffect(() => {
+    const sync = () => {
+      const match = router.state.matches.at(-1);
+      const title = (match?.meta?.find((m) => m && "title" in m) as { title?: string } | undefined)?.title;
+      if (title) document.title = tNow(title, TITLES_ZH[title] ?? title);
+    };
+    sync();
+    return router.subscribe("onResolved", sync);
+  }, [locale]);
   return null;
 }
 

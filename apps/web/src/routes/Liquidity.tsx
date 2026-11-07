@@ -24,6 +24,7 @@ import { ShieldedEntry, marketAssets } from "../components/ShieldedEntry";
 import { SHIELDED_EXECUTION, useFunding } from "../lib/funding";
 import { balances, type VaultState } from "../lib/vault/store";
 import { encodeDammEntry, encodeDlmmEntry } from "@curveil/vault-core";
+import { useT, tNow } from "../lib/i18n";
 
 const DEADLINE_MIN = 10;
 const SLIPPAGE_BPS = 50;
@@ -33,6 +34,7 @@ const chunk = <T,>(xs: T[], n: number) => Array.from({ length: Math.ceil(xs.leng
 
 /** Add liquidity to one pool. Reached only from that pool's page, so the pool is already chosen. */
 export function AddLiquidity() {
+  const t = useT();
   const { pool: address } = useParams({ from: "/app/pools/$pool/add" });
   const markets = useMarkets();
   const shielded = useFunding() === "shielded" && SHIELDED_EXECUTION;
@@ -42,28 +44,28 @@ export function AddLiquidity() {
     <div className="wrap tk">
       <Link to={pool ? "/app/pools/$pool" : "/app/pools"} params={{ pool: address }} className="tk-back">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        {pool ? pairLabel(pool) : "Pools"}
+        {pool ? pairLabel(pool) : t("Pools", "资金池")}
       </Link>
       <header className="tk-head">
         <div className="tk-id">
           {pool ? <TokenPair pool={pool} size={44} /> : <Sk w={72} h={44} style={{ borderRadius: 22 }} />}
           <div className="tk-id-text">
-            <div className="tk-name"><h1>Add liquidity</h1></div>
-            <p className="tk-meta">{pool ? <><span>{pairLabel(pool)}</span><span>{kindLabel(pool)}</span><span>Fee now {(pool.fees.currentBps / 100).toFixed(2)}%</span></> : <Sk w="24ch" />}</p>
+            <div className="tk-name"><h1>{t("Add liquidity", "添加流动性")}</h1></div>
+            <p className="tk-meta">{pool ? <><span>{pairLabel(pool)}</span><span>{kindLabel(pool)}</span><span>{t("Fee now", "当前费率")} {(pool.fees.currentBps / 100).toFixed(2)}%</span></> : <Sk w="24ch" />}</p>
           </div>
         </div>
       </header>
       <div className="stack">
         <ModuleStatus id="liquidity" />
-        {SHIELDED_EXECUTION && <FundingRow what="Deposits and exits are public; who owns the position is not." />}
+        {SHIELDED_EXECUTION && <FundingRow what={t("Deposits and exits are public; who owns the position is not.", "存入和退出是公开的，但谁持有该仓位不公开。")} />}
         {shielded && <SyncNote v={vault} />}
         {markets.isLoading ? <AddSkeleton shielded={shielded} /> : !pool && justCreated(address) ? (
           <>
-            <p className="notice" role="status">Your pool is created. Curveil is indexing it now, which takes up to a minute. This page fills in by itself.</p>
+            <p className="notice" role="status">{t("Your pool is created. Curveil is indexing it now, which takes up to a minute. This page fills in by itself.", "资金池已创建。Curveil 正在为它建立索引，最多需要一分钟，本页会自动更新。")}</p>
             <AddSkeleton shielded={shielded} />
           </>
         ) : !pool ? (
-          <p className="notice bad" role="alert">No Curveil pool is indexed at <span className="mono">{address}</span>. <Link to="/app/pools">Back to Pools</Link></p>
+          <p className="notice bad" role="alert">{t(<>No Curveil pool is indexed at <span className="mono">{address}</span>. <Link to="/app/pools">Back to Pools</Link></>, <>在 <span className="mono">{address}</span> 没有已索引的 Curveil 资金池。<Link to="/app/pools">返回资金池</Link></>)}</p>
         ) : (
           <AddForm pool={pool} vault={shielded ? vault : null} />
         )}
@@ -74,15 +76,16 @@ export function AddLiquidity() {
 
 /** Create a new DAMM pool or DLMM pair. */
 export function CreatePoolPage() {
+  const t = useT();
   return (
     <div className="wrap tk">
       <Link to="/app/pools" className="tk-back">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        Pools
+        {t("Pools", "资金池")}
       </Link>
       <PageHead
-        kicker="Explore" label="New pool" title="Create a pool" art="shapes"
-        lead="Open a public DAMM pool (full range, fees that rise with volatility) or a DLMM pair (liquidity placed in price bins) for two admitted assets. You can add the first liquidity right after."
+        kicker={t("Explore", "探索")} label={t("New pool", "新资金池")} title={t("Create a pool", "创建资金池")} art="shapes"
+        lead={t("Open a public DAMM pool (full range, fees that rise with volatility) or a DLMM pair (liquidity placed in price bins) for two admitted assets. You can add the first liquidity right after.", "为两种已准入的资产开设公开的 DAMM 资金池（全价格区间，费率随波动上升）或 DLMM 交易对（流动性分布在各个价格档中）。创建后可以立刻添加第一笔流动性。")}
       />
       <div className="stack">
         <ModuleStatus id="liquidity" />
@@ -122,11 +125,12 @@ function SkPoolHead() {
 }
 
 function AddSkeleton({ shielded }: { shielded: boolean }) {
+  const t = useT();
   return (
     <div className="add-layout" aria-busy="true">
-      <Loading label="Loading pools" />
+      <Loading label={t("Loading pools", "正在加载资金池")} />
       <div className={`panel stack${shielded ? " shielded-panel" : ""}`}>
-        <div className="field"><span className="small muted">Pool</span><Sk block w="100%" h={44} /></div>
+        <div className="field"><span className="small muted">{t("Pool", "资金池")}</span><Sk block w="100%" h={44} /></div>
         <Sk block w="100%" h={64} />
         <Sk block w="100%" h={64} />
         <Sk block w="100%" h={48} />
@@ -134,7 +138,7 @@ function AddSkeleton({ shielded }: { shielded: boolean }) {
       <div className="panel stack">
         <SkPoolHead />
         <dl className="rows">
-          {["Price", "Fee now", "Fees to LPs", "Fees 24h"].map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="9ch" /></dd></div>)}
+          {t(["Price", "Fee now", "Fees to LPs", "Fees 24h"], ["价格", "当前费率", "LP 分成", "24 小时手续费"]).map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="9ch" /></dd></div>)}
         </dl>
       </div>
     </div>
@@ -173,6 +177,7 @@ function PositionCard(props: {
   note: string;
   tx: ReturnType<typeof useTxRunner>;
 }) {
+  const t = useT();
   const { pool, tx } = props;
   // Value is passed in token1. When token0 is the dollar token, show it in dollars instead.
   const usd0 = /usd/i.test(pool.token0.symbol) && !/usd/i.test(pool.token1.symbol) && (pool.price ?? 0) > 0;
@@ -184,17 +189,17 @@ function PositionCard(props: {
           <TokenPair pool={pool} size={32} />
           <span className="lpc-name">
             <strong>{pairLabel(pool)}</strong>
-            <span className="lpc-sub">{kindLabel(pool)} · {(pool.fees.currentBps / 100).toFixed(2)}% fee</span>
+            <span className="lpc-sub">{kindLabel(pool)} · {t(`${(pool.fees.currentBps / 100).toFixed(2)}% fee`, `费率 ${(pool.fees.currentBps / 100).toFixed(2)}%`)}</span>
           </span>
         </Link>
         {props.inRange === null ? (
-          <span className="tag tag-live">Full range</span>
+          <span className="tag tag-live">{t("Full range", "全区间")}</span>
         ) : (
-          <span className={`tag ${props.inRange ? "tag-live" : "tag-warn"}`}>{props.inRange ? "In range" : "Out of range"}</span>
+          <span className={`tag ${props.inRange ? "tag-live" : "tag-warn"}`}>{props.inRange ? t("In range", "在区间内") : t("Out of range", "超出区间")}</span>
         )}
       </header>
       <div className="lpc-value">
-        <span className="lpc-label">Position value</span>
+        <span className="lpc-label">{t("Position value", "仓位价值")}</span>
         <strong>≈ {fmtNumber(shown.value, 2)} <span>{shown.symbol}</span></strong>
       </div>
       <div className="lpc-visual">{props.visual}</div>
@@ -203,17 +208,17 @@ function PositionCard(props: {
       </dl>
       <div className="lpc-fees">
         <div>
-          <span className="lpc-label">Unclaimed fees</span>
+          <span className="lpc-label">{t("Unclaimed fees", "未领取手续费")}</span>
           <span className="mono">{props.fees}</span>
         </div>
-        <button type="button" className="btn btn-sm" disabled={!props.canClaim || tx.busy} onClick={props.onClaim}>Claim</button>
+        <button type="button" className="btn btn-sm" disabled={!props.canClaim || tx.busy} onClick={props.onClaim}>{t("Claim", "领取")}</button>
       </div>
       <div className="lpc-foot">
-        <WalletAction verb="manage this position">
-          <span className="lpc-label">Remove liquidity</span>
+        <WalletAction verb={t("manage this position", "管理该仓位")}>
+          <span className="lpc-label">{t("Remove liquidity", "移除流动性")}</span>
           <div className="lpc-remove">
-            <PercentPicker value={props.pct} onChange={props.setPct} label="Share of the position to remove" />
-            <button type="button" className="btn btn-sm" disabled={!props.canRemove || tx.busy} onClick={props.onRemove}>Remove {props.pct}%</button>
+            <PercentPicker value={props.pct} onChange={props.setPct} label={t("Share of the position to remove", "要移除的仓位比例")} />
+            <button type="button" className="btn btn-sm" disabled={!props.canRemove || tx.busy} onClick={props.onRemove}>{t(`Remove ${props.pct}%`, `移除 ${props.pct}%`)}</button>
           </div>
           <p className="small muted lpc-note">{props.note}</p>
         </WalletAction>
@@ -225,13 +230,14 @@ function PositionCard(props: {
 
 /** Full-range picture for a DAMM position: how its value splits between the two tokens. */
 function Composition({ pool, v0, v1 }: { pool: MarketPool; v0: number; v1: number }) {
+  const t = useT();
   const total = v0 + v1;
   const p0 = total > 0 ? (v0 / total) * 100 : 50;
   return (
     <div className="lpc-comp">
       <div className="lpc-comp-top">
-        <span>Composition by value</span>
-        <span>Earns at every price</span>
+        <span>{t("Composition by value", "按价值构成")}</span>
+        <span>{t("Earns at every price", "在任何价格都能赚取手续费")}</span>
       </div>
       <div className="lpc-split" role="img" aria-label={`${pool.token0.symbol} ${p0.toFixed(1)}%, ${pool.token1.symbol} ${(100 - p0).toFixed(1)}%`}>
         <i style={{ width: `${p0}%` }} />
@@ -256,6 +262,7 @@ function PercentPicker({ value, onChange, label }: { value: number; onChange: (n
 }
 
 function DammPosition({ pool, pos, onDone }: { pool: MarketPool; pos: Positions["damm"][number]; onDone: () => void }) {
+  const t = useT();
   const { address } = useConnection();
   const tx = useTxRunner();
   const [pct, setPct] = useState(100);
@@ -268,14 +275,14 @@ function DammPosition({ pool, pos, onDone }: { pool: MarketPool; pos: Positions[
 
   async function claim() {
     if (!address) return;
-    if (await tx.run([{ label: "Claim fees", params: { address: pool.address, abi: dammPoolAbi, functionName: "claimFees", args: [address], chainId: curveilChain.id } }])) onDone();
+    if (await tx.run([{ label: t("Claim fees", "领取手续费"), params: { address: pool.address, abi: dammPoolAbi, functionName: "claimFees", args: [address], chainId: curveilChain.id } }])) onDone();
   }
   async function remove() {
     if (!address || !ROUTER || liq === 0n) return;
     const steps: TxStep[] = [];
-    if ((allowance.data ?? 0n) < liq) steps.push({ label: "Approve LP shares for the router", params: { address: pool.address, abi: dammPoolAbi, functionName: "approve", args: [ROUTER, liq], chainId: curveilChain.id } });
+    if ((allowance.data ?? 0n) < liq) steps.push({ label: t("Approve LP shares for the router", "授权路由器使用 LP 份额"), params: { address: pool.address, abi: dammPoolAbi, functionName: "approve", args: [ROUTER, liq], chainId: curveilChain.id } });
     steps.push({
-      label: `Remove ${pct}% of liquidity`,
+      label: t(`Remove ${pct}% of liquidity`, `移除 ${pct}% 的流动性`),
       params: { address: ROUTER, abi: routerAbi, functionName: "removeLiquidityDamm", args: [pool.token0.address, pool.token1.address, liq, withSlippage(out0, SLIPPAGE_BPS), withSlippage(out1, SLIPPAGE_BPS), address, deadlineIn(DEADLINE_MIN)], chainId: curveilChain.id },
     });
     const ok = await tx.run(steps);
@@ -294,8 +301,8 @@ function DammPosition({ pool, pos, onDone }: { pool: MarketPool; pos: Positions[
       rows={[
         [pool.token0.symbol, <span className="mono">{fmtAmount(pos.amount0, pool.token0.decimals)}</span>],
         [pool.token1.symbol, <span className="mono">{fmtAmount(pos.amount1, pool.token1.decimals, 2)}</span>],
-        ["Price range", "Full range"],
-        ["Share of pool", <span className="mono">{fmtNumber(pos.shareOfPool * 100, 4)}%</span>],
+        [t("Price range", "价格区间"), t("Full range", "全区间")],
+        [t("Share of pool", "资金池占比"), <span className="mono">{fmtNumber(pos.shareOfPool * 100, 4)}%</span>],
       ]}
       fees={<>{fmtAmount(pos.pendingFees0, pool.token0.decimals, 6)} {pool.token0.symbol} + {fmtAmount(pos.pendingFees1, pool.token1.decimals, 4)} {pool.token1.symbol}</>}
       canClaim={hasFees}
@@ -304,13 +311,14 @@ function DammPosition({ pool, pos, onDone }: { pool: MarketPool; pos: Positions[
       setPct={setPct}
       canRemove={liq > 0n}
       onRemove={remove}
-      note={`Returns about ${fmtAmount(out0, pool.token0.decimals)} ${pool.token0.symbol} and ${fmtAmount(out1, pool.token1.decimals, 2)} ${pool.token1.symbol}, at most ${SLIPPAGE_BPS / 100}% less if the pool moves. Fees stay claimable.`}
+      note={t(`Returns about ${fmtAmount(out0, pool.token0.decimals)} ${pool.token0.symbol} and ${fmtAmount(out1, pool.token1.decimals, 2)} ${pool.token1.symbol}, at most ${SLIPPAGE_BPS / 100}% less if the pool moves. Fees stay claimable.`, `约返还 ${fmtAmount(out0, pool.token0.decimals)} ${pool.token0.symbol} 和 ${fmtAmount(out1, pool.token1.decimals, 2)} ${pool.token1.symbol}，若资金池变动最多少 ${SLIPPAGE_BPS / 100}%。手续费仍可领取。`)}
       tx={tx}
     />
   );
 }
 
 function DlmmPosition({ pool, pos, onDone }: { pool: MarketPool; pos: Positions["dlmm"][number]; onDone: () => void }) {
+  const t = useT();
   const { address } = useConnection();
   const tx = useTxRunner();
   const [pct, setPct] = useState(100);
@@ -325,7 +333,7 @@ function DlmmPosition({ pool, pos, onDone }: { pool: MarketPool; pos: Positions[
   async function claim() {
     if (!address) return;
     const steps: TxStep[] = chunk(pos.allBins, MAX_BINS).map((ids, i, all) => ({
-      label: all.length > 1 ? `Claim fees, part ${i + 1}` : "Claim fees",
+      label: all.length > 1 ? t(`Claim fees, part ${i + 1}`, `领取手续费，第 ${i + 1} 部分`) : t("Claim fees", "领取手续费"),
       params: { address: pool.address, abi: dlmmPairAbi, functionName: "claimFees", args: [address, ids], chainId: curveilChain.id },
     }));
     if (await tx.run(steps)) onDone();
@@ -336,7 +344,7 @@ function DlmmPosition({ pool, pos, onDone }: { pool: MarketPool; pos: Positions[
       .map((b) => ({ id: b.id, shares: (BigInt(b.shares) * BigInt(pct)) / 100n, x: (BigInt(b.amountX) * BigInt(pct)) / 100n, y: (BigInt(b.amountY) * BigInt(pct)) / 100n }))
       .filter((b) => b.shares > 0n);
     const steps: TxStep[] = chunk(parts, MAX_BINS).map((c, i, all) => ({
-      label: all.length > 1 ? `Remove ${pct}%, part ${i + 1}` : `Remove ${pct}% of liquidity`,
+      label: all.length > 1 ? t(`Remove ${pct}%, part ${i + 1}`, `移除 ${pct}%，第 ${i + 1} 部分`) : t(`Remove ${pct}% of liquidity`, `移除 ${pct}% 的流动性`),
       params: {
         address: pool.address,
         abi: dlmmPairAbi,
@@ -355,18 +363,18 @@ function DlmmPosition({ pool, pos, onDone }: { pool: MarketPool; pos: Positions[
     if (steps.length && (await tx.run(steps))) onDone();
   }
 
-  const value = bars.reduce((t, b) => t + b.x + b.y, 0);
+  const value = bars.reduce((sum, b) => sum + b.x + b.y, 0);
   return (
     <PositionCard
       pool={pool}
       inRange={inRange}
       value={value}
-      visual={<BinChart bins={bars} activeId={pool.activeId} height={88} label={`Your liquidity across ${bins.length} bins`} symbols={[pool.token0.symbol, pool.token1.symbol]} />}
+      visual={<BinChart bins={bars} activeId={pool.activeId} height={88} label={t(`Your liquidity across ${bins.length} bins`, `你在 ${bins.length} 个价格档中的流动性`)} symbols={[pool.token0.symbol, pool.token1.symbol]} />}
       rows={[
         [pool.token0.symbol, <span className="mono">{fmtAmount(pos.amountX, pool.token0.decimals)}</span>],
         [pool.token1.symbol, <span className="mono">{fmtAmount(pos.amountY, pool.token1.decimals, 2)}</span>],
-        ["Price range", <span className="mono">{lo !== undefined && hi !== undefined ? `${fmtPrice(price(lo))} – ${fmtPrice(price(hi))}` : "–"}</span>],
-        ["Bins", <>{bins.length} bins{inRange ? ", active bin inside" : <span className="warn-text">, not earning</span>}</>],
+        [t("Price range", "价格区间"), <span className="mono">{lo !== undefined && hi !== undefined ? `${fmtPrice(price(lo))} – ${fmtPrice(price(hi))}` : "–"}</span>],
+        [t("Bins", "价格档"), t(<>{bins.length} bins{inRange ? ", active bin inside" : <span className="warn-text">, not earning</span>}</>, <>{bins.length} 个价格档{inRange ? "，包含当前价格档" : <span className="warn-text">，未在赚取手续费</span>}</>)],
       ]}
       fees={<>{fmtAmount(pos.pendingFeesX, pool.token0.decimals, 6)} {pool.token0.symbol} + {fmtAmount(pos.pendingFeesY, pool.token1.decimals, 4)} {pool.token1.symbol}</>}
       canClaim={hasFees}
@@ -375,7 +383,7 @@ function DlmmPosition({ pool, pos, onDone }: { pool: MarketPool; pos: Positions[
       setPct={setPct}
       canRemove={bins.length > 0}
       onRemove={remove}
-      note={`Removes ${pct}% of your shares in every bin, straight from the pair. Fees stay claimable.`}
+      note={t(`Removes ${pct}% of your shares in every bin, straight from the pair. Fees stay claimable.`, `直接从交易对中移除你在每个价格档里 ${pct}% 的份额。手续费仍可领取。`)}
       tx={tx}
     />
   );
@@ -384,6 +392,7 @@ function DlmmPosition({ pool, pos, onDone }: { pool: MarketPool; pos: Positions[
 // ------------------------------------------------------------------ add
 
 function AddForm({ pool, vault }: { pool: MarketPool; vault: VaultState | null }) {
+  const t = useT();
   const hasWeth = !vault && Boolean(WETH) && (same(pool.token0.address, WETH) || same(pool.token1.address, WETH));
   const [eth, setEth] = useState(true);
   // Shielded entries need both tokens to be vault assets.
@@ -392,7 +401,7 @@ function AddForm({ pool, vault }: { pool: MarketPool; vault: VaultState | null }
     if (!marketAssets(vault.status, pool)) {
       return (
         <div className="panel shielded-panel">
-          <p style={{ margin: 0 }}>Both tokens of this pool must be vault assets to supply it from the vault. Switch to Public to add from your wallet.</p>
+          <p style={{ margin: 0 }}>{t("Both tokens of this pool must be vault assets to supply it from the vault. Switch to Public to add from your wallet.", "要从金库向该资金池提供流动性，两种代币都必须是金库资产。切换到“公开”即可从钱包添加。")}</p>
         </div>
       );
     }
@@ -401,13 +410,13 @@ function AddForm({ pool, vault }: { pool: MarketPool; vault: VaultState | null }
     <div className="add-layout">
       <div className={`panel stack${vault ? " shielded-panel" : ""}`}>
         <section className="form-step">
-          <div className="form-step-head"><span className="step-n">01</span><h3>Pool</h3></div>
+          <div className="form-step-head"><span className="step-n">01</span><h3>{t("Pool", "资金池")}</h3></div>
           <PositionHead pool={pool} />
         </section>
         {hasWeth && (
           <label className="check-row small">
             <input type="checkbox" checked={eth} onChange={(e) => setEth(e.target.checked)} />
-            <span>Pay the WETH side with ETH. It is wrapped for you first, which adds one wallet confirmation.</span>
+            <span>{t("Pay the WETH side with ETH. It is wrapped for you first, which adds one wallet confirmation.", "用 ETH 支付 WETH 一侧。系统会先帮你包装，因此需要多确认一次钱包。")}</span>
           </label>
         )}
         {pool.kind === "damm" ? <DammAdd key={pool.address} pool={pool} vault={vault} eth={eth && hasWeth} /> : <DlmmAdd key={pool.address} pool={pool} vault={vault} eth={eth && hasWeth} />}
@@ -418,19 +427,20 @@ function AddForm({ pool, vault }: { pool: MarketPool; vault: VaultState | null }
 }
 
 function PoolFacts({ pool }: { pool: MarketPool }) {
+  const t = useT();
   return (
     <div className="panel stack">
       <PositionHead pool={pool} />
       <dl className="rows">
-        <div><dt>Price</dt><dd className="mono">{fmtPrice(pool.price)} {pool.token1.symbol}</dd></div>
-        <div><dt>Fee now</dt><dd className="mono">{(pool.fees.currentBps / 100).toFixed(2)}%</dd></div>
-        <div><dt>Fees to LPs</dt><dd>{100 - pool.fees.protocolShareBps / 100}% of every fee</dd></div>
-        <div><dt>Fees 24h</dt><dd className="mono">{fmtNumber(pool.fees24hQuote, 2)}</dd></div>
+        <div><dt>{t("Price", "价格")}</dt><dd className="mono">{fmtPrice(pool.price)} {pool.token1.symbol}</dd></div>
+        <div><dt>{t("Fee now", "当前费率")}</dt><dd className="mono">{(pool.fees.currentBps / 100).toFixed(2)}%</dd></div>
+        <div><dt>{t("Fees to LPs", "LP 分成")}</dt><dd>{t(`${100 - pool.fees.protocolShareBps / 100}% of every fee`, `每笔手续费的 ${100 - pool.fees.protocolShareBps / 100}%`)}</dd></div>
+        <div><dt>{t("Fees 24h", "24 小时手续费")}</dt><dd className="mono">{fmtNumber(pool.fees24hQuote, 2)}</dd></div>
       </dl>
       <p className="small muted" style={{ margin: 0 }}>
         {pool.kind === "damm"
-          ? "DAMM liquidity covers every price, so it always earns, but less per unit than concentrated liquidity. You can lose value against holding when the price moves."
-          : "DLMM liquidity only earns while the price is inside your bins. Outside them it sits entirely in one token. You can lose value against holding when the price moves."}
+          ? t("DAMM liquidity covers every price, so it always earns, but less per unit than concentrated liquidity. You can lose value against holding when the price moves.", "DAMM 流动性覆盖所有价格，所以始终在赚取手续费，但单位收益低于集中流动性。价格变动时，相比直接持有可能会有价值损失。")
+          : t("DLMM liquidity only earns while the price is inside your bins. Outside them it sits entirely in one token. You can lose value against holding when the price moves.", "DLMM 流动性只有在价格处于你的价格档内时才赚取手续费，超出后会全部变成一种代币。价格变动时，相比直接持有可能会有价值损失。")}
       </p>
     </div>
   );
@@ -464,7 +474,7 @@ function wraps(pool: MarketPool, amounts: [bigint, bigint], eth: boolean): TxSte
   const amt = i === 0 ? amounts[0] : i === 1 ? amounts[1] : 0n;
   if (amt === 0n) return [];
   const params = { address: WETH, abi: wethAbi, functionName: "deposit", value: amt, chainId: curveilChain.id } as unknown as TxStep["params"];
-  return [{ label: `Wrap ${fmtAmount(amt, 18)} ETH`, params }];
+  return [{ label: tNow(`Wrap ${fmtAmount(amt, 18)} ETH`, `包装 ${fmtAmount(amt, 18)} ETH`), params }];
 }
 
 function approvals(pool: MarketPool, amounts: [bigint, bigint], allowances: [bigint | undefined, bigint | undefined]): TxStep[] {
@@ -472,13 +482,14 @@ function approvals(pool: MarketPool, amounts: [bigint, bigint], allowances: [big
   [pool.token0, pool.token1].forEach((t, i) => {
     const amt = amounts[i]!;
     if (amt > 0n && (allowances[i] ?? 0n) < amt) {
-      steps.push({ label: `Approve ${fmtAmount(amt, t.decimals)} ${t.symbol} for the router`, params: { address: t.address, abi: erc20Abi, functionName: "approve", args: [ROUTER!, amt], chainId: curveilChain.id } });
+      steps.push({ label: tNow(`Approve ${fmtAmount(amt, t.decimals)} ${t.symbol} for the router`, `授权路由器使用 ${fmtAmount(amt, t.decimals)} ${t.symbol}`), params: { address: t.address, abi: erc20Abi, functionName: "approve", args: [ROUTER!, amt], chainId: curveilChain.id } });
     }
   });
   return steps;
 }
 
 function DammAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | null; eth: boolean }) {
+  const t = useT();
   const { address } = useConnection();
   const qc = useQueryClient();
   const tx = useTxRunner();
@@ -519,7 +530,7 @@ function DammAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | n
     if (!address || !ROUTER) return;
     const steps = [...wraps(pool, [a0, a1], eth), ...approvals(pool, [a0, a1], [b0.allowance, b1.allowance])];
     steps.push({
-      label: "Add liquidity",
+      label: t("Add liquidity", "添加流动性"),
       params: {
         address: ROUTER,
         abi: routerAbi,
@@ -539,24 +550,25 @@ function DammAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | n
   }
 
   const label = a0 === 0n || a1 === 0n ? "Enter both amounts" : short0 ? `Not enough ${sym0}` : short1 ? `Not enough ${sym1}` : "Add liquidity";
-  const balLabel = vault ? "Vault" : undefined;
+  const balLabel = vault ? t("Vault", "金库") : undefined;
+  const say = (l: string) => l === "Enter both amounts" ? t(l, "请输入两种代币的数量") : l === "Add liquidity" ? t(l, "添加流动性") : l === "Enter an amount" ? t(l, "请输入金额") : l.startsWith("Not enough ") ? t(l, `${l.slice(11)} 余额不足`) : l;
   return (
     <>
-      {empty && vault && <p className="notice warn" style={{ margin: 0 }}>This pool is empty. Seed it from a public wallet first; a shielded deposit cannot set the starting price.</p>}
-      {empty && !vault && <p className="notice warn" style={{ margin: 0 }}>This pool is empty. Your deposit sets its starting price, so enter amounts in the ratio of the market price.</p>}
+      {empty && vault && <p className="notice warn" style={{ margin: 0 }}>{t("This pool is empty. Seed it from a public wallet first; a shielded deposit cannot set the starting price.", "该资金池是空的。请先用公开钱包注入初始流动性，隐私存入无法设定起始价格。")}</p>}
+      {empty && !vault && <p className="notice warn" style={{ margin: 0 }}>{t("This pool is empty. Your deposit sets its starting price, so enter amounts in the ratio of the market price.", "该资金池是空的。你的存入将设定起始价格，请按市场价格的比例输入数量。")}</p>}
       <section className="form-step">
-      <div className="form-step-head"><span className="step-n">02</span><h3>Deposit both tokens</h3><p>{empty ? "Enter both amounts in the ratio of the market price." : "Type either amount and the other follows the pool's current ratio."}</p></div>
-      <AmountField label={sym0} error={short0 ? `More than your ${vault ? "vault" : "wallet"} balance` : null} decimals={pool.token0.decimals} value={v0} onChange={on0} symbol={sym0} balanceLabel={balLabel} balance={b0.balance !== undefined ? fmtAmount(b0.balance, pool.token0.decimals) : undefined} onMax={() => b0.balance !== undefined && on0(formatUnits(b0.balance, pool.token0.decimals))}>
+      <div className="form-step-head"><span className="step-n">02</span><h3>{t("Deposit both tokens", "存入两种代币")}</h3><p>{empty ? t("Enter both amounts in the ratio of the market price.", "请按市场价格的比例输入两种数量。") : t("Type either amount and the other follows the pool's current ratio.", "输入任意一种数量，另一种会按资金池当前比例自动计算。")}</p></div>
+      <AmountField label={sym0} error={short0 ? t(`More than your ${vault ? "vault" : "wallet"} balance`, `超过你的${vault ? "金库" : "钱包"}余额`) : null} decimals={pool.token0.decimals} value={v0} onChange={on0} symbol={sym0} balanceLabel={balLabel} balance={b0.balance !== undefined ? fmtAmount(b0.balance, pool.token0.decimals) : undefined} onMax={() => b0.balance !== undefined && on0(formatUnits(b0.balance, pool.token0.decimals))}>
         <span className="token-tag"><TokenDisc token={{ address: sym0 === "ETH" ? NATIVE : pool.token0.address, symbol: sym0 }} size={20} />{sym0}</span>
       </AmountField>
-      <AmountField label={sym1} error={short1 ? `More than your ${vault ? "vault" : "wallet"} balance` : null} decimals={pool.token1.decimals} value={v1} onChange={on1} symbol={sym1} balanceLabel={balLabel} balance={b1.balance !== undefined ? fmtAmount(b1.balance, pool.token1.decimals) : undefined} onMax={() => b1.balance !== undefined && on1(formatUnits(b1.balance, pool.token1.decimals))}>
+      <AmountField label={sym1} error={short1 ? t(`More than your ${vault ? "vault" : "wallet"} balance`, `超过你的${vault ? "金库" : "钱包"}余额`) : null} decimals={pool.token1.decimals} value={v1} onChange={on1} symbol={sym1} balanceLabel={balLabel} balance={b1.balance !== undefined ? fmtAmount(b1.balance, pool.token1.decimals) : undefined} onMax={() => b1.balance !== undefined && on1(formatUnits(b1.balance, pool.token1.decimals))}>
         <span className="token-tag"><TokenDisc token={{ address: sym1 === "ETH" ? NATIVE : pool.token1.address, symbol: sym1 }} size={20} />{sym1}</span>
       </AmountField>
       </section>
       <dl className="rows summary">
-        <div><dt>Pool ratio</dt><dd className="mono">{empty ? "Set by your deposit" : `1 ${sym0} = ${fmtPrice(Number(formatUnits(r1, pool.token1.decimals)) / Number(formatUnits(r0, pool.token0.decimals)))} ${sym1}`}</dd></div>
-        <div><dt>Your share after</dt><dd className="mono">{share === null ? "–" : `${share.toFixed(4)}%`}</dd></div>
-        <div><dt>Minimums</dt><dd className="small">Each amount may fall by at most {SLIPPAGE_BPS / 100}% if the ratio moves</dd></div>
+        <div><dt>{t("Pool ratio", "资金池比例")}</dt><dd className="mono">{empty ? t("Set by your deposit", "由你的存入设定") : `1 ${sym0} = ${fmtPrice(Number(formatUnits(r1, pool.token1.decimals)) / Number(formatUnits(r0, pool.token0.decimals)))} ${sym1}`}</dd></div>
+        <div><dt>{t("Your share after", "存入后你的占比")}</dt><dd className="mono">{share === null ? "–" : `${share.toFixed(4)}%`}</dd></div>
+        <div><dt>{t("Minimums", "最低数量")}</dt><dd className="small">{t(`Each amount may fall by at most ${SLIPPAGE_BPS / 100}% if the ratio moves`, `若比例变动，每种数量最多减少 ${SLIPPAGE_BPS / 100}%`)}</dd></div>
       </dl>
       {vault ? (
         <VaultGate v={vault}>
@@ -568,7 +580,7 @@ function DammAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | n
               params={(positionId) =>
                 encodeDammEntry({ positionId, market: pool.address, min0: withSlippage(a0, SLIPPAGE_BPS), min1: withSlippage(a1, SLIPPAGE_BPS), minLiquidity: minted !== null ? withSlippage(minted, SLIPPAGE_BPS) : 1n })
               }
-              blocked={empty ? "Pool is empty" : a0 === 0n || a1 === 0n ? "Enter both amounts" : null}
+              blocked={empty ? t("Pool is empty", "资金池为空") : a0 === 0n || a1 === 0n ? t("Enter both amounts", "请输入两种代币的数量") : null}
               onDone={() => {
                 setV0("");
                 setV1("");
@@ -579,8 +591,8 @@ function DammAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | n
         </VaultGate>
       ) : (
         <>
-          <WalletAction verb="add liquidity">
-            <button className="btn btn-primary btn-block" disabled={label !== "Add liquidity" || tx.busy} onClick={add}>{tx.busy ? "Check your wallet…" : label}</button>
+          <WalletAction verb={t("add liquidity", "添加流动性")}>
+            <button className="btn btn-primary btn-block" disabled={label !== "Add liquidity" || tx.busy} onClick={add}>{tx.busy ? t("Check your wallet…", "请在钱包中确认…") : say(label)}</button>
           </WalletAction>
           <TxStatus phase={tx.phase} />
         </>
@@ -590,6 +602,7 @@ function DammAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | n
 }
 
 function DlmmAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | null; eth: boolean }) {
+  const t = useT();
   const { address } = useConnection();
   const qc = useQueryClient();
   const tx = useTxRunner();
@@ -619,7 +632,7 @@ function DlmmAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | n
     if (!address || !ROUTER) return;
     const steps = [...wraps(pool, [ax, ay], eth), ...approvals(pool, [ax, ay], [b0.allowance, b1.allowance])];
     steps.push({
-      label: "Add liquidity",
+      label: t("Add liquidity", "添加流动性"),
       params: {
         address: ROUTER,
         abi: routerAbi,
@@ -637,64 +650,65 @@ function DlmmAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | n
     }
   }
 
+  const say = (l: string) => l === "Enter both amounts" ? t(l, "请输入两种代币的数量") : l === "Add liquidity" ? t(l, "添加流动性") : l === "Enter an amount" ? t(l, "请输入金额") : l.startsWith("Not enough ") ? t(l, `${l.slice(11)} 余额不足`) : l;
   const label = ax === 0n && ay === 0n ? "Enter an amount" : short0 ? `Not enough ${sym0}` : short1 ? `Not enough ${sym1}` : "Add liquidity";
   return (
     <>
       <section className="form-step">
-      <div className="form-step-head"><span className="step-n">02</span><h3>Shape your range</h3><p>Your liquidity earns fees only while the price is inside the bins you pick.</p></div>
-      <div className="choice-grid two" role="group" aria-label="Allocation strategy">
+      <div className="form-step-head"><span className="step-n">02</span><h3>{t("Shape your range", "设定价格区间")}</h3><p>{t("Your liquidity earns fees only while the price is inside the bins you pick.", "只有当价格位于你选择的价格档内时，你的流动性才会赚取手续费。")}</p></div>
+      <div className="choice-grid two" role="group" aria-label={t("Allocation strategy", "分配策略")}>
         {STRATEGIES.map((s) => (
           <button key={s.id} type="button" className="choice" aria-pressed={strategy === s.id} onClick={() => setStrategy(s.id)}>
-            <strong>{s.label}</strong>
-            <span>{s.text}</span>
+            <strong>{t(s.label, s.labelZh)}</strong>
+            <span>{t(s.text, s.textZh)}</span>
           </button>
         ))}
       </div>
       {strategy === "custom" ? (
         <div className="grid-2" style={{ gap: 12 }}>
           <label className="field">
-            <span className="field-top"><span className="field-label">Bins below the price</span><span className="mono small">{-lower}</span></span>
+            <span className="field-top"><span className="field-label">{t("Bins below the price", "价格下方的价格档")}</span><span className="mono small">{-lower}</span></span>
             <input type="range" min={0} max={50} value={-lower} onChange={(e) => setLower(-Number(e.target.value))} />
           </label>
           <label className="field">
-            <span className="field-top"><span className="field-label">Bins above the price</span><span className="mono small">{upper}</span></span>
+            <span className="field-top"><span className="field-label">{t("Bins above the price", "价格上方的价格档")}</span><span className="mono small">{upper}</span></span>
             <input type="range" min={0} max={50} value={upper} onChange={(e) => setUpper(Number(e.target.value))} />
           </label>
         </div>
       ) : (
         <label className="field">
-          <span className="field-top"><span className="field-label">Bins on each side of the price</span><span className="mono small">{radius} <span className="muted">· {radius * 2 + 1} bins in all</span></span></span>
+          <span className="field-top"><span className="field-label">{t("Bins on each side of the price", "价格两侧各有的价格档")}</span><span className="mono small">{radius} <span className="muted">{t(`· ${radius * 2 + 1} bins in all`, `· 共 ${radius * 2 + 1} 个价格档`)}</span></span></span>
           <input type="range" min={1} max={50} value={radius} onChange={(e) => setRadius(Number(e.target.value))} />
         </label>
       )}
       <dl className="kv range-kv">
-        <div><dt>Min price</dt><dd className="small">{fmtPrice(price(active + lo))} <span className="muted">{sym1}</span></dd></div>
-        <div><dt>Max price</dt><dd className="small">{fmtPrice(price(active + hi))} <span className="muted">{sym1}</span></dd></div>
+        <div><dt>{t("Min price", "最低价格")}</dt><dd className="small">{fmtPrice(price(active + lo))} <span className="muted">{sym1}</span></dd></div>
+        <div><dt>{t("Max price", "最高价格")}</dt><dd className="small">{fmtPrice(price(active + hi))} <span className="muted">{sym1}</span></dd></div>
       </dl>
       </section>
       <section className="form-step">
-      <div className="form-step-head"><span className="step-n">03</span><h3>Deposit</h3><p>{needsX && needsY ? `Bins above the price hold ${sym0}, bins below hold ${sym1}. Fill one side or both.` : needsX ? `This range is above the price, so it only takes ${sym0}.` : `This range is below the price, so it only takes ${sym1}.`}</p></div>
+      <div className="form-step-head"><span className="step-n">03</span><h3>{t("Deposit", "存入")}</h3><p>{needsX && needsY ? t(`Bins above the price hold ${sym0}, bins below hold ${sym1}. Fill one side or both.`, `价格上方的价格档存放 ${sym0}，下方存放 ${sym1}。可以只填一侧，也可以两侧都填。`) : needsX ? t(`This range is above the price, so it only takes ${sym0}.`, `该区间在当前价格上方，因此只接受 ${sym0}。`) : t(`This range is below the price, so it only takes ${sym1}.`, `该区间在当前价格下方，因此只接受 ${sym1}。`)}</p></div>
       {needsX && (
-        <AmountField label={`${sym0} for bins above the price`} error={short0 ? `More than your ${vault ? "vault" : "wallet"} balance` : null} decimals={pool.token0.decimals} value={vx} onChange={setVx} symbol={sym0} balanceLabel={vault ? "Vault" : undefined} balance={b0.balance !== undefined ? fmtAmount(b0.balance, pool.token0.decimals) : undefined} onMax={() => b0.balance !== undefined && setVx(formatUnits(b0.balance, pool.token0.decimals))}>
+        <AmountField label={t(`${sym0} for bins above the price`, `存入上方价格档的 ${sym0}`)} error={short0 ? t(`More than your ${vault ? "vault" : "wallet"} balance`, `超过你的${vault ? "金库" : "钱包"}余额`) : null} decimals={pool.token0.decimals} value={vx} onChange={setVx} symbol={sym0} balanceLabel={vault ? t("Vault", "金库") : undefined} balance={b0.balance !== undefined ? fmtAmount(b0.balance, pool.token0.decimals) : undefined} onMax={() => b0.balance !== undefined && setVx(formatUnits(b0.balance, pool.token0.decimals))}>
           <span className="token-tag"><TokenDisc token={{ address: sym0 === "ETH" ? NATIVE : pool.token0.address, symbol: sym0 }} size={20} />{sym0}</span>
         </AmountField>
       )}
       {needsY && (
-        <AmountField label={`${sym1} for bins below the price`} error={short1 ? `More than your ${vault ? "vault" : "wallet"} balance` : null} decimals={pool.token1.decimals} value={vy} onChange={setVy} symbol={sym1} balanceLabel={vault ? "Vault" : undefined} balance={b1.balance !== undefined ? fmtAmount(b1.balance, pool.token1.decimals) : undefined} onMax={() => b1.balance !== undefined && setVy(formatUnits(b1.balance, pool.token1.decimals))}>
+        <AmountField label={t(`${sym1} for bins below the price`, `存入下方价格档的 ${sym1}`)} error={short1 ? t(`More than your ${vault ? "vault" : "wallet"} balance`, `超过你的${vault ? "金库" : "钱包"}余额`) : null} decimals={pool.token1.decimals} value={vy} onChange={setVy} symbol={sym1} balanceLabel={vault ? t("Vault", "金库") : undefined} balance={b1.balance !== undefined ? fmtAmount(b1.balance, pool.token1.decimals) : undefined} onMax={() => b1.balance !== undefined && setVy(formatUnits(b1.balance, pool.token1.decimals))}>
           <span className="token-tag"><TokenDisc token={{ address: sym1 === "ETH" ? NATIVE : pool.token1.address, symbol: sym1 }} size={20} />{sym1}</span>
         </AmountField>
       )}
       <div className="field">
-        <span className="field-label">Preview of what each bin receives</span>
+        <span className="field-label">{t("Preview of what each bin receives", "各价格档分配预览")}</span>
         {(needsX ? ax : 0n) === 0n && (needsY ? ay : 0n) === 0n ? (
-          <div className="preview-empty small muted">Enter an amount to see how it spreads across the {bars.length} bins.</div>
+          <div className="preview-empty small muted">{t(`Enter an amount to see how it spreads across the ${bars.length} bins.`, `输入金额即可查看它如何分布到 ${bars.length} 个价格档。`)}</div>
         ) : (
-          <BinChart bins={bars} activeId={active} height={120} label={`Deposit preview across ${bars.length} bins`} formatPrice={(id) => fmtPrice(price(id))} symbols={[sym0, sym1]} />
+          <BinChart bins={bars} activeId={active} height={120} label={t(`Deposit preview across ${bars.length} bins`, `${bars.length} 个价格档的存入预览`)} formatPrice={(id) => fmtPrice(price(id))} symbols={[sym0, sym1]} />
         )}
       </div>
       </section>
       <p className="small muted" style={{ margin: 0 }}>
-        The active bin ({active.toLocaleString("en-US")}) takes only what matches its current mix of {sym0} and {sym1}; anything left over is returned to {vault ? "your vault as notes" : "your wallet"} in the same transaction. If the price moves more than 3 bins before your deposit lands, it reverts.
+        {t(`The active bin (${active.toLocaleString("en-US")}) takes only what matches its current mix of ${sym0} and ${sym1}; anything left over is returned to ${vault ? "your vault as notes" : "your wallet"} in the same transaction. If the price moves more than 3 bins before your deposit lands, it reverts.`, `当前价格档（${active.toLocaleString("en-US")}）只接收符合其当前 ${sym0} 与 ${sym1} 比例的部分，多余的会在同一笔交易中退回${vault ? "你的金库（以票据形式）" : "你的钱包"}。如果在存入上链前价格移动超过 3 个价格档，交易会回滚。`)}
       </p>
       {vault ? (
         <VaultGate v={vault}>
@@ -714,7 +728,7 @@ function DlmmAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | n
                   distributionY: dist.distributionY,
                 })
               }
-              blocked={(needsX ? ax : 0n) === 0n && (needsY ? ay : 0n) === 0n ? "Enter an amount" : null}
+              blocked={(needsX ? ax : 0n) === 0n && (needsY ? ay : 0n) === 0n ? t("Enter an amount", "请输入金额") : null}
               onDone={() => {
                 setVx("");
                 setVy("");
@@ -724,8 +738,8 @@ function DlmmAdd({ pool, vault, eth }: { pool: MarketPool; vault: VaultState | n
         </VaultGate>
       ) : (
         <>
-          <WalletAction verb="add liquidity">
-            <button className="btn btn-primary btn-block" disabled={label !== "Add liquidity" || tx.busy} onClick={add}>{tx.busy ? "Check your wallet…" : label}</button>
+          <WalletAction verb={t("add liquidity", "添加流动性")}>
+            <button className="btn btn-primary btn-block" disabled={label !== "Add liquidity" || tx.busy} onClick={add}>{tx.busy ? t("Check your wallet…", "请在钱包中确认…") : say(label)}</button>
           </WalletAction>
           <TxStatus phase={tx.phase} />
         </>

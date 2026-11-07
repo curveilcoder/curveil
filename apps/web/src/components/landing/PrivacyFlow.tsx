@@ -6,6 +6,7 @@ import { useCycle, useNarrow } from "./play";
 import { DitherCanvas } from "../Dither";
 import { SHIELD_SWEEP } from "./Fields";
 import { usePrefersReducedMotion } from "../../lib/motion";
+import { useT } from "../../lib/i18n";
 
 const STEPS = [
   {
@@ -31,6 +32,27 @@ const STEPS = [
   },
 ] as const;
 
+const STEPS_ZH = [
+  {
+    name: "存入隐私",
+    text: "存入金库后，资金会变成一张加密票据，只有你的 Curveil 账户可以花费。",
+    sees: ["你的存款地址", "资产、金额和时间"],
+    hidden: ["这张票据之后支付的每一笔操作"],
+  },
+  {
+    name: "交易",
+    text: "兑换、添加流动性或转账。由你设备上生成的零知识证明来授权。",
+    sees: ["资金池执行：路径、金额、储备", "广播时间"],
+    hidden: ["由哪个钱包出资", "输出归谁所有", "私密转账的金额和收款人"],
+  },
+  {
+    name: "提取",
+    text: "把资金提到任意公开地址。你的恢复短语可以在任何地方恢复账户。",
+    sees: ["收款人、资产、金额和时间"],
+    hidden: ["赎回的是哪一笔存款"],
+  },
+] as const;
+
 // Diagram geometry (viewBox 640 × 270). The Vault sits in the middle as a dithered disc.
 const VX = 320, VY = 140, VR = 60;
 const EDGE = {
@@ -41,17 +63,20 @@ const EDGE = {
 };
 
 export function MoneyFlow() {
+  const t = useT();
+  type Step = { id: string; name: string; text: string; sees: readonly string[]; hidden: readonly string[] };
+  const steps = t<readonly Step[]>(STEPS, STEPS.map((st, n) => ({ ...st, ...STEPS_ZH[n]! })));
   const ref = useRef<HTMLDivElement>(null);
   const [i, pick, auto] = useCycle(ref, STEPS.length, 4200);
   const reduced = usePrefersReducedMotion();
   const narrow = useNarrow(820);
-  const s = STEPS[i]!;
+  const s = steps[i]!;
   const on = (id: string) => (s.id === id ? "on" : "");
-  const note = s.id === "transact" ? "Proof made on your device" : s.id === "shield" ? "Note created for your account" : "Note spent, value released";
+  const note = s.id === "transact" ? t("Proof made on your device", "证明在你的设备上生成") : s.id === "shield" ? t("Note created for your account", "已为你的账户创建票据") : t("Note spent, value released", "票据已花费，资金已释放");
   return (
     <div ref={ref} className="vault-flow">
       <div className="vf-stage">
-          {narrow ? <MiniFlow step={s.id} /> : (
+          {narrow ? <MiniFlow step={s.id} t={t} /> : (
           <div className="vf-diagram">
           <svg viewBox="0 0 640 270" className="flow-svg" role="img" aria-label={`${s.name}: ${s.text}`}>
             <defs>
@@ -64,27 +89,27 @@ export function MoneyFlow() {
               <path d={`M 76 112 C 120 30, 420 24, 560 50`} fill="none" strokeDasharray="3 5" />
               <circle cx={VX} cy={38} r={9} />
               <path d={`M ${VX - 4} 34 L ${VX + 4} 42 M ${VX + 4} 34 L ${VX - 4} 42`} />
-              <text x={VX} y={20} textAnchor="middle">no public link to your wallet</text>
+              <text x={VX} y={20} textAnchor="middle">{t("no public link to your wallet", "与你的钱包没有公开关联")}</text>
             </g>
-            <Node x={0} y={112} title="Your wallet" sub="Public address" active={s.id === "shield"} />
+            <Node x={0} y={112} title={t("Your wallet", "你的钱包")} sub={t("Public address", "公开地址")} active={s.id === "shield"} />
             <g className={`flow-vault ${s.id}`}>
               <circle className="vault-halo" cx={VX} cy={VY} r={VR + 22} />
-              <text x={VX} y={VY + 104} textAnchor="middle" className="t1">Vault</text>
+              <text x={VX} y={VY + 104} textAnchor="middle" className="t1">{t("Vault", "金库")}</text>
               <text x={VX} y={VY + 118} textAnchor="middle" className="t3">{note}</text>
             </g>
-            <Node x={482} y={44} title="Pools" sub="Public execution" active={s.id === "transact"} />
-            <Node x={482} y={192} title="Any address" sub="You choose it" active={s.id === "withdraw"} />
-            <Edge d={EDGE.shield} on={on("shield")} label="deposit" lx={206} ly={130} reduced={reduced} />
-            <Edge d={EDGE.transactOut} on={on("transact")} label="proof" lx={430} ly={70} reduced={reduced} />
+            <Node x={482} y={44} title={t("Pools", "资金池")} sub={t("Public execution", "公开执行")} active={s.id === "transact"} />
+            <Node x={482} y={192} title={t("Any address", "任意地址")} sub={t("You choose it", "由你选择")} active={s.id === "withdraw"} />
+            <Edge d={EDGE.shield} on={on("shield")} label={t("deposit", "存入")} lx={206} ly={130} reduced={reduced} />
+            <Edge d={EDGE.transactOut} on={on("transact")} label={t("proof", "证明")} lx={430} ly={70} reduced={reduced} />
             <Edge d={EDGE.transactBack} on={on("transact")} reduced={reduced} />
-            <Edge d={EDGE.withdraw} on={on("withdraw")} label="withdraw" lx={418} ly={236} reduced={reduced} />
+            <Edge d={EDGE.withdraw} on={on("withdraw")} label={t("withdraw", "提取")} lx={418} ly={236} reduced={reduced} />
             </svg>
           <div className="vf-shield" aria-hidden="true"><DitherCanvas make={SHIELD_SWEEP} aspect={1.2} cell={3} animate fps={20} /></div>
           </div>
           )}
       </div>
       <ol className="vf-steps">
-        {STEPS.map((st, n) => (
+        {steps.map((st, n) => (
           <li key={st.id} className={n === i ? "on" : ""}>
             <button type="button" onClick={() => pick(n)} aria-pressed={n === i}>
               <span className="vf-bar" aria-hidden="true">{n === i && <i key={`t${i}`} className={auto ? "run" : "full"} />}</span>
@@ -93,11 +118,11 @@ export function MoneyFlow() {
             </button>
             <div className="vf-lists">
               <div>
-                <p className="flow-h">Public sees</p>
+                <p className="flow-h">{t("Public sees", "公开可见")}</p>
                 <ul className="tick-list">{st.sees.map((t) => <li key={t} className="see">{t}</li>)}</ul>
               </div>
               <div>
-                <p className="flow-h shielded-ink">Stays private</p>
+                <p className="flow-h shielded-ink">{t("Stays private", "保持私密")}</p>
                 <ul className="tick-list">{st.hidden.map((t) => <li key={t} className="hide">{t}</li>)}</ul>
               </div>
             </div>
@@ -138,15 +163,16 @@ function Edge({ d, on, label, lx, ly, reduced }: { d: string; on: string; label?
 }
 
 /** The same flow as a short vertical list, for phones. */
-function MiniFlow({ step }: { step: string }) {
-  const [from, via, to] = step === "shield" ? ["Your wallet", "Deposit", "Curveil Vault"] : step === "transact" ? ["Curveil Vault", "Proof", "Pools"] : ["Curveil Vault", "Withdraw", "Any address"];
+function MiniFlow({ step, t }: { step: string; t: ReturnType<typeof useT> }) {
+  const VAULT = t("Curveil Vault", "Curveil 金库");
+  const [from, via, to] = step === "shield" ? [t("Your wallet", "你的钱包"), t("Deposit", "存入"), VAULT] : step === "transact" ? [VAULT, t("Proof", "证明"), t("Pools", "资金池")] : [VAULT, t("Withdraw", "提取"), t("Any address", "任意地址")];
   return (
     <div className="flow-mini" aria-hidden="true">
       <div className="vf-shield-mini"><DitherCanvas make={SHIELD_SWEEP} aspect={1.2} cell={3} animate fps={20} /></div>
-      <span className={`fm-node ${from === "Curveil Vault" ? "vault" : ""}`}>{from}</span>
+      <span className={`fm-node ${from === VAULT ? "vault" : ""}`}>{from}</span>
       <span className="fm-edge mono">{via} ↓</span>
-      <span className={`fm-node on ${to === "Curveil Vault" ? "vault" : ""}`}>{to}</span>
-      {step !== "shield" && <span className="fm-broken mono">✕ No public link to your wallet</span>}
+      <span className={`fm-node on ${to === VAULT ? "vault" : ""}`}>{to}</span>
+      {step !== "shield" && <span className="fm-broken mono">✕ {t("No public link to your wallet", "与你的钱包没有公开关联")}</span>}
     </div>
   );
 }

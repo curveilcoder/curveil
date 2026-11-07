@@ -5,11 +5,11 @@
  */
 export type Strategy = "balanced" | "concentrated" | "edge" | "custom";
 
-export const STRATEGIES: { id: Strategy; label: string; text: string }[] = [
-  { id: "balanced", label: "Balanced", text: "Even distribution across the selected bins." },
-  { id: "concentrated", label: "Concentrated", text: "More near the active price, less toward the edges." },
-  { id: "edge", label: "Edge-weighted", text: "More toward the range boundaries." },
-  { id: "custom", label: "Custom", text: "Set the lower and upper bounds separately, evenly weighted." },
+export const STRATEGIES: { id: Strategy; label: string; text: string; labelZh: string; textZh: string }[] = [
+  { id: "balanced", label: "Balanced", text: "Even distribution across the selected bins.", labelZh: "均衡", textZh: "在所选价格档内平均分布。" },
+  { id: "concentrated", label: "Concentrated", text: "More near the active price, less toward the edges.", labelZh: "集中", textZh: "靠近当前价格的价格档多一些，边缘少一些。" },
+  { id: "edge", label: "Edge-weighted", text: "More toward the range boundaries.", labelZh: "边缘加权", textZh: "靠近区间边界的部分多一些。" },
+  { id: "custom", label: "Custom", text: "Set the lower and upper bounds separately, evenly weighted.", labelZh: "自定义", textZh: "分别设置上下边界，平均分配。" },
 ];
 
 const ONE = 10n ** 18n;

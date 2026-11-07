@@ -9,6 +9,7 @@ import { fmtAmount } from "../lib/format";
 import { feeFor, pickFeeToken } from "../lib/vault/actions";
 import { adapterAddress, prepareExecution } from "../lib/vault/execute";
 import { balances, type VaultStatus } from "../lib/vault/store";
+import { useT } from "../lib/i18n";
 
 type Tok = { address: Address; symbol: string; decimals: number };
 const same = (a: string, b: string) => getAddress(a) === getAddress(b);
@@ -35,6 +36,7 @@ export function ShieldedSwapAction({
   blocked: string | null;
   onDone: () => void;
 }) {
+  const t = useT();
   const b = useBroadcaster();
   const act = useVaultAction();
   const adapter = adapterAddress(status, "ShieldedSwapAdapter");
@@ -51,15 +53,15 @@ export function ShieldedSwapAction({
   const fee = mode === "broadcaster" ? (feeFor(b.info, "execute", feeToken) ?? 0n) : 0n;
   const feeOnInput = mode === "broadcaster" && feeToken !== null && same(feeToken, tokIn.address);
   const problem = !adapter || adapter.status !== "active"
-    ? "Shielded swaps are closed on this network right now."
+    ? t("Shielded swaps are closed on this network right now.", "该网络目前已关闭隐私兑换。")
     : !assetIn
-      ? `${tokIn.symbol} is not held in the vault.`
+      ? t(`${tokIn.symbol} is not held in the vault.`, `金库中没有持有 ${tokIn.symbol}。`)
       : !assetOut
-        ? `${tokOut.symbol} cannot be held in the vault.`
+        ? t(`${tokOut.symbol} cannot be held in the vault.`, `${tokOut.symbol} 不能存放在金库中。`)
         : !assetOut.shieldingEnabled
-          ? `Shielding of ${tokOut.symbol} is switched off, so a swap cannot create ${tokOut.symbol} notes.`
+          ? t(`Shielding of ${tokOut.symbol} is switched off, so a swap cannot create ${tokOut.symbol} notes.`, `${tokOut.symbol} 的存入隐私已关闭，因此兑换无法生成 ${tokOut.symbol} 票据。`)
           : mode === "broadcaster" && !feeToken
-              ? "The broadcaster cannot take its fee from this swap. Submit from your wallet."
+              ? t("The broadcaster cannot take its fee from this swap. Submit from your wallet.", "广播者无法从这笔兑换中扣除手续费，请用钱包提交。")
               : null;
 
   // The form already flags an amount above the vault balance; the button says it too.
@@ -71,7 +73,7 @@ export function ShieldedSwapAction({
       .run({
         status,
         action: "execute",
-        label: `Shielded swap of ${fmtAmount(amount, tokIn.decimals)} ${tokIn.symbol} to ${tokOut.symbol}`,
+        label: t(`Shielded swap of ${fmtAmount(amount, tokIn.decimals)} ${tokIn.symbol} to ${tokOut.symbol}`, `隐私兑换 ${fmtAmount(amount, tokIn.decimals)} ${tokIn.symbol} 为 ${tokOut.symbol}`),
         mode,
         feeToken,
         prove: async (f, fr, onStage) => {
@@ -95,12 +97,12 @@ export function ShieldedSwapAction({
     <div className="stack" style={{ gap: 14 }}>
       <ModePicker mode={mode} onMode={setMode} b={b} action="execute" feeToken={feeTok} />
       <Exposure
-        pub={["That a shielded swap happened, and when", "The route, the amount in and the amount out (the pools' swap events show them)", ...senderExposure(mode)]}
-        priv={["Which vault account paid and received", "Which of your notes were spent", "Your remaining shielded balances"]}
+        pub={[...t(["That a shielded swap happened, and when", "The route, the amount in and the amount out (the pools' swap events show them)"], ["发生过一笔隐私兑换，以及时间", "路由、输入数量和输出数量（资金池的兑换事件会显示）"]), ...senderExposure(mode)]}
+        priv={t(["Which vault account paid and received", "Which of your notes were spent", "Your remaining shielded balances"], ["哪个金库账户付款和收款", "花费了你的哪些票据", "你剩余的隐私余额"])}
       />
       {problem && <p className="notice warn small" style={{ margin: 0 }}>{problem}</p>}
       <VaultSubmit mode={mode} act={act} disabled={Boolean(blocked) || Boolean(problem) || short || !hops || minOut === null} onClick={go}>
-        {blocked ?? (short ? `Not enough ${tokIn.symbol} in your vault${feeOnInput && amount <= spendable ? " for the fee" : ""}` : "Prove and swap")}
+        {blocked ?? (short ? t(`Not enough ${tokIn.symbol} in your vault${feeOnInput && amount <= spendable ? " for the fee" : ""}`, `金库中的 ${tokIn.symbol} 不足${feeOnInput && amount <= spendable ? "以支付手续费" : ""}`) : t("Prove and swap", "生成证明并兑换"))}
       </VaultSubmit>
     </div>
   );

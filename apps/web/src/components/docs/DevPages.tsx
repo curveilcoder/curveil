@@ -7,14 +7,16 @@ import { ApiReference } from "../ApiReference";
 import { SDK_VERSION } from "@curveil/sdk";
 import { API_URL, BROADCASTER_URL, EXAMPLE_URL, IS_TESTNET, NETWORK, explorerAddress, manifest, shortAddress } from "../../lib/config";
 
-const CHAIN_EXPORT = IS_TESTNET ? "robinhoodTestnet" : "robinhood";
+export const CHAIN_EXPORT = IS_TESTNET ? "robinhoodTestnet" : "robinhood";
 import { api } from "../../lib/launchpads";
 import { fmtBps } from "../../lib/format";
 import { Callout, C, Code, CodeTabs, Section, Step, Steps } from "./Kit";
+import { useLang } from "../../lib/i18n";
+import * as ZH from "./DevPagesZh";
 
-const SDK_TARBALL = `/sdk/curveil-sdk-${SDK_VERSION}.tgz`;
+export const SDK_TARBALL = `/sdk/curveil-sdk-${SDK_VERSION}.tgz`;
 
-const BROADCAST_ENDPOINTS = [
+export const BROADCAST_ENDPOINTS = [
   ["GET", "/v1/broadcast/info", "Broadcaster address, gas balance, health, fee per asset, fee multiplier per action, relayed adapters and what it can see"],
   ["POST", "/v1/broadcast/quote", "Fee and fee recipient to bind into a transfer, withdrawal or shielded execution"],
   ["POST", "/v1/broadcast/submit", "Validates, simulates and sends a proof-bound transfer, withdrawal or shielded execution (swap, liquidity entry or exit)"],
@@ -23,10 +25,11 @@ const BROADCAST_ENDPOINTS = [
 
 /** The developer pages of /docs. */
 export function DevPage({ page }: { page: "quickstart" | "launchpad-guide" | "api" | "testnet" }) {
-  if (page === "quickstart") return <><ModuleStatus id="developers" /><Quickstart /></>;
-  if (page === "launchpad-guide") return <LaunchpadGuide />;
-  if (page === "api") return <ApiGuide />;
-  return <TestnetTools />;
+  const zh = useLang() === "zh";
+  if (page === "quickstart") return <><ModuleStatus id="developers" />{zh ? <ZH.Quickstart /> : <Quickstart />}</>;
+  if (page === "launchpad-guide") return zh ? <ZH.LaunchpadGuide /> : <LaunchpadGuide />;
+  if (page === "api") return zh ? <ZH.ApiGuide /> : <ApiGuide />;
+  return zh ? <ZH.TestnetTools /> : <TestnetTools />;
 }
 
 function ApiGuide() {
@@ -42,20 +45,13 @@ function ApiGuide() {
           raise that to 3,000. Each response says which limit applied in <C>X-RateLimit-Limit</C> and <C>X-RateLimit-Tier</C>.
         </p>
         <CodeTabs
-          tabs={[
-            { label: "curl", lang: "sh", code: `curl "${API_URL}/v1/launches?sort=volume&limit=3" \\\n  -H "Authorization: Bearer $CURVEIL_API_KEY"` },
-            { label: "SDK", code: `const curveil = createClient({ network: "${NETWORK}", apiKey: process.env.CURVEIL_API_KEY });\nconst { launches } = await curveil.launches({ sort: "volume", limit: 3 });` },
-            { label: "fetch", code: `const r = await fetch("${API_URL}/v1/launches?sort=volume&limit=3", {\n  headers: { Authorization: \`Bearer \${process.env.CURVEIL_API_KEY}\` },\n});\nconst { launches } = await r.json();` },
-          ]}
+          tabs={API_TABS}
         />
         <Callout kind="warn">Keep keys on your server. A key in browser code can be copied by anyone who opens your site.</Callout>
       </Section>
       <Section title="Errors">
         <p className="dk-p">Errors use normal HTTP status codes and a body with a stable code and a readable message. On a 429, wait for the seconds in <C>Retry-After</C>.</p>
-        <Code lang="json" title="429 Too Many Requests">{`{
-  "error": "rate_limited",
-  "message": "Over 300 requests a minute from this address. Use an API key for a higher limit."
-}`}</Code>
+        <Code lang="json" title="429 Too Many Requests">{ERRORS_JSON}</Code>
       </Section>
       <Section title="Endpoints">
         <div className="panel"><ApiReference /></div>
@@ -81,25 +77,13 @@ function Quickstart() {
           <C>@curveil/sdk</C> works in browsers, Workers, Deno, Bun and Node 18+, with <C>viem</C> as its only peer dependency. Until it
           is on npm, install the build served by this site:
         </p>
-        <CodeTabs tabs={[{ label: "npm", lang: "sh", code: `npm install viem ${origin}${SDK_TARBALL}` }, { label: "pnpm", lang: "sh", code: `pnpm add viem ${origin}${SDK_TARBALL}` }, { label: "bun", lang: "sh", code: `bun add viem ${origin}${SDK_TARBALL}` }]} />
+        <CodeTabs tabs={INSTALL_TABS(origin)} />
       </Step>
 
       <Step title="Read data">
         <p className="dk-p">Reads need no key (300 requests a minute per IP). An <Link to="/app/profile" search={{ tab: "developer", sub: "keys" }}>API key</Link> raises that to 3,000.</p>
         <CodeTabs
-          tabs={[
-            {
-              label: "SDK",
-              code: `import { createClient } from "@curveil/sdk";
-
-const curveil = createClient({ network: "${NETWORK}"${API_URL.includes("localhost") ? `, baseUrl: "${API_URL}"` : ""} /*, apiKey: process.env.CURVEIL_API_KEY */ });
-
-const { launches } = await curveil.launches({ sort: "volume", limit: 10 });
-const pad = await curveil.operator("sprout");          // a launchpad by name or address
-const revenue = await curveil.revenue(pad.operator.address);`,
-            },
-            { label: "curl", lang: "sh", code: `curl "${API_URL}/v1/launches?sort=volume&limit=10"\ncurl "${API_URL}/v1/operators/sprout"` },
-          ]}
+          tabs={READ_TABS}
         />
       </Step>
 
@@ -108,44 +92,14 @@ const revenue = await curveil.revenue(pad.operator.address);`,
           <Link to="/docs" search={{ page: "launchpad-guide" }}>Register a launchpad</Link> first. The SDK returns plain <C>{"{ to, data, value }"}</C> transactions for any wallet library;
           the launch records your launchpad and its fee share, fixed for the token's life.
         </p>
-        <Code>{`import { approveTx, createLaunchTx } from "@curveil/sdk";
-import { parseUnits } from "viem";
-
-const m = await curveil.manifest();
-const factory = m.contracts.LaunchFactory.address;
-const usdg = m.assets.find((a) => a.label === "USDG")!.address;
-const buy = parseUnits("100", 6);                      // optional initial buy in USDG
-
-await wallet.sendTransaction(approveTx(usdg, factory, buy));
-await wallet.sendTransaction(createLaunchTx({
-  factory,
-  templateId: 1,
-  name: "Seedling", symbol: "SEED", metadataURI: "",
-  creatorRecipient: creator,
-  operator: pad.operator.address,                      // your launchpad
-  initialBuy: buy,                                     // minTokensOut: use quoteBuy() for slippage
-}));`}</Code>
+        <Code>{LAUNCH_CODE}</Code>
       </Step>
 
       <Step title="Receive webhooks">
         <p className="dk-p">
           <Link to="/app/profile" search={{ tab: "developer", sub: "webhooks" }}>Add an endpoint</Link> in your profile, keep its signing secret, and verify every delivery against the raw body before trusting it.
         </p>
-        <Code>{`import { verifyWebhookRequest, WebhookVerificationError } from "@curveil/sdk/webhooks";
-
-export default {
-  async fetch(request: Request, env: { CURVEIL_WEBHOOK_SECRET: string }) {
-    try {
-      const event = await verifyWebhookRequest(request, env.CURVEIL_WEBHOOK_SECRET);
-      if (await alreadyHandled(event.id)) return new Response("ok");   // retries reuse the id
-      if (event.type === "launch.created") { /* … */ }
-      return new Response("ok");
-    } catch (e) {
-      if (e instanceof WebhookVerificationError) return new Response("bad signature", { status: 401 });
-      throw e;                                                          // a 5xx is retried
-    }
-  },
-};`}</Code>
+        <Code>{WEBHOOK_CODE}</Code>
         <Callout kind="note" title="Verifying without the SDK">
           The signature header is <C>Curveil-Signature: t=&lt;unix seconds&gt;,v1=&lt;hex HMAC-SHA256 of "t.body"&gt;</C>. Compute the same HMAC with your secret,
           compare in constant time, and reject timestamps more than 5 minutes old.
@@ -167,6 +121,115 @@ export default {
     </>
   );
 }
+
+export const API_TABS = [
+            { label: "curl", lang: "sh", code: `curl "${API_URL}/v1/launches?sort=volume&limit=3" \\\n  -H "Authorization: Bearer $CURVEIL_API_KEY"` },
+            { label: "SDK", code: `const curveil = createClient({ network: "${NETWORK}", apiKey: process.env.CURVEIL_API_KEY });\nconst { launches } = await curveil.launches({ sort: "volume", limit: 3 });` },
+            { label: "fetch", code: `const r = await fetch("${API_URL}/v1/launches?sort=volume&limit=3", {\n  headers: { Authorization: \`Bearer \${process.env.CURVEIL_API_KEY}\` },\n});\nconst { launches } = await r.json();` },
+          ];
+export const READ_TABS = [
+            {
+              label: "SDK",
+              code: `import { createClient } from "@curveil/sdk";
+
+const curveil = createClient({ network: "${NETWORK}"${API_URL.includes("localhost") ? `, baseUrl: "${API_URL}"` : ""} /*, apiKey: process.env.CURVEIL_API_KEY */ });
+
+const { launches } = await curveil.launches({ sort: "volume", limit: 10 });
+const pad = await curveil.operator("sprout");          // a launchpad by name or address
+const revenue = await curveil.revenue(pad.operator.address);`,
+            },
+            { label: "curl", lang: "sh", code: `curl "${API_URL}/v1/launches?sort=volume&limit=10"\ncurl "${API_URL}/v1/operators/sprout"` },
+          ];
+export const INSTALL_TABS = (origin: string) => [{ label: "npm", lang: "sh", code: `npm install viem ${origin}${SDK_TARBALL}` }, { label: "pnpm", lang: "sh", code: `pnpm add viem ${origin}${SDK_TARBALL}` }, { label: "bun", lang: "sh", code: `bun add viem ${origin}${SDK_TARBALL}` }];
+export const ERRORS_JSON = `{
+  "error": "rate_limited",
+  "message": "Over 300 requests a minute from this address. Use an API key for a higher limit."
+}`;
+
+export const LAUNCH_CODE = `import { approveTx, createLaunchTx } from "@curveil/sdk";
+import { parseUnits } from "viem";
+
+const m = await curveil.manifest();
+const factory = m.contracts.LaunchFactory.address;
+const usdg = m.assets.find((a) => a.label === "USDG")!.address;
+const buy = parseUnits("100", 6);                      // optional initial buy in USDG
+
+await wallet.sendTransaction(approveTx(usdg, factory, buy));
+await wallet.sendTransaction(createLaunchTx({
+  factory,
+  templateId: 1,
+  name: "Seedling", symbol: "SEED", metadataURI: "",
+  creatorRecipient: creator,
+  operator: pad.operator.address,                      // your launchpad
+  initialBuy: buy,                                     // minTokensOut: use quoteBuy() for slippage
+}));`;
+
+export const WEBHOOK_CODE = `import { verifyWebhookRequest, WebhookVerificationError } from "@curveil/sdk/webhooks";
+
+export default {
+  async fetch(request: Request, env: { CURVEIL_WEBHOOK_SECRET: string }) {
+    try {
+      const event = await verifyWebhookRequest(request, env.CURVEIL_WEBHOOK_SECRET);
+      if (await alreadyHandled(event.id)) return new Response("ok");   // retries reuse the id
+      if (event.type === "launch.created") { /* … */ }
+      return new Response("ok");
+    } catch (e) {
+      if (e instanceof WebhookVerificationError) return new Response("bad signature", { status: 401 });
+      throw e;                                                          // a 5xx is retried
+    }
+  },
+};`;
+
+export const SLUG_CODE = `import { createClient, isValidSlug, launchpadRegistryAbi, ${CHAIN_EXPORT} } from "@curveil/sdk";
+import { createPublicClient, http, keccak256, toBytes, zeroAddress } from "viem";
+
+const curveil = createClient({ network: "${NETWORK}" });
+const chain = createPublicClient({ chain: ${CHAIN_EXPORT}, transport: http() });
+const { registry, maxShareBps } = await curveil.factory();
+
+const slug = "northbank";
+if (!isValidSlug(slug)) throw new Error("bad name");
+const owner = await chain.readContract({
+  address: registry, abi: launchpadRegistryAbi,
+  functionName: "operatorBySlug", args: [keccak256(toBytes(slug))],
+});
+const free = owner === zeroAddress;`;
+
+export const REGISTER_CODE = `import { encodeBrandURI, predictOperator, registerOperatorTx } from "@curveil/sdk";
+
+const brandURI = encodeBrandURI({
+  name: "Northbank", tagline: "Launches for the north bank",
+  accent: "#2563ff", url: "https://launch.northbank.xyz",
+});
+const { templates } = await curveil.templates();
+const operator = await predictOperator(chain, registry, slug);   // your launchpad's address
+
+await wallet.sendTransaction(registerOperatorTx({
+  registry, slug, brandURI,
+  shareBps: 2500,                                  // 25%, at most maxShareBps
+  templates: templates.filter((t) => t.enabled).map((t) => t.id),
+  recipients: [{ address: treasury, weightBps: 10_000 }],
+}));`;
+
+export const SITE_CODE = `const { operator: pad } = await curveil.operator(slug);  // brand, share, templates, status
+const { launches } = await curveil.launches({ operator: pad.address, sort: "volume" });
+
+// Trading on a curve: quote, then build and send.
+const { tokensOut } = await quoteBuy(chain, launch.curve, quoteIn);
+await wallet.sendTransaction(buyTx({ curve: launch.curve, quoteIn, minTokensOut: withSlippage(tokensOut, 100), to: user }));`;
+
+export const COLLECT_CODE = `import { collectTx, releaseTx } from "@curveil/sdk";
+
+const rev = await curveil.revenue(slug);
+for (const t of rev.tokens) {
+  const curves = rev.curves
+    .filter((c) => c.quote.toLowerCase() === t.token.toLowerCase() && BigInt(c.uncollected) > 0n)
+    .map((c) => c.curve);
+  if (curves.length) await wallet.sendTransaction(collectTx(operator, curves, t.token));
+  for (const r of t.recipients) {
+    if (BigInt(r.owed) > 0n) await wallet.sendTransaction(releaseTx(operator, t.token, r.address));
+  }
+}`;
 
 const MANAGE = [
   ["setBrandTx(registry, operator, brandURI)", "Name, tagline, accent, website and logo. Display only."],
@@ -207,20 +270,7 @@ function LaunchpadGuide() {
           The name (slug) is permanent and appears in links and the API: 3 to 32 characters of a-z, 0-9 and "-", not starting or ending with "-". Read the registry to see
           whether it is free.
         </p>
-        <Code>{`import { createClient, isValidSlug, launchpadRegistryAbi, ${CHAIN_EXPORT} } from "@curveil/sdk";
-import { createPublicClient, http, keccak256, toBytes, zeroAddress } from "viem";
-
-const curveil = createClient({ network: "${NETWORK}" });
-const chain = createPublicClient({ chain: ${CHAIN_EXPORT}, transport: http() });
-const { registry, maxShareBps } = await curveil.factory();
-
-const slug = "northbank";
-if (!isValidSlug(slug)) throw new Error("bad name");
-const owner = await chain.readContract({
-  address: registry, abi: launchpadRegistryAbi,
-  functionName: "operatorBySlug", args: [keccak256(toBytes(slug))],
-});
-const free = owner === zeroAddress;`}</Code>
+        <Code>{SLUG_CODE}</Code>
       </Step>
 
       <Step title="Register it">
@@ -228,21 +278,7 @@ const free = owner === zeroAddress;`}</Code>
           One transaction. The wallet that sends it becomes the launchpad's admin. Your launchpad's address is known before you send it, and that address is what each launch
           records as its operator. Recipients are 1 to 8 addresses whose weights add up to 10,000.
         </p>
-        <Code>{`import { encodeBrandURI, predictOperator, registerOperatorTx } from "@curveil/sdk";
-
-const brandURI = encodeBrandURI({
-  name: "Northbank", tagline: "Launches for the north bank",
-  accent: "#2563ff", url: "https://launch.northbank.xyz",
-});
-const { templates } = await curveil.templates();
-const operator = await predictOperator(chain, registry, slug);   // your launchpad's address
-
-await wallet.sendTransaction(registerOperatorTx({
-  registry, slug, brandURI,
-  shareBps: 2500,                                  // 25%, at most maxShareBps
-  templates: templates.filter((t) => t.enabled).map((t) => t.id),
-  recipients: [{ address: treasury, weightBps: 10_000 }],
-}));`}</Code>
+        <Code>{REGISTER_CODE}</Code>
         <p className="dk-p">
           The share is a part of the protocol's portion of each curve fee, not an extra charge, and creators keep their full share. On the standard template (1% fee, half to
           the creator) a 25% share pays your launchpad 0.125% of every curve trade. Each launch fixes the share when it is created, so a later change never touches existing
@@ -255,12 +291,7 @@ await wallet.sendTransaction(registerOperatorTx({
           Your site reads its own settings and launches from the API and sends transactions built by the SDK. There is no indexer to run. Launches made from your site pass
           your launchpad's address as <C>operator</C>, as in step 3 of the <Link to="/docs" search={{ page: "quickstart" }}>Quickstart</Link>.
         </p>
-        <Code>{`const { operator: pad } = await curveil.operator(slug);  // brand, share, templates, status
-const { launches } = await curveil.launches({ operator: pad.address, sort: "volume" });
-
-// Trading on a curve: quote, then build and send.
-const { tokensOut } = await quoteBuy(chain, launch.curve, quoteIn);
-await wallet.sendTransaction(buyTx({ curve: launch.curve, quoteIn, minTokensOut: withSlippage(tokensOut, 100), to: user }));`}</Code>
+        <Code>{SITE_CODE}</Code>
         <ul className="dk-list">
           <li>
             A complete launchpad site built only on the SDK and viem is in <C>apps/launchpad-example</C>
@@ -280,18 +311,7 @@ await wallet.sendTransaction(buyTx({ curve: launch.curve, quoteIn, minTokensOut:
           Your fees build up inside each token's curve. Collecting pulls them into your launchpad's address and splits them by weight; releasing pays one recipient. Anyone can
           send these transactions, and the money only ever goes to your recipients.
         </p>
-        <Code>{`import { collectTx, releaseTx } from "@curveil/sdk";
-
-const rev = await curveil.revenue(slug);
-for (const t of rev.tokens) {
-  const curves = rev.curves
-    .filter((c) => c.quote.toLowerCase() === t.token.toLowerCase() && BigInt(c.uncollected) > 0n)
-    .map((c) => c.curve);
-  if (curves.length) await wallet.sendTransaction(collectTx(operator, curves, t.token));
-  for (const r of t.recipients) {
-    if (BigInt(r.owed) > 0n) await wallet.sendTransaction(releaseTx(operator, t.token, r.address));
-  }
-}`}</Code>
+        <Code>{COLLECT_CODE}</Code>
         <p className="dk-p">
           Fees that reach your launchpad's address another way are split with <C>distributeTx(operator, token)</C>.
         </p>

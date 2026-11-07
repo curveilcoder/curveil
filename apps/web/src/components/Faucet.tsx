@@ -5,6 +5,7 @@ import { BaseError, ContractFunctionRevertedError, formatUnits } from "viem";
 import { manifest, curveilChain, explorerAddress } from "../lib/config";
 import { faucetAbi, erc20Abi } from "../lib/abis";
 import { TxStatus, type TxPhase } from "./TxStatus";
+import { useT, tNow } from "../lib/i18n";
 
 const faucet = manifest.contracts.TestFaucet?.address as `0x${string}` | undefined;
 const assets = manifest.assets.filter((a) => a.testOnly);
@@ -15,19 +16,20 @@ function describeError(e: unknown): string {
     if (revert instanceof ContractFunctionRevertedError) {
       if (revert.data?.errorName === "CoolingDown") {
         const at = Number(revert.data.args?.[1] ?? 0n);
-        return `You already claimed in the last 24 hours. Try again after ${new Date(at * 1000).toLocaleString()}.`;
+        return tNow(`You already claimed in the last 24 hours. Try again after ${new Date(at * 1000).toLocaleString()}.`, `你在过去 24 小时内已经领取过。请在 ${new Date(at * 1000).toLocaleString()} 之后再试。`);
       }
-      if (revert.data?.errorName === "DripDisabled") return "The faucet is paused for this token.";
+      if (revert.data?.errorName === "DripDisabled") return tNow("The faucet is paused for this token.", "该代币的水龙头已暂停。");
     }
-    if (e.name === "UserRejectedRequestError" || /rejected|denied/i.test(e.shortMessage)) return "You cancelled the request in your wallet. Nothing was sent.";
-    if (/insufficient funds/i.test(e.shortMessage)) return "Your wallet needs a little testnet ETH for gas.";
+    if (e.name === "UserRejectedRequestError" || /rejected|denied/i.test(e.shortMessage)) return tNow("You cancelled the request in your wallet. Nothing was sent.", "你在钱包中取消了请求，未发送任何内容。");
+    if (/insufficient funds/i.test(e.shortMessage)) return tNow("Your wallet needs a little testnet ETH for gas.", "你的钱包需要少量测试网 ETH 作为 gas。");
     return e.shortMessage;
   }
-  return "The transaction could not be sent.";
+  return tNow("The transaction could not be sent.", "交易无法发送。");
 }
 
 /** Testnet faucet: a real on-chain claim of tUSDG and tWETH. */
 export function Faucet() {
+  const t = useT();
   const { address, chainId, isConnected } = useConnection();
   const client = usePublicClient();
   const write = useWriteContract();
@@ -63,7 +65,7 @@ export function Faucet() {
       setPhase({ kind: "submitted", hash });
       const receipt = await client.waitForTransactionReceipt({ hash });
       if (receipt.status !== "success") {
-        setPhase({ kind: "failed", message: "The transaction reverted. No tokens were sent.", hash });
+        setPhase({ kind: "failed", message: t("The transaction reverted. No tokens were sent.", "交易已回滚，未发送任何代币。"), hash });
         return;
       }
       setPhase({ kind: "confirmed", hash, block: receipt.blockNumber });
@@ -76,39 +78,39 @@ export function Faucet() {
   return (
     <div className="panel stack" id="faucet">
       <div>
-        <p className="eyebrow">Testnet faucet</p>
-        <h3>Get test USDG and WETH</h3>
+        <p className="eyebrow">{t("Testnet faucet", "测试网水龙头")}</p>
+        <h3>{t("Get test USDG and WETH", "领取测试 USDG 和 WETH")}</h3>
         <p className="muted small" style={{ margin: "8px 0 0" }}>
-          Claims 10,000 tUSDG and 5 tWETH once every 24 hours. These are Curveil test tokens with no value.{" "}
-          <a href={explorerAddress(faucet)} target="_blank" rel="noreferrer">Faucet contract</a>
+          {t("Claims 10,000 tUSDG and 5 tWETH once every 24 hours. These are Curveil test tokens with no value.", "每 24 小时可领取 10,000 tUSDG 和 5 tWETH。这些是没有价值的 Curveil 测试代币。")}{" "}
+          <a href={explorerAddress(faucet)} target="_blank" rel="noreferrer">{t("Faucet contract", "水龙头合约")}</a>
         </p>
       </div>
-      {!isConnected && <p className="notice">Connect a wallet to claim. You need a little testnet ETH for gas.</p>}
-      {wrongChain && <p className="notice warn">Your wallet is on another network. Use the switch button in the header first.</p>}
+      {!isConnected && <p className="notice">{t("Connect a wallet to claim. You need a little testnet ETH for gas.", "连接钱包即可领取。你需要少量测试网 ETH 作为 gas。")}</p>}
+      {wrongChain && <p className="notice warn">{t("Your wallet is on another network. Use the switch button in the header first.", "你的钱包在其他网络上，请先使用页头的切换按钮。")}</p>}
       {isConnected && !wrongChain && (
         <>
           <div className="table-scroll" tabIndex={0}>
             <table className="data" style={{ minWidth: 0 }}>
               <thead>
-                <tr><th>Token</th><th>Your balance</th><th>Next claim</th></tr>
+                <tr><th>{t("Token", "代币")}</th><th>{t("Your balance", "你的余额")}</th><th>{t("Next claim", "下次领取")}</th></tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.address}>
                     <td><a href={explorerAddress(r.address)} target="_blank" rel="noreferrer">{r.symbol}</a></td>
                     <td className="mono">
-                      {reads.isError ? "Unavailable" : r.bal === undefined ? <Sk w={80} /> : Number(formatUnits(r.bal, r.decimals)).toLocaleString("en-US", { maximumFractionDigits: 4 })}
+                      {reads.isError ? t("Unavailable", "不可用") : r.bal === undefined ? <Sk w={80} /> : Number(formatUnits(r.bal, r.decimals)).toLocaleString("en-US", { maximumFractionDigits: 4 })}
                     </td>
-                    <td className="small">{r.at === undefined ? (reads.isError ? "Unavailable" : <Sk w="12ch" />) : r.at === 0 || r.at <= now ? "Available now" : new Date(r.at * 1000).toLocaleString()}</td>
+                    <td className="small">{r.at === undefined ? (reads.isError ? t("Unavailable", "不可用") : <Sk w="12ch" />) : r.at === 0 || r.at <= now ? t("Available now", "现在可领") : new Date(r.at * 1000).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          {reads.isError && <p className="notice bad">Could not read balances from the chain. Check your connection and retry.</p>}
+          {reads.isError && <p className="notice bad">{t("Could not read balances from the chain. Check your connection and retry.", "无法从链上读取余额，请检查网络后重试。")}</p>}
           <div>
             <button className="btn btn-primary" onClick={claim} disabled={coolingDown || phase.kind === "awaiting_wallet" || phase.kind === "submitted"}>
-              {coolingDown ? "Claimed today" : phase.kind === "awaiting_wallet" ? "Confirm in your wallet…" : phase.kind === "submitted" ? "Waiting for confirmation…" : "Claim test tokens"}
+              {coolingDown ? t("Claimed today", "今日已领取") : phase.kind === "awaiting_wallet" ? t("Confirm in your wallet…", "请在钱包中确认…") : phase.kind === "submitted" ? t("Waiting for confirmation…", "等待确认…") : t("Claim test tokens", "领取测试代币")}
             </button>
           </div>
         </>

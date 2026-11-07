@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { useT, tNow } from "../lib/i18n";
 
 /**
  * Execution prices of recent trades, oldest to newest. Says so; it is not a candle feed.
@@ -12,11 +13,12 @@ export function PriceChart({ points, height = 140, axis = false, fmt = (n: numbe
   /** Colours the line by direction over the shown range; omitted keeps the neutral chart colour. */
   up?: boolean | null;
 }) {
+  const t = useT();
   const gid = useId().replace(/:/g, "");
   if (points.length < 2) {
     return (
       <div className="chart-empty" style={{ minHeight: axis ? height : undefined }}>
-        <p className="small muted" style={{ margin: 0 }}>Not enough trades yet to draw a price line. It appears after the second trade.</p>
+        <p className="small muted" style={{ margin: 0 }}>{t("Not enough trades yet to draw a price line. It appears after the second trade.", "成交数量还不足以绘制价格线，第二笔成交后会显示。")}</p>
       </div>
     );
   }
@@ -36,7 +38,7 @@ export function PriceChart({ points, height = 140, axis = false, fmt = (n: numbe
   const line = points.map((p, i) => `${i ? "L" : "M"}${x(p, i).toFixed(2)},${y(p.price).toFixed(2)}`).join(" ");
   const last = points[points.length - 1]!;
   const colour = up === true ? "var(--good)" : up === false ? "var(--bad)" : "var(--chart)";
-  const label = `Execution price of the last ${points.length} trades, from ${lo0.toPrecision(5)} to ${hi.toPrecision(5)}`;
+  const label = tNow(`Execution price of the last ${points.length} trades, from ${lo0.toPrecision(5)} to ${hi.toPrecision(5)}`, `最近 ${points.length} 笔成交的执行价格，从 ${lo0.toPrecision(5)} 到 ${hi.toPrecision(5)}`);
 
   if (!axis) {
     return (

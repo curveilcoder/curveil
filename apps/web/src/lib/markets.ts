@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getJson } from "./api";
+import { tNow } from "./i18n";
 
 export type TokenRef = { address: `0x${string}`; symbol: string; decimals: number; isQuote: boolean; name?: string | null; image?: string | null };
 
@@ -129,7 +130,7 @@ export function useActivity(account: string | undefined) {
 }
 
 export const pairLabel = (p: MarketPool) => `${p.token0.symbol} / ${p.token1.symbol}`;
-export const kindLabel = (p: MarketPool) => (p.kind === "damm" ? "DAMM" : `DLMM · bin ${p.binStep}`);
+export const kindLabel = (p: MarketPool) => (p.kind === "damm" ? "DAMM" : tNow(`DLMM · bin ${p.binStep}`, `DLMM · 区间 ${p.binStep}`));
 
 /** Price of `base` in units of the other token of the pool. */
 export function priceOf(p: MarketPool, base: string): number | null {

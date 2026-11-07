@@ -565,3 +565,12 @@ body.sig-lock { overflow: hidden; }
 .token-logo { object-fit: cover; background: var(--surface-2); padding: 0; }
 /* In the phone menu the current page gets a bar on its left instead of underneath. */
 @media (max-width: 900px) { .nav.open .nav-link[data-status="active"]::after { left: 0; right: auto; top: 10px; bottom: 10px; width: 3px; height: auto; } }
+
+/* Simplified Chinese: Geist has no CJK glyphs, so name the usual system fonts for them. */
+:lang(zh) { --font-sans: "Geist Variable", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", system-ui, sans-serif; }
+:lang(zh) body { letter-spacing: 0; }
+.lang-switch { position: relative; cursor: pointer; color: var(--ink); font-size: 13px; gap: 5px; min-height: 34px; }
+.lang-switch:hover, .lang-switch:focus-within { border-color: var(--accent); }
+.lang-switch select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+/* CJK glyphs fill the whole em box: tight Latin line heights and negative tracking make lines collide. */
+:lang(zh) :is(h1, h2, h3, .lens-h, .display) { line-height: 1.22; letter-spacing: 0; }

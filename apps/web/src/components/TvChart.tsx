@@ -15,6 +15,7 @@ import {
 } from "lightweight-charts";
 import type { Candle } from "../lib/perps";
 import { Sk } from "./Skeleton";
+import { useT, tNow } from "../lib/i18n";
 
 type Props = {
   candles: (Candle & { v?: number })[];
@@ -126,7 +127,8 @@ type Legend = { t: number; o: number; h: number; l: number; c: number; v?: numbe
  * drag the price axis to rescale, double-click the axis to auto-fit again. Volume sits underneath
  * when the candles carry it.
  */
-export function TvChart({ candles, mark, markTitle, height = 420, resetKey, mode: modeProp = "candles", fmt, minBars = 0, empty = "No prices for this range yet.", minBand = 0.002, terminal }: Props) {
+export function TvChart({ candles, mark, markTitle, height = 420, resetKey, mode: modeProp = "candles", fmt, minBars = 0, empty, minBand = 0.002, terminal }: Props) {
+  const tr = useT();
   const box = useRef<HTMLDivElement>(null);
   const chart = useRef<IChartApi | null>(null);
   const price = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -358,7 +360,7 @@ export function TvChart({ candles, mark, markTitle, height = 420, resetKey, mode
   if (!hasData) {
     return (
       <div className="chart-empty" style={{ minHeight: height }}>
-        <p className="small muted" style={{ margin: 0 }}>{empty}</p>
+        <p className="small muted" style={{ margin: 0 }}>{empty ?? tr("No prices for this range yet.", "该区间暂无价格。")}</p>
       </div>
     );
   }
@@ -380,11 +382,11 @@ export function TvChart({ candles, mark, markTitle, height = 420, resetKey, mode
       <div ref={root} className={`tvc tvc-term${full ? " is-full" : ""}`}>
         <div className="tvc-top">
           <div className="tvc-top-l">{terminal.toolbar}</div>
-          <div className="tvc-icons" role="group" aria-label="Chart tools">
-            <button type="button" className="tvc-ico" onClick={() => setKind(lineMode ? "candles" : "line")} title={lineMode ? "Show candles" : "Show a line"} aria-label={lineMode ? "Show candles" : "Show a line"}>{lineMode ? ICON.candles : ICON.line}</button>
+          <div className="tvc-icons" role="group" aria-label={tr("Chart tools", "图表工具")}>
+            <button type="button" className="tvc-ico" onClick={() => setKind(lineMode ? "candles" : "line")} title={lineMode ? tr("Show candles", "显示K线") : tr("Show a line", "显示折线")} aria-label={lineMode ? tr("Show candles", "显示K线") : tr("Show a line", "显示折线")}>{lineMode ? ICON.candles : ICON.line}</button>
             <span className="tvc-sep" aria-hidden="true" />
-            <button type="button" className="tvc-ico" onClick={toggleFull} title={full ? "Exit full screen" : "Full screen"} aria-label={full ? "Exit full screen" : "Full screen"}>{full ? ICON.exit : ICON.full}</button>
-            <button type="button" className="tvc-ico" onClick={screenshot} title="Save the chart as an image" aria-label="Save the chart as an image">{ICON.shot}</button>
+            <button type="button" className="tvc-ico" onClick={toggleFull} title={full ? tr("Exit full screen", "退出全屏") : tr("Full screen", "全屏")} aria-label={full ? tr("Exit full screen", "退出全屏") : tr("Full screen", "全屏")}>{full ? ICON.exit : ICON.full}</button>
+            <button type="button" className="tvc-ico" onClick={screenshot} title={tr("Save the chart as an image", "将图表保存为图片")} aria-label={tr("Save the chart as an image", "将图表保存为图片")}>{ICON.shot}</button>
           </div>
         </div>
         <div className="tvc-stage" style={full ? undefined : { height }} onPointerUp={syncAuto} onWheel={syncAuto} onDoubleClick={syncAuto}>
@@ -406,23 +408,23 @@ export function TvChart({ candles, mark, markTitle, height = 420, resetKey, mode
                 </div>
                 <div className="tvc-ov-row tvc-ov-time mono">{new Date(shown.t * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" })}</div>
                 {hasVol && (
-                  <button type="button" className={`tvc-ov-vol${showVol ? "" : " off"}`} onClick={toggleVol} aria-pressed={showVol} title={showVol ? "Hide volume" : "Show volume"}>
-                    Volume{typeof shown.v === "number" && showVol ? <b className="mono">{vol(shown.v)}</b> : null}
+                  <button type="button" className={`tvc-ov-vol${showVol ? "" : " off"}`} onClick={toggleVol} aria-pressed={showVol} title={showVol ? tr("Hide volume", "隐藏成交量") : tr("Show volume", "显示成交量")}>
+                    {tr("Volume", "成交量")}{typeof shown.v === "number" && showVol ? <b className="mono">{vol(shown.v)}</b> : null}
                   </button>
                 )}
               </>
             )}
-            <button type="button" className={`tvc-ov-fold${legendOpen ? "" : " closed"}`} onClick={() => setLegendOpen((v) => !v)} aria-expanded={legendOpen} aria-label={legendOpen ? "Hide the legend" : "Show the legend"}>{ICON.chev}</button>
+            <button type="button" className={`tvc-ov-fold${legendOpen ? "" : " closed"}`} onClick={() => setLegendOpen((v) => !v)} aria-expanded={legendOpen} aria-label={legendOpen ? tr("Hide the legend", "隐藏图例") : tr("Show the legend", "显示图例")}>{ICON.chev}</button>
           </div>
           <div className="tvc-float" style={{ right: axisW + 8 }}>
-            {away && <button type="button" className="tvc-live" onClick={() => chart.current?.timeScale().scrollToRealTime()} title="Jump to the latest candle" aria-label="Jump to the latest candle">{ICON.live}</button>}
+            {away && <button type="button" className="tvc-live" onClick={() => chart.current?.timeScale().scrollToRealTime()} title={tr("Jump to the latest candle", "跳到最新K线")} aria-label={tr("Jump to the latest candle", "跳到最新K线")}>{ICON.live}</button>}
             <div className="tvc-scalebar">
-              <span className="tvc-clock mono" title="Your local time">{clock} {zoneLabel()}</span>
+              <span className="tvc-clock mono" title={tr("Your local time", "你的本地时间")}>{clock} {zoneLabel()}</span>
               <span className="tvc-sep" aria-hidden="true" />
-              <button type="button" className={scale === "pct" ? "on" : ""} aria-pressed={scale === "pct"} onClick={() => setScaleMode("pct")} title="Percentage scale">%</button>
-              <button type="button" className={scale === "log" ? "on" : ""} aria-pressed={scale === "log"} onClick={() => setScaleMode("log")} title="Logarithmic scale">log</button>
-              <button type="button" className={auto ? "on" : ""} aria-pressed={auto} onClick={autoOn} title="Auto-fit the price scale">auto</button>
-              <button type="button" onClick={reset} title="Fit the chart again">reset</button>
+              <button type="button" className={scale === "pct" ? "on" : ""} aria-pressed={scale === "pct"} onClick={() => setScaleMode("pct")} title={tr("Percentage scale", "百分比坐标")}>%</button>
+              <button type="button" className={scale === "log" ? "on" : ""} aria-pressed={scale === "log"} onClick={() => setScaleMode("log")} title={tr("Logarithmic scale", "对数坐标")}>log</button>
+              <button type="button" className={auto ? "on" : ""} aria-pressed={auto} onClick={autoOn} title={tr("Auto-fit the price scale", "自动适配价格坐标")}>auto</button>
+              <button type="button" onClick={reset} title={tr("Fit the chart again", "重新适配图表")}>reset</button>
             </div>
           </div>
         </div>
@@ -438,7 +440,7 @@ export function TvChart({ candles, mark, markTitle, height = 420, resetKey, mode
           <div className="tvc-legend mono" aria-live="off">
             <span>{new Date(shown.t * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "UTC" })}</span>
             {lineMode ? (
-              <span>Price <b>{f(shown.c)}</b></span>
+              <span>{tr("Price", "价格")} <b>{f(shown.c)}</b></span>
             ) : (
               <>
                 <span>O <b>{f(shown.o)}</b></span>
@@ -447,16 +449,16 @@ export function TvChart({ candles, mark, markTitle, height = 420, resetKey, mode
                 <span>C <b className={shown.c >= shown.o ? "good-text" : "bad-text"}>{f(shown.c)}</b></span>
               </>
             )}
-            {typeof shown.v === "number" && <span>Vol <b>{vol(shown.v)}</b></span>}
+            {typeof shown.v === "number" && <span>{tr("Vol", "量")} <b>{vol(shown.v)}</b></span>}
           </div>
         ) : <span />}
         <div className="tvc-tools">
-          <button type="button" onClick={reset} title="Fit the chart again and turn auto-scale back on">Reset</button>
-          <button type="button" className={log ? "on" : ""} aria-pressed={log} onClick={toggleLog} title="Logarithmic price scale">Log</button>
+          <button type="button" onClick={reset} title={tr("Fit the chart again and turn auto-scale back on", "重新适配图表并恢复自动缩放")}>{tr("Reset", "重置")}</button>
+          <button type="button" className={log ? "on" : ""} aria-pressed={log} onClick={toggleLog} title={tr("Logarithmic price scale", "对数价格坐标")}>{tr("Log", "对数")}</button>
         </div>
       </div>
       <div ref={box} className="tvc-plot" style={{ height }} />
-      <p className="tvc-hint small">Scroll to zoom, drag to move, drag the price axis to rescale. Double-click the axis to fit again.</p>
+      <p className="tvc-hint small">{tr("Scroll to zoom, drag to move, drag the price axis to rescale. Double-click the axis to fit again.", "滚动缩放，拖动平移，拖动价格轴调整比例。双击坐标轴重新适配。")}</p>
     </div>
   );
 }

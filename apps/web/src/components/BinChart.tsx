@@ -1,3 +1,4 @@
+import { tNow } from "../lib/i18n";
 /**
  * Liquidity by bin: value of each bin in token1 terms, with X shown as the public colour and
  * Y as ink. Used for live pair state and for deposit previews.
@@ -5,7 +6,7 @@
 export type BinBar = { id: number; x: number; y: number; highlight?: boolean };
 
 export function BinChart({ bins, activeId, height = 160, label, formatPrice, symbols = ["token X", "token Y"] }: { bins: BinBar[]; activeId: number | null; height?: number; label: string; formatPrice?: (id: number) => string; symbols?: [string, string] }) {
-  if (bins.length === 0) return <p className="small muted">No liquidity in this range.</p>;
+  if (bins.length === 0) return <p className="small muted">{tNow("No liquidity in this range.", "该区间内没有流动性。")}</p>;
   const max = Math.max(...bins.map((b) => b.x + b.y), 1e-18);
   const w = 100 / bins.length;
   const first = bins[0]!.id;

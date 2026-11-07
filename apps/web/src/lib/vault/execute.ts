@@ -15,6 +15,7 @@ import { type Address, type Hex } from "viem";
 import { DEADLINE_SECONDS, artifacts, checkSignals, pick, ready, toJson, type Ready } from "./actions";
 import { prove, type ProveStage } from "./prover";
 import type { VaultStatus } from "./store";
+import { tNow } from "../i18n";
 
 /** One leg: `amount` of `resource` goes to the adapter, `fee` to the broadcaster. */
 export type ExecLeg = { resource: string; amount: bigint; fee: bigint };
@@ -34,7 +35,7 @@ export async function prepareExecution(o: {
   onStage?: (s: ProveStage, step?: string) => void;
 }): Promise<{ ready: Ready; plan: ExecutePlan; ms: number }> {
   const { keys, tree } = ready(o.status);
-  if (o.status.version !== 2) throw new Error("This network's vault cannot run shielded actions yet.");
+  if (o.status.version !== 2) throw new Error(tNow("This network's vault cannot run shielded actions yet.", "本网络的金库暂时还不能执行隐私操作。"));
   const domain = BigInt(o.status.noteDomain);
   const legs = o.legs.map((l) => ({ resource: BigInt(l.resource), amount: l.amount, fee: l.fee, inputs: pick(l.resource, l.amount + l.fee) }));
   const plan = planExecute({

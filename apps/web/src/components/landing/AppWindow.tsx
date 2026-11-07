@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { DitherCanvas, NOISE, type Scene } from "../Dither";
 import { useInView, useNarrow, seeded, fmt } from "./play";
 import { usePrefersReducedMotion } from "../../lib/motion";
+import { useT } from "../../lib/i18n";
 
 const P0 = 3_000;
 const CANDLES = 46;
@@ -37,6 +38,7 @@ function makeFeed() {
 }
 
 export function AppWindow() {
+  const t = useT();
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref);
   const reduced = usePrefersReducedMotion();
@@ -63,34 +65,34 @@ export function AppWindow() {
         <div className="aw-pair">
           <span className="aw-coin" aria-hidden="true"><i /><i /></span>
           <strong>ETH / USDG</strong>
-          <span className="muted small hide-sm">DLMM pool · 0.22% bins</span>
+          <span className="muted small hide-sm">{t("DLMM pool · 0.22% bins", "DLMM 资金池 · 0.22% 区间")}</span>
         </div>
         <div className="aw-price">
           <span className="mono">{fmt(last, 2)}</span>
           <span className={`mono small ${change >= 0 ? "good-text" : "bad-text"}`}>{change >= 0 ? "+" : "−"}{Math.abs(change).toFixed(2)}%</span>
         </div>
-        <div className="aw-tabs hide-sm" aria-hidden="true"><span className="on">Chart</span><span>Liquidity</span><span>Positions</span></div>
+        <div className="aw-tabs hide-sm" aria-hidden="true"><span className="on">{t("Chart", "图表")}</span><span>{t("Liquidity", "流动性")}</span><span>{t("Positions", "仓位")}</span></div>
       </div>
       <div className="aw-body">
         <div className="aw-main">
           <MarketDots candles={candles} active={active} />
-          <p className="aw-cap mono">Price above, liquidity bins below · the active bin follows the price</p>
+          <p className="aw-cap mono">{t("Price above, liquidity bins below · the active bin follows the price", "上方为价格，下方为流动性区间 · 活跃区间跟随价格移动")}</p>
         </div>
         <div className="aw-feed">
-          <p className="aw-feed-h"><span className="dot good pulse" aria-hidden="true" /> Trades</p>
-          <ul aria-label="Recent trades">
-            {trades.map((t) => (
-              <li key={t.id}>
-                <span className={t.buy ? "good-text" : "bad-text"}>{t.buy ? "Buy" : "Sell"}</span>
-                <span className="mono">{t.eth.toFixed(3)} ETH</span>
-                <span className="mono muted">{fmt(t.price, 0)}</span>
+          <p className="aw-feed-h"><span className="dot good pulse" aria-hidden="true" /> {t("Trades", "成交")}</p>
+          <ul aria-label={t("Recent trades", "最近成交")}>
+            {trades.map((tr) => (
+              <li key={tr.id}>
+                <span className={tr.buy ? "good-text" : "bad-text"}>{tr.buy ? t("Buy", "买入") : t("Sell", "卖出")}</span>
+                <span className="mono">{tr.eth.toFixed(3)} ETH</span>
+                <span className="mono muted">{fmt(tr.price, 0)}</span>
                 <span className="aw-owner">
-                  {t.owner ? <span className="mono">{t.owner}</span> : <span className="aw-hidden" role="img" aria-label="Owner hidden"><DitherCanvas make={NOISE} aspect={0.2} cell={3} animate fps={10} /></span>}
+                  {tr.owner ? <span className="mono">{tr.owner}</span> : <span className="aw-hidden" role="img" aria-label={t("Owner hidden", "持有人已隐藏")}><DitherCanvas make={NOISE} aspect={0.2} cell={3} animate fps={10} /></span>}
                 </span>
               </li>
             ))}
           </ul>
-          <p className="aw-legend small"><span className="tag tag-shielded">Shielded</span> trades show the trade, not the trader.</p>
+          <p className="aw-legend small">{t(<><span className="tag tag-shielded">Shielded</span> trades show the trade, not the trader.</>, <><span className="tag tag-shielded">隐私</span>交易只显示交易本身，不显示交易者。</>)}</p>
         </div>
       </div>
     </div>
@@ -151,6 +153,7 @@ function makeMarket(src: { current: Src }): (cols: number, rows: number) => Scen
 }
 
 function MarketDots({ candles, active }: { candles: Candle[]; active: number }) {
+  const t = useT();
   const narrow = useNarrow(560);
   const shown = narrow ? candles.slice(-24) : candles;
   const src = useRef<Src>({ candles: shown, active });
@@ -162,7 +165,7 @@ function MarketDots({ candles, active }: { candles: Candle[]; active: number }) 
   const tagY = ((hi + span * 0.08 - last) / (span * 1.16)) * CHART * 100;
   return (
     <div className="aw-dots">
-      <DitherCanvas make={make} aspect={narrow ? 0.62 : 0.44} cell={narrow ? 3 : 4} animate fps={12} label={`Sample price chart, last ${fmt(last, 2)}`} />
+      <DitherCanvas make={make} aspect={narrow ? 0.62 : 0.44} cell={narrow ? 3 : 4} animate fps={12} label={t(`Sample price chart, last ${fmt(last, 2)}`, `示例价格图，最新价 ${fmt(last, 2)}`)} />
       <span className="aw-tag mono" style={{ top: `${tagY}%` }}>{fmt(last, 0)}</span>
     </div>
   );

@@ -45,6 +45,7 @@ import {
   type PerpMarket,
   type PerpsOverview,
 } from "../lib/perps";
+import { useT } from "../lib/i18n";
 
 const adapterAbi = perpsAdapterAbiJson as Abi;
 const same = (a: string, b: string) => getAddress(a) === getAddress(b);
@@ -58,6 +59,7 @@ const USDG_TOK = QUOTE ? { address: QUOTE.address as Address, symbol: QUOTE.symb
 
 /** Fee terms for one form: which mode, and the fee if the broadcaster submits. */
 function useFee(available: bigint) {
+  const tr = useT();
   const b = useBroadcaster();
   const feeToken = USDG_TOK ? pickFeeToken(b.info, [{ address: USDG_TOK.address, available }]) : null;
   const [mode, setMode] = useMode(b, feeToken !== null);
@@ -65,8 +67,8 @@ function useFee(available: bigint) {
   const problem = mode !== "broadcaster" || feeToken
     ? null
     : b.info
-      ? "The broadcaster cannot take its fee from these notes. Submit from your wallet."
-      : "Loading the broadcaster's terms…";
+      ? tr("The broadcaster cannot take its fee from these notes. Submit from your wallet.", "广播者无法从这些票据中扣除手续费，请用钱包提交。")
+      : tr("Loading the broadcaster's terms…", "正在加载广播者条款…");
   return { b, feeToken, mode, setMode, fee, problem };
 }
 
@@ -83,6 +85,7 @@ export function ShieldedPerpOpen({ status, market, isLong, size, collateral, acc
   blocked: string | null;
   onDone: () => void;
 }) {
+  const tr = useT();
   const act = useVaultAction();
   const adapter = adapterAddress(status, "ShieldedPerpsAdapter");
   const asset = usdgAsset(status);
@@ -90,9 +93,9 @@ export function ShieldedPerpOpen({ status, market, isLong, size, collateral, acc
   const need = collateral + execFee;
   const f = useFee(spendable > need ? spendable - need : 0n);
   const problem = !adapter || adapter.status !== "active"
-    ? "Shielded perps are closed on this network right now."
+    ? tr("Shielded perps are closed on this network right now.", "该网络上的隐私永续合约目前已关闭。")
     : !asset
-      ? `${USDG_SYMBOL} is not held in the vault.`
+      ? tr(`${USDG_SYMBOL} is not held in the vault.`, `金库中没有 ${USDG_SYMBOL}。`)
       : f.problem;
   // Not enough vault balance shows on the button, not as a separate notice.
   const short = need > 0n && need + f.fee > spendable;
@@ -105,7 +108,7 @@ export function ShieldedPerpOpen({ status, market, isLong, size, collateral, acc
       .run({
         status,
         action: "execute",
-        label: `Shielded ${isLong ? "long" : "short"} ${market.symbol}, ${fmtUsdg(size)} ${USDG_SYMBOL}`,
+        label: tr(`Shielded ${isLong ? "long" : "short"} ${market.symbol}, ${fmtUsdg(size)} ${USDG_SYMBOL}`, `隐私${isLong ? "做多" : "做空"} ${market.symbol}，${fmtUsdg(size)} ${USDG_SYMBOL}`),
         mode: f.mode,
         feeToken: f.feeToken,
         prove: async (fee, fr, onStage) => {
@@ -128,12 +131,12 @@ export function ShieldedPerpOpen({ status, market, isLong, size, collateral, acc
     <div className="stack" style={{ gap: 14 }}>
       <ModePicker mode={f.mode} onMode={f.setMode} b={f.b} action="execute" feeToken={USDG_TOK} />
       <Exposure
-        pub={["The market, side, size, collateral and price limit (the engine's events show them)", "That the shielded adapter owns the position", ...senderExposure(f.mode)]}
-        priv={["Which vault account holds the position", "Which of your notes paid for it", "Where the proceeds go when you collect them"]}
+        pub={[...tr(["The market, side, size, collateral and price limit (the engine's events show them)", "That the shielded adapter owns the position"], ["市场、方向、规模、保证金和价格限制（引擎事件会显示）", "该仓位由隐私适配器持有"]), ...senderExposure(f.mode)]}
+        priv={tr(["Which vault account holds the position", "Which of your notes paid for it", "Where the proceeds go when you collect them"], ["哪个金库账户持有该仓位", "你的哪些票据为它付款", "领取时收益去往何处"])}
       />
       {problem && <p className="notice warn small" style={{ margin: 0 }}>{problem}</p>}
       <VaultSubmit mode={f.mode} act={act} disabled={Boolean(blocked) || Boolean(problem) || short} onClick={go}>
-        {blocked ?? (short ? `Not enough ${USDG_SYMBOL} in your vault` : `Prove and ${isLong ? "long" : "short"} ${market.base}`)}
+        {blocked ?? (short ? tr(`Not enough ${USDG_SYMBOL} in your vault`, `金库中的 ${USDG_SYMBOL} 不足`) : tr(`Prove and ${isLong ? "long" : "short"} ${market.base}`, `生成证明并${isLong ? "做多" : "做空"} ${market.base}`))}
       </VaultSubmit>
     </div>
   );
@@ -144,6 +147,7 @@ export function ShieldedPerpOpen({ status, market, isLong, size, collateral, acc
 type OwnedClaim = ApiClaim & { resource: string; spendable: bigint; spending: bigint };
 
 export function ShieldedPerpPositions({ v, status, o }: { v: VaultState; status: VaultStatus; o: PerpsOverview }) {
+  const tr = useT();
   const adapter = adapterAddress(status, "ShieldedPerpsAdapter");
   const claims = usePerpClaims(Boolean(adapter));
   const owned = useMemo(() => {
@@ -164,13 +168,13 @@ export function ShieldedPerpPositions({ v, status, o }: { v: VaultState; status:
   return (
     <div className="panel stack shielded-panel">
       <div className="row-between">
-        <p className="eyebrow" style={{ margin: 0 }}>Your shielded positions</p>
-        <span className="tag tag-shielded">Shielded</span>
+        <p className="eyebrow" style={{ margin: 0 }}>{tr("Your shielded positions", "你的隐私仓位")}</p>
+        <span className="tag tag-shielded">{tr("Shielded", "隐私")}</span>
       </div>
-      {claims.isLoading && <><Loading label="Loading your shielded positions" /><PositionSkeleton shielded /></>}
-      {claims.isError && <p className="notice bad" role="alert">Claims could not be listed. Your claim notes are safe; try again shortly.</p>}
+      {claims.isLoading && <><Loading label={tr("Loading your shielded positions", "正在加载你的隐私仓位")} /><PositionSkeleton shielded /></>}
+      {claims.isError && <p className="notice bad" role="alert">{tr("Claims could not be listed. Your claim notes are safe; try again shortly.", "无法列出凭证。你的凭证票据是安全的，请稍后重试。")}</p>}
       {claims.isSuccess && owned.length === 0 && (
-        <p className="small muted" style={{ margin: 0 }}>No claim notes in this vault account. A new position's claim appears once the indexer lists it, usually within a minute.</p>
+        <p className="small muted" style={{ margin: 0 }}>{tr("No claim notes in this vault account. A new position's claim appears once the indexer lists it, usually within a minute.", "该金库账户中没有凭证票据。新仓位的凭证会在索引器列出后出现，通常在一分钟内。")}</p>
       )}
       {adapter && owned.map((c) => <ClaimCard key={c.claimId} c={c} status={status} o={o} adapter={adapter.address} />)}
     </div>
@@ -180,6 +184,7 @@ export function ShieldedPerpPositions({ v, status, o }: { v: VaultState; status:
 type ClaimAction = "close" | "margin" | "orders";
 
 function ClaimCard({ c, status, o, adapter }: { c: OwnedClaim; status: VaultStatus; o: PerpsOverview; adapter: Address }) {
+  const tr = useT();
   const live = usePerpPosition(c.positionId);
   const collectable = useReadContract({
     address: adapter,
@@ -200,19 +205,19 @@ function ClaimCard({ c, status, o, adapter }: { c: OwnedClaim; status: VaultStat
   if (!p) return <PositionSkeleton shielded />;
   return (
     <div className="panel stack perp-position">
-      <PositionSummary p={p} m={m} tag={<span className="tag tag-shielded">Shielded</span>} />
-      {c.spending > 0n && <p className="small muted" style={{ margin: 0 }}>An action on this claim is in flight.</p>}
+      <PositionSummary p={p} m={m} tag={<span className="tag tag-shielded">{tr("Shielded", "隐私")}</span>} />
+      {c.spending > 0n && <p className="small muted" style={{ margin: 0 }}>{tr("An action on this claim is in flight.", "该凭证有一项操作正在进行中。")}</p>}
       {(owed > 0n || collecting) && <CollectForm c={c} status={status} adapter={adapter} owed={owed} keep={isLive} onStart={() => setCollecting(true)} />}
-      {!isLive && owed === 0n && !collecting && <p className="small muted" style={{ margin: 0 }}>Nothing left to collect. The claim note no longer backs anything.</p>}
+      {!isLive && owed === 0n && !collecting && <p className="small muted" style={{ margin: 0 }}>{tr("Nothing left to collect. The claim note no longer backs anything.", "没有可领取的了。该凭证票据已不再对应任何资产。")}</p>}
       {p.status === "open" && m && (
         <>
-          <div className="seg" role="group" aria-label="Position action" style={{ marginTop: 0 }}>
+          <div className="seg" role="group" aria-label={tr("Position action", "仓位操作")} style={{ marginTop: 0 }}>
             <button type="button" aria-pressed={action === "close"} onClick={() => setAction(action === "close" ? null : "close")}>
-              {p.pendingClose !== "0" ? "Closing…" : "Close"}
+              {p.pendingClose !== "0" ? tr("Closing…", "平仓中…") : tr("Close", "平仓")}
             </button>
-            <button type="button" aria-pressed={action === "margin"} onClick={() => setAction(action === "margin" ? null : "margin")}>Add margin</button>
+            <button type="button" aria-pressed={action === "margin"} onClick={() => setAction(action === "margin" ? null : "margin")}>{tr("Add margin", "追加保证金")}</button>
             <button type="button" aria-pressed={action === "orders"} onClick={() => setAction(action === "orders" ? null : "orders")}>
-              TP / SL{orders.length ? ` (${orders.length})` : ""}
+              {tr("TP / SL", "止盈 / 止损")}{orders.length ? ` (${orders.length})` : ""}
             </button>
           </div>
           {action === "close" && <ClaimClose c={c} status={status} adapter={adapter} m={m} o={o} />}
@@ -229,6 +234,7 @@ function ClaimCard({ c, status, o, adapter }: { c: OwnedClaim; status: VaultStat
  * the broadcaster submits), and outputs in the adapter's order.
  */
 function useClaimAction(status: VaultStatus, c: OwnedClaim, adapter: Address, usdgIn: bigint, kind: "margin" | "plain") {
+  const tr = useT();
   const act = useVaultAction();
   const asset = usdgAsset(status);
   const spendable = asset ? balances(asset.resource).spendable : 0n;
@@ -236,11 +242,11 @@ function useClaimAction(status: VaultStatus, c: OwnedClaim, adapter: Address, us
   const f = useFee(spendable > reserve ? spendable - reserve : 0n);
   const short = asset && (kind === "margin" ? usdgIn + f.fee : f.fee > 0n ? 1n + f.fee : 0n) > spendable;
   const problem = !asset
-    ? `${USDG_SYMBOL} is not held in the vault.`
+    ? tr(`${USDG_SYMBOL} is not held in the vault.`, `金库中没有 ${USDG_SYMBOL}。`)
     : c.spendable < CLAIM_UNITS
-      ? "Waiting for the last action on this position to settle."
+      ? tr("Waiting for the last action on this position to settle.", "正在等待该仓位的上一项操作结算。")
       : short
-        ? `Not enough spendable vault ${USDG_SYMBOL}${f.mode === "broadcaster" ? " for the broadcaster fee" : ""}.`
+        ? tr(`Not enough spendable vault ${USDG_SYMBOL}${f.mode === "broadcaster" ? " for the broadcaster fee" : ""}.`, `金库中可用的 ${USDG_SYMBOL} 不足${f.mode === "broadcaster" ? "以支付广播者手续费" : ""}。`)
         : f.problem;
 
   function run(label: string, params: Hex, onDone?: () => void) {
@@ -283,6 +289,7 @@ function ClaimFooter({ a, disabled, label, onClick, mode }: { a: ReturnType<type
 }
 
 function ClaimClose({ c, status, adapter, m, o }: { c: OwnedClaim; status: VaultStatus; adapter: Address; m: PerpMarket; o: PerpsOverview }) {
+  const tr = useT();
   const live = usePerpPosition(c.positionId).data?.position;
   const a = useClaimAction(status, c, adapter, 0n, "plain");
   const [pct, setPct] = useState(100);
@@ -294,19 +301,20 @@ function ClaimClose({ c, status, adapter, m, o }: { c: OwnedClaim; status: Vault
   const closing = live ? live.pendingClose !== "0" : false;
   return (
     <CloseControls pct={pct} setPct={setPct} slippage={slippage} setSlippage={setSlippage} size={size} limit={limit} execFee={execFee} closeFeeBps={m.config?.closeFeeBps}>
-      <p className="small muted" style={{ margin: 0 }}>Proceeds stay with the claim until you collect them into a new note.</p>
+      <p className="small muted" style={{ margin: 0 }}>{tr("Proceeds stay with the claim until you collect them into a new note.", "收益会保留在凭证中，直到你将其领取到新票据。")}</p>
       <ClaimFooter
         a={a}
         mode={a.f.mode}
         disabled={!limit || size === 0n || closing}
-        label={closing ? "Waiting for the keeper…" : `Prove and close ${pct}%`}
-        onClick={() => limit && a.run(`Close ${pct}% of shielded ${m.symbol}`, encodePerpClose({ claimId: BigInt(c.claimId), size, acceptablePrice: limit, executionFee: execFee }))}
+        label={closing ? tr("Waiting for the keeper…", "等待执行者…") : tr(`Prove and close ${pct}%`, `生成证明并平仓 ${pct}%`)}
+        onClick={() => limit && a.run(tr(`Close ${pct}% of shielded ${m.symbol}`, `平仓隐私 ${m.symbol} 的 ${pct}%`), encodePerpClose({ claimId: BigInt(c.claimId), size, acceptablePrice: limit, executionFee: execFee }))}
       />
     </CloseControls>
   );
 }
 
 function ClaimMargin({ c, status, adapter }: { c: OwnedClaim; status: VaultStatus; adapter: Address }) {
+  const tr = useT();
   const [input, setInput] = useState("");
   const amount = parseAmount(input, USDG_DECIMALS) ?? 0n;
   const a = useClaimAction(status, c, adapter, amount, "margin");
@@ -314,15 +322,16 @@ function ClaimMargin({ c, status, adapter }: { c: OwnedClaim; status: VaultStatu
   const spendable = asset ? balances(asset.resource).spendable : 0n;
   return (
     <div className="stack">
-      <AmountField label="Add collateral" value={input} onChange={setInput} symbol={USDG_SYMBOL} decimals={USDG_DECIMALS} balance={fmtAmount(spendable, USDG_DECIMALS)} balanceLabel="Vault" onMax={() => setInput(formatUnits(spendable, USDG_DECIMALS))}>
+      <AmountField label={tr("Add collateral", "追加保证金")} value={input} onChange={setInput} symbol={USDG_SYMBOL} decimals={USDG_DECIMALS} balance={fmtAmount(spendable, USDG_DECIMALS)} balanceLabel={tr("Vault", "金库")} onMax={() => setInput(formatUnits(spendable, USDG_DECIMALS))}>
         <span className="token-tag">{USDG_SYMBOL}</span>
       </AmountField>
-      <ClaimFooter a={a} mode={a.f.mode} disabled={amount === 0n} label="Prove and add margin" onClick={() => a.run(`Add ${fmtUsdg(amount)} ${USDG_SYMBOL} margin`, encodePerpAddCollateral(BigInt(c.claimId)))} />
+      <ClaimFooter a={a} mode={a.f.mode} disabled={amount === 0n} label={tr("Prove and add margin", "生成证明并追加保证金")} onClick={() => a.run(tr(`Add ${fmtUsdg(amount)} ${USDG_SYMBOL} margin`, `追加 ${fmtUsdg(amount)} ${USDG_SYMBOL} 保证金`), encodePerpAddCollateral(BigInt(c.claimId)))} />
     </div>
   );
 }
 
 function ClaimOrders({ c, status, adapter, m, o, orders }: { c: OwnedClaim; status: VaultStatus; adapter: Address; m: PerpMarket; o: PerpsOverview; orders: Parameters<typeof OrderList>[0]["orders"] }) {
+  const tr = useT();
   const live = usePerpPosition(c.positionId).data?.position;
   const a = useClaimAction(status, c, adapter, 0n, "plain");
   const form = useOrderForm(live!, m, o);
@@ -330,31 +339,32 @@ function ClaimOrders({ c, status, adapter, m, o, orders }: { c: OwnedClaim; stat
   const claimId = BigInt(c.claimId);
   return (
     <div className="stack">
-      <OrderList orders={orders} busy={a.act.busy} onCancel={(id) => a.run("Cancel shielded order", encodePerpCancelOrder(claimId, BigInt(id)))} />
+      <OrderList orders={orders} busy={a.act.busy} onCancel={(id) => a.run(tr("Cancel shielded order", "取消隐私订单"), encodePerpCancelOrder(claimId, BigInt(id)))} />
       <OrderFields form={form} />
       <ClaimFooter
         a={a}
         mode={a.f.mode}
         disabled={!form.ready}
-        label={form.problem ?? `Prove and place ${form.kindLabel}`}
-        onClick={() => a.run(`Place shielded ${form.kindLabel}`, encodePerpPlaceOrder({ claimId, ...form.body }), form.reset)}
+        label={form.problem ?? tr(`Prove and place ${form.kindLabel}`, `生成证明并设置${form.kindLabel}`)}
+        onClick={() => a.run(tr(`Place shielded ${form.kindLabel}`, `设置隐私${form.kindLabel}`), encodePerpPlaceOrder({ claimId, ...form.body }), form.reset)}
       />
     </div>
   );
 }
 
 function CollectForm({ c, status, adapter, owed, keep, onStart }: { c: OwnedClaim; status: VaultStatus; adapter: Address; owed: bigint; keep: boolean; onStart: () => void }) {
+  const tr = useT();
   const act = useVaultAction();
   const asset = usdgAsset(status);
   const f = useFee(owed);
   const problem = !asset
-    ? `${USDG_SYMBOL} is not held in the vault.`
+    ? tr(`${USDG_SYMBOL} is not held in the vault.`, `金库中没有 ${USDG_SYMBOL}。`)
     : owed === 0n
       ? null
       : c.spendable < CLAIM_UNITS
-        ? "Waiting for the last action on this position to settle."
+        ? tr("Waiting for the last action on this position to settle.", "正在等待该仓位的上一项操作结算。")
         : f.mode === "broadcaster" && !f.feeToken && f.b.info
-          ? "Too little to pay the broadcaster. Submit from your wallet."
+          ? tr("Too little to pay the broadcaster. Submit from your wallet.", "金额太少，无法支付广播者，请用钱包提交。")
           : f.problem;
   function go() {
     if (!asset || problem || owed === 0n) return;
@@ -362,7 +372,7 @@ function CollectForm({ c, status, adapter, owed, keep, onStart }: { c: OwnedClai
     void act.run({
       status,
       action: "execute",
-      label: `Collect ${fmtUsdg(owed)} ${USDG_SYMBOL} from a shielded position`,
+      label: tr(`Collect ${fmtUsdg(owed)} ${USDG_SYMBOL} from a shielded position`, `从隐私仓位领取 ${fmtUsdg(owed)} ${USDG_SYMBOL}`),
       mode: f.mode,
       feeToken: f.feeToken,
       prove: async (fee, fr, onStage) => {
@@ -382,19 +392,19 @@ function CollectForm({ c, status, adapter, owed, keep, onStart }: { c: OwnedClai
   }
   if (owed === 0n) {
     return (
-      <VaultSubmit mode={f.mode} act={act} disabled onClick={go}>Collected</VaultSubmit>
+      <VaultSubmit mode={f.mode} act={act} disabled onClick={go}>{tr("Collected", "已领取")}</VaultSubmit>
     );
   }
   return (
     <div className="stack">
       <div className="notice good">
         <span className="dot good" style={{ marginTop: 7 }} aria-hidden="true" />
-        <span>{fmtUsdg(owed)} {USDG_SYMBOL} is ready to collect into a new vault note{keep ? "; the position stays open" : ""}.</span>
+        <span>{tr(`${fmtUsdg(owed)} ${USDG_SYMBOL} is ready to collect into a new vault note${keep ? "; the position stays open" : ""}.`, `${fmtUsdg(owed)} ${USDG_SYMBOL} 可领取到新的金库票据${keep ? "；仓位保持开放" : ""}。`)}</span>
       </div>
       <ModePicker mode={f.mode} onMode={f.setMode} b={f.b} action="execute" feeToken={USDG_TOK} />
-      <Exposure pub={["How much the position paid out (the engine's events show it)", ...senderExposure(f.mode)]} priv={["Which vault account receives it", "The new note"]} />
+      <Exposure pub={[tr("How much the position paid out (the engine's events show it)", "该仓位支付了多少（引擎事件会显示）"), ...senderExposure(f.mode)]} priv={tr(["Which vault account receives it", "The new note"], ["哪个金库账户收到它", "新票据"])} />
       {problem && <p className="notice warn small" style={{ margin: 0 }}>{problem}</p>}
-      <VaultSubmit mode={f.mode} act={act} disabled={Boolean(problem)} onClick={go}>Prove and collect</VaultSubmit>
+      <VaultSubmit mode={f.mode} act={act} disabled={Boolean(problem)} onClick={go}>{tr("Prove and collect", "生成证明并领取")}</VaultSubmit>
     </div>
   );
 }

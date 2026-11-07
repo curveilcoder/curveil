@@ -1,5 +1,6 @@
 /** Main-thread handle on the prover worker. One proof at a time. */
 import type { Groth16Proof } from "@curveil/vault-core";
+import { tNow } from "../i18n";
 
 export type ProveStage = "loading" | "proving";
 export type Artifact = { url: string; sha256: string };
@@ -29,7 +30,7 @@ export function prove(
       }
     };
     w.addEventListener("message", onMessage);
-    w.onerror = (ev) => reject(new Error(ev.message || "The prover stopped unexpectedly."));
+    w.onerror = (ev) => reject(new Error(ev.message || tNow("The prover stopped unexpectedly.", "证明生成器意外停止。")));
     w.postMessage({ id, input, ...artifacts });
   });
 }

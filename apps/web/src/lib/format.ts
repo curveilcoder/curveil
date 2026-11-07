@@ -1,4 +1,5 @@
 import { formatUnits, parseUnits } from "viem";
+import { tNow } from "./i18n";
 
 /** Token amount for display: grouped, trimmed, never in scientific notation. */
 export function fmtAmount(raw: bigint | string | null | undefined, decimals: number, maxFraction = 4): string {
@@ -43,10 +44,10 @@ export const fmtBps = (bps: number | null | undefined) => (bps === null || bps =
 export function timeAgo(ts: number | null | undefined): string {
   if (!ts) return "–";
   const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
-  if (s < 60) return `${s}s ago`;
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86_400) return `${Math.floor(s / 3600)}h ago`;
-  return `${Math.floor(s / 86_400)}d ago`;
+  if (s < 60) return tNow(`${s}s ago`, `${s} 秒前`);
+  if (s < 3600) return tNow(`${Math.floor(s / 60)}m ago`, `${Math.floor(s / 60)} 分钟前`);
+  if (s < 86_400) return tNow(`${Math.floor(s / 3600)}h ago`, `${Math.floor(s / 3600)} 小时前`);
+  return tNow(`${Math.floor(s / 86_400)}d ago`, `${Math.floor(s / 86_400)} 天前`);
 }
 
 /** Parses user input into base units. Returns null for empty or invalid input. */

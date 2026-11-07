@@ -20,32 +20,34 @@ import { TemplateTerms } from "./LaunchCreate";
 import { bondingCurveAbi, erc20Abi, lpEscrowAbi } from "../lib/abis";
 import { LP_ESCROW, explorerAddress, explorerTx, shortAddress } from "../lib/config";
 import { fmtAmount, fmtBps, fmtNumber, fmtPrice, isUsd, parseAmount, timeAgo, withSlippage } from "../lib/format";
-import { STATE_LABEL, justCreated, untilLabel, useLaunch, useLaunchTrades, type LaunchDetail, type Lock } from "../lib/launch";
+import { STATE_LABEL, STATE_LABEL_ZH, justCreated, untilLabel, useLaunch, useLaunchTrades, type LaunchDetail, type Lock } from "../lib/launch";
 import { deadlineIn, useWalletTokens, same, NATIVE, WETH, wrapStep, unwrapStep, wethReceived, GAS_RESERVE, quoteSym } from "../lib/tokens";
 import { useTxRunner, type TxStep } from "../lib/tx";
 import { padHref, useOperator } from "../lib/launchpads";
+import { useT } from "../lib/i18n";
 
 export function LaunchToken() {
+  const tr = useT();
   const { token } = useParams({ from: "/app/launch/$token" });
   const valid = isAddress(token);
   const detail = useLaunch(valid ? token : "0x0000000000000000000000000000000000000000", valid);
 
   // A launch created a moment ago is not indexed yet: wait for it instead of saying it is missing.
   const fresh = valid && justCreated(token);
-  if (fresh && !detail.data && (!detail.error || String(detail.error.message).includes("404"))) return <TokenSkeleton note="Your token is created. Curveil is indexing it now, which takes up to a minute. This page fills in by itself." />;
+  if (fresh && !detail.data && (!detail.error || String(detail.error.message).includes("404"))) return <TokenSkeleton note={tr("Your token is created. Curveil is indexing it now, which takes up to a minute. This page fills in by itself.", "代币已创建。Curveil 正在为它建立索引，最多需要一分钟，本页会自动更新。")} />;
   // A failed refresh keeps showing the last good data.
   if (!valid || (detail.error && !detail.data)) {
     return (
       <div className="wrap">
         <PageHead
-          kicker={<Link to="/app/launch">Launch</Link>} title="Launch not found"
+          kicker={<Link to="/app/launch">{tr("Launch", "发币")}</Link>} title={tr("Launch not found", "找不到该发行")}
           lead={valid && !String(detail.error?.message).includes("404")
-            ? "The Curveil API could not be reached, so this launch cannot be shown."
-            : <>No Curveil launch is indexed for <span className="mono">{token}</span> on this network. A launch created in the last few seconds may still be indexing.</>}
+            ? tr("The Curveil API could not be reached, so this launch cannot be shown.", "无法连接 Curveil API，因此无法显示该发行。")
+            : tr(<>No Curveil launch is indexed for <span className="mono">{token}</span> on this network. A launch created in the last few seconds may still be indexing.</>, <>该网络上没有 <span className="mono">{token}</span> 的已索引 Curveil 发行。几秒钟前创建的发行可能仍在索引中。</>)}
         />
         <div className="hero-actions">
-          <Link to="/app/launch" className="btn">All launches</Link>
-          {valid && <button className="btn" onClick={() => detail.refetch()}>Retry</button>}
+          <Link to="/app/launch" className="btn">{tr("All launches", "全部发行")}</Link>
+          {valid && <button className="btn" onClick={() => detail.refetch()}>{tr("Retry", "重试")}</button>}
         </div>
       </div>
     );
@@ -56,13 +58,14 @@ export function LaunchToken() {
 
 /** The token page while it loads: labels and the warning stay, values are skeletons. */
 function TokenSkeleton({ note }: { note?: string }) {
+  const tr = useT();
   return (
     <div className="wrap tk" aria-busy="true">
-      <Loading label={note ?? "Loading the launch"} />
+      <Loading label={note ?? tr("Loading the launch", "正在加载发行")} />
       {note && <p className="notice good" style={{ marginBottom: 16 }}>{note}</p>}
       <Link to="/app/launch" className="tk-back">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        Launches
+        {tr("Launches", "代币发行")}
       </Link>
       <header className="tk-head">
         <div className="tk-id">
@@ -73,7 +76,7 @@ function TokenSkeleton({ note }: { note?: string }) {
           </div>
         </div>
         <div className="tk-cap">
-          <span className="tk-label">Market cap</span>
+          <span className="tk-label">{tr("Market cap", "市值")}</span>
           <strong><Sk w="7ch" /></strong>
           <span className="tk-cap-sub"><Sk w="12ch" /></span>
         </div>
@@ -85,10 +88,10 @@ function TokenSkeleton({ note }: { note?: string }) {
             <Sk block w="100%" h={260} />
           </section>
           <dl className="tk-stats">
-            {["Market cap", "Volume 24h", "Trades", "Supply", "Creator fees"].map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="7ch" /></dd></div>)}
+            {tr(["Market cap", "Volume 24h", "Trades", "Supply", "Creator fees"], ["市值", "24 小时成交量", "成交笔数", "供应量", "创作者手续费"]).map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="7ch" /></dd></div>)}
           </dl>
           <section className="tk-curve">
-            <span className="tk-label">Bonding curve progress</span>
+            <span className="tk-label">{tr("Bonding curve progress", "联合曲线进度")}</span>
             <Sk block w="100%" h={8} style={{ borderRadius: 999 }} />
             <Sk w="40ch" />
           </section>
@@ -111,6 +114,7 @@ const RANGES = [["24h", DAY], ["7D", 7 * DAY], ["All", 0]] as const;
 type Tab = "trades" | "locks" | "fees" | "terms";
 
 function TokenView({ d }: { d: LaunchDetail }) {
+  const tr = useT();
   const l = d.launch;
   const quote = l.quote ?? d.template?.quote;
   const q = quoteSym(quote);
@@ -165,7 +169,7 @@ function TokenView({ d }: { d: LaunchDetail }) {
   const creatorFees = quote ? Number(l.fees.creator) / 10 ** quote.decimals : null;
   const qd = isUsd(q) ? 2 : 4;
   const padName = pad.data ? pad.data.operator.brand?.name || pad.data.operator.slug : null;
-  const links = [["Website", d.metadata?.website], ["X", d.metadata?.x], ["Telegram", d.metadata?.telegram]].filter((x): x is [string, string] => Boolean(x[1]));
+  const links = [[tr("Website", "网站"), d.metadata?.website], ["X", d.metadata?.x], ["Telegram", d.metadata?.telegram]].filter((x): x is [string, string] => Boolean(x[1]));
 
   const pickSide = (s: "buy" | "sell") => {
     setSide(s);
@@ -176,7 +180,7 @@ function TokenView({ d }: { d: LaunchDetail }) {
     <div className={`wrap tk${tradable || graduated ? " has-mbar" : ""}`}>
       <Link to="/app/launch" className="tk-back">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        Launches
+        {tr("Launches", "代币发行")}
       </Link>
 
       <header className="tk-head">
@@ -186,21 +190,21 @@ function TokenView({ d }: { d: LaunchDetail }) {
             <div className="tk-name">
               <h1>{l.name}</h1>
               <span className="tk-sym mono">{l.symbol}</span>
-              <span className={`tag ${graduated ? "tag-live" : l.state === "graduation_ready" ? "tag-shielded" : "tag-public"}`}>{STATE_LABEL[l.state]}</span>
+              <span className={`tag ${graduated ? "tag-live" : l.state === "graduation_ready" ? "tag-shielded" : "tag-public"}`}>{tr(STATE_LABEL[l.state], STATE_LABEL_ZH[l.state])}</span>
             </div>
             <p className="tk-meta">
-              <span>by <Link className="mono" to="/app/profile/$address" params={{ address: l.creator }}>{shortAddress(l.creator)}</Link></span>
+              <span>{tr("by", "创建者")} <Link className="mono" to="/app/profile/$address" params={{ address: l.creator }}>{shortAddress(l.creator)}</Link></span>
               <a href={explorerTx(l.createdTx)} target="_blank" rel="noreferrer">{timeAgo(l.createdAt)}</a>
-              <span>{q} pair</span>
+              <span>{tr(`${q} pair`, `${q} 交易对`)}</span>
               <CopyAddress value={l.token} />
               {links.map(([label, href]) => <a key={label} className="tk-link" href={href} target="_blank" rel="noopener noreferrer nofollow ugc">{label} ↗</a>)}
             </p>
           </div>
         </div>
         <div className="tk-cap">
-          <span className="tk-label">Market cap</span>
+          <span className="tk-label">{tr("Market cap", "市值")}</span>
           <strong><QuoteFig n={l.marketCap} symbol={q} /></strong>
-          <span className="tk-cap-sub mono">{fmtPrice(l.price)} {q} price</span>
+          <span className="tk-cap-sub mono">{tr(`${fmtPrice(l.price)} ${q} price`, `价格 ${fmtPrice(l.price)} ${q}`)}</span>
         </div>
       </header>
 
@@ -211,20 +215,20 @@ function TokenView({ d }: { d: LaunchDetail }) {
               <div>
                 <p id="tk-price" className="tk-price mono">{fmtPrice(l.price)} <span>{q}</span></p>
                 <p className={`tk-change ${change === null ? "muted" : change >= 0 ? "good-text" : "bad-text"}`}>
-                  {change === null ? "No 24h change yet" : `${change >= 0 ? "+" : ""}${(change * 100).toFixed(2)}%`} <span className="muted">24h</span>
+                  {change === null ? tr("No 24h change yet", "暂无 24 小时涨跌") : `${change >= 0 ? "+" : ""}${(change * 100).toFixed(2)}%`} <span className="muted">{tr("24h", "24 小时")}</span>
                 </p>
               </div>
               <div className="tk-chart-tools">
-                <div className="seg tk-range" role="group" aria-label="Chart type" style={{ marginTop: 0 }}>
-                  <button type="button" aria-pressed={view === "candles"} onClick={() => setView("candles")} aria-label="Candles" title="Candles">
+                <div className="seg tk-range" role="group" aria-label={tr("Chart type", "图表类型")} style={{ marginTop: 0 }}>
+                  <button type="button" aria-pressed={view === "candles"} onClick={() => setView("candles")} aria-label={tr("Candles", "K 线")} title={tr("Candles", "K 线")}>
                     <svg viewBox="0 0 16 16" aria-hidden="true" className="tk-ico"><path d="M4 2v12M12 2v12" /><rect x="2.5" y="5" width="3" height="6" /><rect x="10.5" y="4" width="3" height="5" /></svg>
                   </button>
-                  <button type="button" aria-pressed={view === "line"} onClick={() => setView("line")} aria-label="Line" title="Line">
+                  <button type="button" aria-pressed={view === "line"} onClick={() => setView("line")} aria-label={tr("Line", "折线")} title={tr("Line", "折线")}>
                     <svg viewBox="0 0 16 16" aria-hidden="true" className="tk-ico"><path d="M1.5 12 6 7l3 3 5.5-6.5" /></svg>
                   </button>
                 </div>
-                <div className="seg tk-range" role="group" aria-label="Chart range" style={{ marginTop: 0 }}>
-                  {RANGES.map(([label, secs]) => <button key={label} type="button" aria-pressed={range === secs} onClick={() => setRange(secs)}>{label}</button>)}
+                <div className="seg tk-range" role="group" aria-label={tr("Chart range", "图表范围")} style={{ marginTop: 0 }}>
+                  {RANGES.map(([label, secs]) => <button key={label} type="button" aria-pressed={range === secs} onClick={() => setRange(secs)}>{tr(label, label === "All" ? "全部" : label === "7D" ? "7 天" : "24 小时")}</button>)}
                 </div>
               </div>
             </div>
@@ -232,30 +236,30 @@ function TokenView({ d }: { d: LaunchDetail }) {
               <TvChart
                 candles={candles}
                 mark={l.price}
-                markTitle="Price"
+                markTitle={tr("Price", "价格")}
                 height={360}
                 mode={view === "line" ? "line" : "candles"}
                 fmt={(n) => fmtPrice(n)}
                 minBars={30}
                 minBand={0.01}
                 resetKey={`${l.token}:${range ?? "all"}`}
-                empty="No trades in this range yet."
+                empty={tr("No trades in this range yet.", "这个范围内还没有成交。")}
               />
             )}
-            <p className="small muted" style={{ margin: 0 }}>{q} per {l.symbol} after each curve trade.{graduated && l.pool ? <> Pool trades are on the <Link to="/app/pools/$pool" params={{ pool: l.pool }}>pool page</Link>.</> : ""}</p>
+            <p className="small muted" style={{ margin: 0 }}>{tr(<>{q} per {l.symbol} after each curve trade.{graduated && l.pool ? <> Pool trades are on the <Link to="/app/pools/$pool" params={{ pool: l.pool }}>pool page</Link>.</> : ""}</>, <>每笔曲线交易后每枚 {l.symbol} 的 {q} 价格。{graduated && l.pool ? <>资金池中的交易请看<Link to="/app/pools/$pool" params={{ pool: l.pool }}>资金池页面</Link>。</> : ""}</>)}</p>
           </section>
 
           <dl className="tk-stats">
-            <div><dt>Market cap</dt><dd><QuoteFig n={l.marketCap} symbol={q} /></dd></div>
-            <div><dt>Volume 24h</dt><dd><QuoteFig n={l.volume24hQuote} symbol={q} /></dd></div>
-            <div><dt>Trades</dt><dd>{l.trades.toLocaleString("en-US")}</dd></div>
-            <div><dt>Supply</dt><dd>{supply !== null ? compact(supply) : "–"}</dd></div>
-            <div><dt>Creator fees</dt><dd>{creatorFees !== null ? fmtNumber(creatorFees, qd) : "–"} <span>{q}</span></dd></div>
+            <div><dt>{tr("Market cap", "市值")}</dt><dd><QuoteFig n={l.marketCap} symbol={q} /></dd></div>
+            <div><dt>{tr("Volume 24h", "24 小时成交量")}</dt><dd><QuoteFig n={l.volume24hQuote} symbol={q} /></dd></div>
+            <div><dt>{tr("Trades", "成交笔数")}</dt><dd>{l.trades.toLocaleString("en-US")}</dd></div>
+            <div><dt>{tr("Supply", "供应量")}</dt><dd>{supply !== null ? compact(supply) : "–"}</dd></div>
+            <div><dt>{tr("Creator fees", "创作者手续费")}</dt><dd>{creatorFees !== null ? fmtNumber(creatorFees, qd) : "–"} <span>{q}</span></dd></div>
           </dl>
 
-          <section className="tk-curve" aria-label="Bonding curve progress">
+          <section className="tk-curve" aria-label={tr("Bonding curve progress", "联合曲线进度")}>
             <div className="row-between">
-              <span className="tk-label">{graduated ? "Graduated" : "Bonding curve progress"}</span>
+              <span className="tk-label">{graduated ? tr("Graduated", "已毕业") : tr("Bonding curve progress", "联合曲线进度")}</span>
               <span className="mono tk-curve-pct">{graduated ? "100%" : `${pct.toFixed(pct < 10 ? 2 : 1)}%`}</span>
             </div>
             <div className="tk-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(graduated ? 100 : pct)}>
@@ -263,31 +267,31 @@ function TokenView({ d }: { d: LaunchDetail }) {
             </div>
             <p className="small muted" style={{ margin: 0 }}>
               {graduated
-                ? <>The curve closed with <span className="mono">{fmtNumber(reserve, qd)} {q}</span> and moved into a DAMM pool. Its LP shares are locked in escrow.</>
-                : <><span className="mono">{fmtNumber(reserve, qd)}</span> of <span className="mono">{fmtNumber(threshold, 0)} {q}</span> in the curve. At the threshold, trading stops and the liquidity moves into a DAMM pool with its LP shares locked.</>}
+                ? tr(<>The curve closed with <span className="mono">{fmtNumber(reserve, qd)} {q}</span> and moved into a DAMM pool. Its LP shares are locked in escrow.</>, <>曲线以 <span className="mono">{fmtNumber(reserve, qd)} {q}</span> 收官并转入 DAMM 资金池，其 LP 份额锁定在托管合约中。</>)
+                : tr(<><span className="mono">{fmtNumber(reserve, qd)}</span> of <span className="mono">{fmtNumber(threshold, 0)} {q}</span> in the curve. At the threshold, trading stops and the liquidity moves into a DAMM pool with its LP shares locked.</>, <>曲线中已有 <span className="mono">{fmtNumber(reserve, qd)}</span> / <span className="mono">{fmtNumber(threshold, 0)} {q}</span>。达到门槛后，曲线交易停止，流动性转入 DAMM 资金池，LP 份额被锁定。</>)}
             </p>
           </section>
 
           <dl className="tk-facts">
-            <div><dt>Token</dt><dd><CopyAddress value={l.token} /></dd></div>
-            <div><dt>Curve</dt><dd><CopyAddress value={l.curve} /></dd></div>
-            {l.pool && <div><dt>Pool</dt><dd><Link className="mono" to="/app/pools/$pool" params={{ pool: l.pool }}>{shortAddress(l.pool)}</Link></dd></div>}
-            <div><dt>Launched</dt><dd>{new Date(l.createdAt * 1000).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</dd></div>
-            <div><dt>Template</dt><dd title={l.templateLabel ?? undefined}>{l.templateLabel ?? `Template ${l.templateId}`}</dd></div>
-            {l.operator && <div><dt>Launchpad</dt><dd><a href={padHref(pad.data?.operator, l.operator)} target="_blank" rel="noreferrer">{padName ?? shortAddress(l.operator)}</a></dd></div>}
+            <div><dt>{tr("Token", "代币")}</dt><dd><CopyAddress value={l.token} /></dd></div>
+            <div><dt>{tr("Curve", "曲线")}</dt><dd><CopyAddress value={l.curve} /></dd></div>
+            {l.pool && <div><dt>{tr("Pool", "资金池")}</dt><dd><Link className="mono" to="/app/pools/$pool" params={{ pool: l.pool }}>{shortAddress(l.pool)}</Link></dd></div>}
+            <div><dt>{tr("Launched", "发行时间")}</dt><dd>{new Date(l.createdAt * 1000).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</dd></div>
+            <div><dt>{tr("Template", "模板")}</dt><dd title={l.templateLabel ?? undefined}>{l.templateLabel ?? tr(`Template ${l.templateId}`, `模板 ${l.templateId}`)}</dd></div>
+            {l.operator && <div><dt>{tr("Launchpad", "发射台")}</dt><dd><a href={padHref(pad.data?.operator, l.operator)} target="_blank" rel="noreferrer">{padName ?? shortAddress(l.operator)}</a></dd></div>}
           </dl>
 
           {(d.metadata?.description || (!d.metadata && l.metadataUri)) && (
             <section className="tk-about">
-              <h2>About</h2>
+              <h2>{tr("About", "简介")}</h2>
               {d.metadata?.description && <p style={{ whiteSpace: "pre-line" }}>{d.metadata.description}</p>}
-              {!d.metadata && l.metadataUri && <p className="small muted">Details at an external link not hosted by Curveil: <span className="mono">{l.metadataUri.slice(0, 80)}</span></p>}
+              {!d.metadata && l.metadataUri && <p className="small muted">{tr("Details at an external link not hosted by Curveil:", "详情位于非 Curveil 托管的外部链接：")} <span className="mono">{l.metadataUri.slice(0, 80)}</span></p>}
             </section>
           )}
 
           <section className="tk-tabs">
-            <div className="tk-tablist" role="tablist" aria-label="Token details">
-              {([["trades", `Trades`, l.trades], ["locks", "Locked liquidity", d.locks.length || null], ["fees", "Fees", null], ["terms", "Terms", null]] as [Tab, string, number | null][])
+            <div className="tk-tablist" role="tablist" aria-label={tr("Token details", "代币详情")}>
+              {([["trades", tr("Trades", "成交"), l.trades], ["locks", tr("Locked liquidity", "锁定的流动性"), d.locks.length || null], ["fees", tr("Fees", "手续费"), null], ["terms", tr("Terms", "条款"), null]] as [Tab, string, number | null][])
                 .filter(([id]) => id !== "locks" || d.locks.length > 0)
                 .map(([id, label, n]) => (
                   <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>
@@ -303,18 +307,18 @@ function TokenView({ d }: { d: LaunchDetail }) {
               {tab === "terms" && d.template && (
                 <div className="stack">
                   <TemplateTerms t={d.template} operatorShareBps={d.launch.operatorShareBps} operatorName={padName ?? undefined} />
-                  {d.launch.operator && <p className="small muted" style={{ margin: 0 }}>Launched on {padName ?? shortAddress(d.launch.operator)}. Its share was fixed when this token was created.</p>}
+                  {d.launch.operator && <p className="small muted" style={{ margin: 0 }}>{tr(`Launched on ${padName ?? shortAddress(d.launch.operator)}. Its share was fixed when this token was created.`, `通过 ${padName ?? shortAddress(d.launch.operator)} 发行。其分成在代币创建时已固定。`)}</p>}
                 </div>
               )}
             </div>
           </section>
         </div>
 
-        <aside className="tk-side" id="trade" aria-label="Trade">
+        <aside className="tk-side" id="trade" aria-label={tr("Trade", "交易")}>
           <div className="panel stack tk-trade">
             {tradable && funding === "shielded" && (
               <p className="small muted tk-public-note">
-                Curve trades are public: they pay from your connected wallet, not your vault. Once the token graduates into a pool, it can be swapped shielded from <Link to="/app/swap">Swap</Link> if it is admitted to the vault.
+                {tr(<>Curve trades are public: they pay from your connected wallet, not your vault. Once the token graduates into a pool, it can be swapped shielded from <Link to="/app/swap">Swap</Link> if it is admitted to the vault.</>, <>曲线交易是公开的：从你连接的钱包付款，而不是金库。代币毕业进入资金池后，如果它已被金库准入，就可以在<Link to="/app/swap">兑换</Link>页面隐私兑换。</>)}
               </p>
             )}
             {tradable && <TradePanel d={d} onConfirmed={setLastTx} side={side} onSide={setSide} />}
@@ -323,24 +327,24 @@ function TokenView({ d }: { d: LaunchDetail }) {
           </div>
           <p className="tk-warn small">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8 15 14H1z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M8 6.5v3.5M8 12v.01" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
-            Anyone can launch a token. Curveil does not review projects; the template only fixes the economics. Trade only what you can afford to lose.
+            {tr("Anyone can launch a token. Curveil does not review projects; the template only fixes the economics. Trade only what you can afford to lose.", "任何人都可以发行代币。Curveil 不审核项目，模板只固定经济参数。请只交易你能承受损失的金额。")}
           </p>
         </aside>
       </div>
 
       {(tradable || graduated) && (
-        <div className="tk-mbar" role="region" aria-label="Quick trade">
+        <div className="tk-mbar" role="region" aria-label={tr("Quick trade", "快速交易")}>
           <div className="tk-mbar-price">
             <span className="tk-label">{l.symbol}</span>
             <strong className="mono">{fmtPrice(l.price)} <span>{q}</span></strong>
           </div>
           {tradable ? (
             <>
-              <button type="button" className="btn tk-sell" onClick={() => pickSide("sell")} disabled={l.state === "created"}>Sell</button>
-              <button type="button" className="btn btn-primary tk-buy" onClick={() => pickSide("buy")}>Buy</button>
+              <button type="button" className="btn tk-sell" onClick={() => pickSide("sell")} disabled={l.state === "created"}>{tr("Sell", "卖出")}</button>
+              <button type="button" className="btn btn-primary tk-buy" onClick={() => pickSide("buy")}>{tr("Buy", "买入")}</button>
             </>
           ) : (
-            l.pool && quote && <Link to="/app/swap" search={{ from: quote.address, to: l.token }} className="btn btn-primary">Trade in the pool</Link>
+            l.pool && quote && <Link to="/app/swap" search={{ from: quote.address, to: l.token }} className="btn btn-primary">{tr("Trade in the pool", "在资金池中交易")}</Link>
           )}
         </div>
       )}
@@ -351,29 +355,30 @@ function TokenView({ d }: { d: LaunchDetail }) {
 const compact = (n: number) => (n >= 1e9 ? `${+(n / 1e9).toFixed(2)}B` : n >= 1e6 ? `${+(n / 1e6).toFixed(2)}M` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}K` : fmtNumber(n, 0));
 
 function TradesTable({ trades, symbol, quote }: { trades: ReturnType<typeof useLaunchTrades>; symbol: string; quote: { symbol: string; decimals: number } | null | undefined }) {
+  const tr = useT();
   const q = quoteSym(quote);
   return (
     <div className="table-scroll" tabIndex={0}>
       <table className="data tk-trades">
         <thead>
-          <tr><th>Side</th><th>Trader</th><th className="num">{q}</th><th className="num">{symbol}</th><th className="num">Price</th><th className="num">Age</th></tr>
+          <tr><th>{tr("Side", "方向")}</th><th>{tr("Trader", "交易者")}</th><th className="num">{q}</th><th className="num">{symbol}</th><th className="num">{tr("Price", "价格")}</th><th className="num">{tr("Age", "时间")}</th></tr>
         </thead>
         <tbody>
           {trades.isLoading && <SkRows cols={6} rows={5} num={[2, 3, 4, 5]} />}
-          {trades.data?.length === 0 && <tr><td colSpan={6} className="muted">No trades yet. The first buy starts the price line.</td></tr>}
+          {trades.data?.length === 0 && <tr><td colSpan={6} className="muted">{tr("No trades yet. The first buy starts the price line.", "还没有成交。第一笔买入将开启价格走势。")}</td></tr>}
           {trades.data?.map((t) => (
             <tr key={`${t.txHash}-${t.logIndex}`}>
               <td>
                 <span className={`tk-side-cell ${t.isBuy ? "good-text" : "bad-text"}`}>
                   <svg viewBox="0 0 12 12" aria-hidden="true"><path d={t.isBuy ? "M3 9 9 3M4.5 3H9v4.5" : "M3 3l6 6M9 4.5V9H4.5"} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  {t.isBuy ? "Buy" : "Sell"}
+                  {t.isBuy ? tr("Buy", "买入") : tr("Sell", "卖出")}
                 </span>
               </td>
               <td className="mono small"><Link to="/app/profile/$address" params={{ address: t.recipient }}>{shortAddress(t.recipient)}</Link></td>
               <td className="num mono">{fmtAmount(t.quoteAmount, quote?.decimals ?? 6, isUsd(quote?.symbol) ? 2 : 4)}</td>
               <td className="num mono">{compact(Number(t.tokenAmount) / 1e18)}</td>
               <td className="num mono small">{fmtPrice(t.priceAfter)}</td>
-              <td className="num small"><a href={explorerTx(t.txHash)} target="_blank" rel="noreferrer" className="muted" title="View the transaction">{timeAgo(t.timestamp)}</a></td>
+              <td className="num small"><a href={explorerTx(t.txHash)} target="_blank" rel="noreferrer" className="muted" title={tr("View the transaction", "查看交易")}>{timeAgo(t.timestamp)}</a></td>
             </tr>
           ))}
         </tbody>
@@ -385,6 +390,7 @@ function TradesTable({ trades, symbol, quote }: { trades: ReturnType<typeof useL
 const SLIPPAGES = [50, 100, 200];
 
 function TradePanel({ d, onConfirmed, side, onSide }: { d: LaunchDetail; onConfirmed: (p: TxPhase) => void; side: "buy" | "sell"; onSide: (s: "buy" | "sell") => void }) {
+  const tr = useT();
   const l = d.launch;
   const quote = (l.quote ?? d.template?.quote)!;
   const qc = useQueryClient();
@@ -417,7 +423,7 @@ function TradePanel({ d, onConfirmed, side, onSide }: { d: LaunchDetail; onConfi
   let used: bigint | null = raw;
   if (side === "buy" && buyQ.data) [out, fee, used] = buyQ.data;
   if (side === "sell" && sellQ.data) [out, fee] = sellQ.data;
-  const quoteErr = (side === "buy" ? buyQ.error : sellQ.error) ? "This amount cannot be quoted. For sells, it may exceed the tokens in circulation." : null;
+  const quoteErr = (side === "buy" ? buyQ.error : sellQ.error) ? tr("This amount cannot be quoted. For sells, it may exceed the tokens in circulation.", "无法为该数量报价。如果是卖出，可能超过了流通中的代币数量。") : null;
   const partial = side === "buy" && raw && used !== null && used < raw;
   const avgPrice = out && used && out > 0n ? (side === "buy" ? Number(used) / 10 ** quote.decimals / (Number(out) / 1e18) : Number(out + (fee ?? 0n)) / 10 ** quote.decimals / (Number(raw ?? 0n) / 1e18)) : null;
   const impact = avgPrice && l.price ? (side === "buy" ? avgPrice / l.price - 1 : 1 - avgPrice / l.price) : null;
@@ -430,22 +436,22 @@ function TradePanel({ d, onConfirmed, side, onSide }: { d: LaunchDetail; onConfi
     const token = side === "buy" ? quote.address : l.token;
     const needed = side === "buy" ? (used ?? raw) : raw;
     const wrap = side === "buy" && ethQ ? needed - (needed < (wethHeld ?? 0n) ? needed : (wethHeld ?? 0n)) : 0n;
-    if (wrap > 0n) steps.push(wrapStep(wrap, `Wrap ${fmtAmount(wrap, 18, 6)} ETH`));
+    if (wrap > 0n) steps.push(wrapStep(wrap, tr(`Wrap ${fmtAmount(wrap, 18, 6)} ETH`, `包装 ${fmtAmount(wrap, 18, 6)} ETH`)));
     if ((bal.allowance ?? 0n) < needed) {
-      steps.push({ label: `Approve ${side === "buy" ? quote.symbol : l.symbol}`, params: { address: token, abi: erc20Abi, functionName: "approve", args: [l.curve, needed] } as const });
+      steps.push({ label: tr(`Approve ${side === "buy" ? quote.symbol : l.symbol}`, `授权 ${side === "buy" ? quote.symbol : l.symbol}`), params: { address: token, abi: erc20Abi, functionName: "approve", args: [l.curve, needed] } as const });
     }
     steps.push(
       side === "buy"
-        ? { label: `Buy ${l.symbol}`, params: { address: l.curve, abi: bondingCurveAbi, functionName: "buy", args: [needed, minOut, address, deadlineIn(10)] } as const }
-        : { label: `Sell ${l.symbol}`, params: { address: l.curve, abi: bondingCurveAbi, functionName: "sell", args: [raw, minOut, address, deadlineIn(10)] } as const },
+        ? { label: tr(`Buy ${l.symbol}`, `买入 ${l.symbol}`), params: { address: l.curve, abi: bondingCurveAbi, functionName: "buy", args: [needed, minOut, address, deadlineIn(10)] } as const }
+        : { label: tr(`Sell ${l.symbol}`, `卖出 ${l.symbol}`), params: { address: l.curve, abi: bondingCurveAbi, functionName: "sell", args: [raw, minOut, address, deadlineIn(10)] } as const },
     );
     let r = await tx.run(steps);
     if (r && side === "sell" && ethQ) {
       const got = wethReceived(r, address);
-      if (got > 0n) r = await tx.run([unwrapStep(got, `Unwrap ${fmtAmount(got, 18, 6)} WETH to ETH`)]);
+      if (got > 0n) r = await tx.run([unwrapStep(got, tr(`Unwrap ${fmtAmount(got, 18, 6)} WETH to ETH`, `把 ${fmtAmount(got, 18, 6)} WETH 解包为 ETH`))]);
     }
     if (r) {
-      onConfirmed({ kind: "confirmed", hash: r.transactionHash, block: r.blockNumber, step: partial ? "Your buy reached the graduation threshold" : undefined });
+      onConfirmed({ kind: "confirmed", hash: r.transactionHash, block: r.blockNumber, step: partial ? tr("Your buy reached the graduation threshold", "你的买入达到了毕业门槛") : undefined });
       setAmount("");
       wallet.refetch();
       qc.invalidateQueries({ queryKey: ["launch", l.token.toLowerCase()] });
@@ -456,15 +462,15 @@ function TradePanel({ d, onConfirmed, side, onSide }: { d: LaunchDetail; onConfi
 
   return (
     <>
-      <div className="seg side-seg" role="tablist" aria-label="Trade side" style={{ marginTop: 0 }}>
+      <div className="seg side-seg" role="tablist" aria-label={tr("Trade side", "交易方向")} style={{ marginTop: 0 }}>
         {(["buy", "sell"] as const).map((s) => (
           <button key={s} role="tab" data-side={s === "buy" ? "long" : "short"} aria-selected={side === s} aria-pressed={side === s} onClick={() => { setSide(s); setAmount(""); }} disabled={s === "sell" && l.state === "created"}>
-            {s === "buy" ? "Buy" : "Sell"}
+            {s === "buy" ? tr("Buy", "买入") : tr("Sell", "卖出")}
           </button>
         ))}
       </div>
       <AmountField
-        label={side === "buy" ? "You pay" : "You sell"}
+        label={side === "buy" ? tr("You pay", "你支付") : tr("You sell", "你卖出")}
         value={amount}
         onChange={setAmount}
         symbol={side === "buy" ? qSym : l.symbol}
@@ -476,34 +482,34 @@ function TradePanel({ d, onConfirmed, side, onSide }: { d: LaunchDetail; onConfi
           setAmount(formatUnits(max, inDec));
         } : undefined}
         decimals={inDec}
-        error={insufficient ? `More than your ${side === "buy" ? qSym : l.symbol} balance` : null}
+        error={insufficient ? tr(`More than your ${side === "buy" ? qSym : l.symbol} balance`, `超过你的 ${side === "buy" ? qSym : l.symbol} 余额`) : null}
       >
         <span className="token-tag">{side === "buy" ? qSym : l.symbol}</span>
       </AmountField>
-      <AmountField label="You receive" hint={out ? <>Estimate. At least <span className="mono">{fmtAmount(minOut, side === "buy" ? 18 : quote.decimals, side === "buy" ? 0 : 4)}</span> with {fmtBps(slip)} slippage, or the trade reverts.</> : undefined} value={out !== null ? fmtAmount(out, side === "buy" ? 18 : quote.decimals, side === "buy" ? 0 : 4).replace(/,/g, "") : ""} readOnly>
+      <AmountField label={tr("You receive", "你收到")} hint={out ? tr(<>Estimate. At least <span className="mono">{fmtAmount(minOut, side === "buy" ? 18 : quote.decimals, side === "buy" ? 0 : 4)}</span> with {fmtBps(slip)} slippage, or the trade reverts.</>, <>估算值。在 {fmtBps(slip)} 滑点下至少收到 <span className="mono">{fmtAmount(minOut, side === "buy" ? 18 : quote.decimals, side === "buy" ? 0 : 4)}</span>，否则交易会回滚。</>) : undefined} value={out !== null ? fmtAmount(out, side === "buy" ? 18 : quote.decimals, side === "buy" ? 0 : 4).replace(/,/g, "") : ""} readOnly>
         <span className="token-tag">{side === "buy" ? l.symbol : qSym}</span>
       </AmountField>
       {partial && (
         <p className="notice good small" style={{ margin: 0 }}>
-          This buy reaches the graduation threshold. Only {fmtAmount(used!, quote.decimals, isUsd(quote.symbol) ? 2 : 4)} {qSym} is used; the rest stays in your wallet. You receive all remaining curve tokens.
+          {tr(`This buy reaches the graduation threshold. Only ${fmtAmount(used!, quote.decimals, isUsd(quote.symbol) ? 2 : 4)} ${qSym} is used; the rest stays in your wallet. You receive all remaining curve tokens.`, `这笔买入会达到毕业门槛。只使用 ${fmtAmount(used!, quote.decimals, isUsd(quote.symbol) ? 2 : 4)} ${qSym}，其余留在你的钱包中。你将收到曲线上剩余的全部代币。`)}
         </p>
       )}
       {quoteErr && raw && <p className="notice bad small" style={{ margin: 0 }}>{quoteErr}</p>}
       <div className="slippage">
-        <span className="field-label">Slippage tolerance</span>
-        <div className="seg" role="group" aria-label="Slippage" style={{ marginTop: 0 }}>
+        <span className="field-label">{tr("Slippage tolerance", "滑点容差")}</span>
+        <div className="seg" role="group" aria-label={tr("Slippage", "滑点")} style={{ marginTop: 0 }}>
           {SLIPPAGES.map((s) => <button key={s} type="button" aria-pressed={slip === s} onClick={() => setSlip(s)}>{fmtBps(s)}</button>)}
         </div>
       </div>
       <dl className="rows summary">
-        <div><dt>Average price</dt><dd className="mono">{fmtPrice(avgPrice)} {qSym}</dd></div>
-        <div><dt>Price impact</dt><dd className={`mono ${impact !== null && impact > 0.05 ? "warn-text" : ""}`}>{impact === null ? "–" : `${(impact * 100).toFixed(2)}%`}</dd></div>
-        <div><dt>Curve fee ({fmtBps(d.template?.feeBps)})</dt><dd className="mono">{fee !== null ? `${fmtAmount(fee, quote.decimals, 4)} ${qSym}` : "–"}</dd></div>
-        <div><dt>Minimum received</dt><dd className="mono">{out ? fmtAmount(minOut, side === "buy" ? 18 : quote.decimals, side === "buy" ? 0 : 4) : "–"}</dd></div>
+        <div><dt>{tr("Average price", "平均价格")}</dt><dd className="mono">{fmtPrice(avgPrice)} {qSym}</dd></div>
+        <div><dt>{tr("Price impact", "价格影响")}</dt><dd className={`mono ${impact !== null && impact > 0.05 ? "warn-text" : ""}`}>{impact === null ? "–" : `${(impact * 100).toFixed(2)}%`}</dd></div>
+        <div><dt>{tr("Curve fee", "曲线手续费")} ({fmtBps(d.template?.feeBps)})</dt><dd className="mono">{fee !== null ? `${fmtAmount(fee, quote.decimals, 4)} ${qSym}` : "–"}</dd></div>
+        <div><dt>{tr("Minimum received", "最低到账")}</dt><dd className="mono">{out ? fmtAmount(minOut, side === "buy" ? 18 : quote.decimals, side === "buy" ? 0 : 4) : "–"}</dd></div>
       </dl>
-      <WalletAction verb={`${side} ${l.symbol}`}>
+      <WalletAction verb={tr(`${side} ${l.symbol}`, `${side === "buy" ? "买入" : "卖出"} ${l.symbol}`)}>
         <button className="btn btn-primary btn-block" disabled={tx.busy || !raw || !out || Boolean(insufficient)} onClick={submit}>
-          {!raw ? "Enter an amount" : insufficient ? `Not enough ${side === "buy" ? qSym : l.symbol}` : tx.busy ? "Waiting for wallet…" : side === "buy" ? `Buy ${l.symbol}` : `Sell ${l.symbol}`}
+          {!raw ? tr("Enter an amount", "请输入金额") : insufficient ? tr(`Not enough ${side === "buy" ? qSym : l.symbol}`, `${side === "buy" ? qSym : l.symbol} 余额不足`) : tx.busy ? tr("Waiting for wallet…", "等待钱包确认…") : side === "buy" ? tr(`Buy ${l.symbol}`, `买入 ${l.symbol}`) : tr(`Sell ${l.symbol}`, `卖出 ${l.symbol}`)}
         </button>
       </WalletAction>
       <TxStatus phase={tx.phase} />
@@ -512,13 +518,14 @@ function TradePanel({ d, onConfirmed, side, onSide }: { d: LaunchDetail; onConfi
 }
 
 function GraduatePanel({ d, prior, onConfirmed }: { d: LaunchDetail; prior: TxPhase | null; onConfirmed: (p: TxPhase) => void }) {
+  const tr = useT();
   const qc = useQueryClient();
   const tx = useTxRunner();
   const l = d.launch;
   async function graduate() {
-    const r = await tx.run([{ label: "Graduate", params: { address: l.curve, abi: bondingCurveAbi, functionName: "graduate" } as const }]);
+    const r = await tx.run([{ label: tr("Graduate", "毕业"), params: { address: l.curve, abi: bondingCurveAbi, functionName: "graduate" } as const }]);
     if (r) {
-      onConfirmed({ kind: "confirmed", hash: r.transactionHash, block: r.blockNumber, step: "Graduated into a DAMM pool" });
+      onConfirmed({ kind: "confirmed", hash: r.transactionHash, block: r.blockNumber, step: tr("Graduated into a DAMM pool", "已毕业并转入 DAMM 资金池") });
       qc.invalidateQueries({ queryKey: ["launch", l.token.toLowerCase()] });
       qc.invalidateQueries({ queryKey: ["launches"] });
     }
@@ -527,15 +534,15 @@ function GraduatePanel({ d, prior, onConfirmed }: { d: LaunchDetail; prior: TxPh
     <>
       {prior && tx.phase.kind === "idle" && <TxStatus phase={prior} />}
       <div>
-        <p className="eyebrow">Graduation</p>
-        <h3>Ready to graduate</h3>
+        <p className="eyebrow">{tr("Graduation", "毕业")}</p>
+        <h3>{tr("Ready to graduate", "可以毕业了")}</h3>
       </div>
       <p className="small" style={{ margin: 0 }}>
-        The curve reserve reached the threshold and curve trading has stopped. Anyone can now graduate it. The migrator checks the amounts and the price, creates the DAMM pool at
-        the curve's final price, deposits the reserve with the migration supply and locks every LP share in escrow.
+        {tr(`The curve reserve reached the threshold and curve trading has stopped. Anyone can now graduate it. The migrator checks the amounts and the price, creates the DAMM pool at
+        the curve's final price, deposits the reserve with the migration supply and locks every LP share in escrow.`, "曲线储备已达到门槛，曲线交易已停止。现在任何人都可以触发毕业。迁移合约会核对数量和价格，按曲线的最终价格创建 DAMM 资金池，存入储备和迁移供应量，并把所有 LP 份额锁定在托管合约中。")}
       </p>
-      <WalletAction verb="graduate this launch">
-        <button className="btn btn-primary btn-block" disabled={tx.busy} onClick={graduate}>{tx.busy ? "Waiting for wallet…" : "Graduate into a DAMM pool"}</button>
+      <WalletAction verb={tr("graduate this launch", "让该发行毕业")}>
+        <button className="btn btn-primary btn-block" disabled={tx.busy} onClick={graduate}>{tx.busy ? tr("Waiting for wallet…", "等待钱包确认…") : tr("Graduate into a DAMM pool", "毕业并转入 DAMM 资金池")}</button>
       </WalletAction>
       <TxStatus phase={tx.phase} />
     </>
@@ -543,55 +550,58 @@ function GraduatePanel({ d, prior, onConfirmed }: { d: LaunchDetail; prior: TxPh
 }
 
 function GraduatedPanel({ d, prior }: { d: LaunchDetail; prior: TxPhase | null }) {
+  const tr = useT();
   const g = d.graduation;
   const quote = d.launch.quote;
   return (
     <>
       {prior && <TxStatus phase={prior} />}
       <div>
-        <p className="eyebrow">Graduation</p>
-        <h3>Trading in the pool</h3>
+        <p className="eyebrow">{tr("Graduation", "毕业")}</p>
+        <h3>{tr("Trading in the pool", "正在资金池中交易")}</h3>
       </div>
       {g ? (
         <dl className="rows summary">
-          <div><dt>Pool</dt><dd className="mono"><Link to="/app/pools/$pool" params={{ pool: g.pool }}>{shortAddress(g.pool)}</Link></dd></div>
-          <div><dt>Tokens deposited</dt><dd className="mono">{fmtAmount(g.tokenAmount, 18, 0)}</dd></div>
-          <div><dt>{quote?.symbol ?? "Quote"} deposited</dt><dd className="mono">{fmtAmount(g.quoteAmount, quote?.decimals ?? 6, isUsd(quote?.symbol) ? 2 : 4)}</dd></div>
-          <div><dt>Graduated</dt><dd><a href={explorerTx(g.txHash)} target="_blank" rel="noreferrer">{timeAgo(g.timestamp)}</a></dd></div>
+          <div><dt>{tr("Pool", "资金池")}</dt><dd className="mono"><Link to="/app/pools/$pool" params={{ pool: g.pool }}>{shortAddress(g.pool)}</Link></dd></div>
+          <div><dt>{tr("Tokens deposited", "存入的代币")}</dt><dd className="mono">{fmtAmount(g.tokenAmount, 18, 0)}</dd></div>
+          <div><dt>{tr(`${quote?.symbol ?? "Quote"} deposited`, `存入的 ${quote?.symbol ?? "计价代币"}`)}</dt><dd className="mono">{fmtAmount(g.quoteAmount, quote?.decimals ?? 6, isUsd(quote?.symbol) ? 2 : 4)}</dd></div>
+          <div><dt>{tr("Graduated", "毕业时间")}</dt><dd><a href={explorerTx(g.txHash)} target="_blank" rel="noreferrer">{timeAgo(g.timestamp)}</a></dd></div>
         </dl>
       ) : (
-        <p className="small muted">Graduation details are still indexing.</p>
+        <p className="small muted">{tr("Graduation details are still indexing.", "毕业详情仍在索引中。")}</p>
       )}
       {g && quote && (
         <div className="stack" style={{ gap: 8 }}>
-          <Link to="/app/swap" search={{ from: quote.address, to: d.launch.token }} className="btn btn-primary btn-block">Trade in the pool</Link>
-          <Link to="/app/pools/$pool" params={{ pool: g.pool }} className="btn btn-block">Pool details</Link>
+          <Link to="/app/swap" search={{ from: quote.address, to: d.launch.token }} className="btn btn-primary btn-block">{tr("Trade in the pool", "在资金池中交易")}</Link>
+          <Link to="/app/pools/$pool" params={{ pool: g.pool }} className="btn btn-block">{tr("Pool details", "资金池详情")}</Link>
         </div>
       )}
-      <p className="small muted" style={{ margin: 0 }}>The curve is closed. All LP shares from graduation are in escrow; see Locked liquidity for their unlock dates.</p>
+      <p className="small muted" style={{ margin: 0 }}>{tr("The curve is closed. All LP shares from graduation are in escrow; see Locked liquidity for their unlock dates.", "曲线已关闭。毕业产生的所有 LP 份额都在托管合约中，解锁日期见“锁定的流动性”。")}</p>
     </>
   );
 }
 
 function LocksPanel({ d }: { d: LaunchDetail }) {
+  const tr = useT();
   return (
     <div className="stack">
       <div className="grid-2">
         {d.locks.map((lock) => <LockCard key={lock.id} lock={lock} d={d} />)}
       </div>
       <p className="small muted" style={{ margin: 0 }}>
-        Locked shares stay in the pool and keep earning trading fees. The beneficiary can claim fees at any time and the LP shares after the unlock time.
-        {LP_ESCROW && <> Escrow <a className="mono" href={explorerAddress(LP_ESCROW)} target="_blank" rel="noreferrer">{shortAddress(LP_ESCROW)}</a>.</>}
+        {tr("Locked shares stay in the pool and keep earning trading fees. The beneficiary can claim fees at any time and the LP shares after the unlock time.", "锁定的份额留在资金池中并持续赚取交易手续费。受益人可以随时领取手续费，解锁时间后可领取 LP 份额。")}
+        {LP_ESCROW && <> {tr("Escrow", "托管合约")} <a className="mono" href={explorerAddress(LP_ESCROW)} target="_blank" rel="noreferrer">{shortAddress(LP_ESCROW)}</a>.</>}
       </p>
     </div>
   );
 }
 
 function LockCard({ lock, d }: { lock: Lock; d: LaunchDetail }) {
+  const tr = useT();
   const { address } = useConnection();
   const qc = useQueryClient();
   const tx = useTxRunner();
-  const who = lock.id === d.graduation?.creatorLockId ? "Creator" : lock.id === d.graduation?.protocolLockId ? "Protocol" : `Lock #${lock.id}`;
+  const who = lock.id === d.graduation?.creatorLockId ? tr("Creator", "创作者") : lock.id === d.graduation?.protocolLockId ? tr("Protocol", "协议") : tr(`Lock #${lock.id}`, `锁仓 #${lock.id}`);
   const p = lock.pool;
   const mine = same(address, lock.beneficiary);
   const unlocked = lock.unlockAt * 1000 <= Date.now();
@@ -600,8 +610,8 @@ function LockCard({ lock, d }: { lock: Lock; d: LaunchDetail }) {
     if (!LP_ESCROW || !address) return;
     const r = await tx.run([
       kind === "fees"
-        ? { label: "Claim LP fees", params: { address: LP_ESCROW, abi: lpEscrowAbi, functionName: "claimFees", args: [BigInt(lock.id), address] } as const }
-        : { label: "Claim LP shares", params: { address: LP_ESCROW, abi: lpEscrowAbi, functionName: "claim", args: [BigInt(lock.id), address] } as const },
+        ? { label: tr("Claim LP fees", "领取 LP 手续费"), params: { address: LP_ESCROW, abi: lpEscrowAbi, functionName: "claimFees", args: [BigInt(lock.id), address] } as const }
+        : { label: tr("Claim LP shares", "领取 LP 份额"), params: { address: LP_ESCROW, abi: lpEscrowAbi, functionName: "claim", args: [BigInt(lock.id), address] } as const },
     ]);
     if (r) {
       qc.invalidateQueries({ queryKey: ["launch", d.launch.token.toLowerCase()] });
@@ -611,21 +621,21 @@ function LockCard({ lock, d }: { lock: Lock; d: LaunchDetail }) {
   return (
     <div className="lock-card stack">
       <div className="row-between">
-        <strong>{who} lock</strong>
-        <span className={`tag ${lock.claimed ? "tag-illustration" : unlocked ? "tag-live" : "tag-public"}`}>{lock.claimed ? "Claimed" : unlocked ? "Unlocked" : `Unlocks ${untilLabel(lock.unlockAt)}`}</span>
+        <strong>{tr(`${who} lock`, `${who}锁仓`)}</strong>
+        <span className={`tag ${lock.claimed ? "tag-illustration" : unlocked ? "tag-live" : "tag-public"}`}>{lock.claimed ? tr("Claimed", "已领取") : unlocked ? tr("Unlocked", "已解锁") : tr(`Unlocks ${untilLabel(lock.unlockAt)}`, `${untilLabel(lock.unlockAt)}解锁`)}</span>
       </div>
       <dl className="rows">
-        <div><dt>Beneficiary</dt><dd className="mono"><a href={explorerAddress(lock.beneficiary)} target="_blank" rel="noreferrer">{shortAddress(lock.beneficiary)}</a>{mine && " (you)"}</dd></div>
-        <div><dt>Unlock time</dt><dd>{new Date(lock.unlockAt * 1000).toLocaleString()}</dd></div>
+        <div><dt>{tr("Beneficiary", "受益人")}</dt><dd className="mono"><a href={explorerAddress(lock.beneficiary)} target="_blank" rel="noreferrer">{shortAddress(lock.beneficiary)}</a>{mine && tr(" (you)", "（你）")}</dd></div>
+        <div><dt>{tr("Unlock time", "解锁时间")}</dt><dd>{new Date(lock.unlockAt * 1000).toLocaleString()}</dd></div>
         {p && !lock.claimed && (
-          <div><dt>Underlying now</dt><dd className="mono small">{fmtAmount(lock.underlying0, p.token0.decimals, 4)} {p.token0.symbol} + {fmtAmount(lock.underlying1, p.token1.decimals, 4)} {p.token1.symbol}</dd></div>
+          <div><dt>{tr("Underlying now", "当前对应资产")}</dt><dd className="mono small">{fmtAmount(lock.underlying0, p.token0.decimals, 4)} {p.token0.symbol} + {fmtAmount(lock.underlying1, p.token1.decimals, 4)} {p.token1.symbol}</dd></div>
         )}
-        {p && <div><dt>Unclaimed fees</dt><dd className="mono small">{fmtAmount(lock.pendingFees0, p.token0.decimals, 6)} {p.token0.symbol} + {fmtAmount(lock.pendingFees1, p.token1.decimals, 6)} {p.token1.symbol}</dd></div>}
+        {p && <div><dt>{tr("Unclaimed fees", "未领取手续费")}</dt><dd className="mono small">{fmtAmount(lock.pendingFees0, p.token0.decimals, 6)} {p.token0.symbol} + {fmtAmount(lock.pendingFees1, p.token1.decimals, 6)} {p.token1.symbol}</dd></div>}
       </dl>
       {mine && (
         <div className="hero-actions" style={{ marginTop: 0 }}>
-          <button className="btn btn-sm" disabled={tx.busy || !hasFees} onClick={() => act("fees")}>Claim fees</button>
-          <button className="btn btn-sm" disabled={tx.busy || !unlocked || lock.claimed} onClick={() => act("lp")}>{unlocked ? "Claim LP shares" : `LP unlocks ${untilLabel(lock.unlockAt)}`}</button>
+          <button className="btn btn-sm" disabled={tx.busy || !hasFees} onClick={() => act("fees")}>{tr("Claim fees", "领取手续费")}</button>
+          <button className="btn btn-sm" disabled={tx.busy || !unlocked || lock.claimed} onClick={() => act("lp")}>{unlocked ? tr("Claim LP shares", "领取 LP 份额") : tr(`LP unlocks ${untilLabel(lock.unlockAt)}`, `LP ${untilLabel(lock.unlockAt)}解锁`)}</button>
         </div>
       )}
       <TxStatus phase={tx.phase} />
@@ -634,11 +644,12 @@ function LockCard({ lock, d }: { lock: Lock; d: LaunchDetail }) {
 }
 
 const BUCKETS = [
-  { id: 0, key: "creator", label: "Creator" },
-  { id: 2, key: "protocol", label: "Protocol" },
+  { id: 0, key: "creator", label: "Creator", zh: "创作者" },
+  { id: 2, key: "protocol", label: "Protocol", zh: "协议" },
 ] as const;
 
 function FeesPanel({ d }: { d: LaunchDetail }) {
+  const tr = useT();
   const l = d.launch;
   const quote = l.quote ?? d.template?.quote;
   const { address } = useConnection();
@@ -647,12 +658,12 @@ function FeesPanel({ d }: { d: LaunchDetail }) {
   const [next, setNext] = useState("");
   const isRecipient = same(address, l.creatorRecipient);
   async function claim(bucket: number) {
-    const r = await tx.run([{ label: "Send fees to recipient", params: { address: l.curve, abi: bondingCurveAbi, functionName: "claimFees", args: [bucket] } as const }]);
+    const r = await tx.run([{ label: tr("Send fees to recipient", "把手续费发送给接收地址"), params: { address: l.curve, abi: bondingCurveAbi, functionName: "claimFees", args: [bucket] } as const }]);
     if (r) qc.invalidateQueries({ queryKey: ["launch", l.token.toLowerCase()] });
   }
   async function setRecipient() {
     if (!isAddress(next)) return;
-    const r = await tx.run([{ label: "Change fee recipient", params: { address: l.curve, abi: bondingCurveAbi, functionName: "setCreatorRecipient", args: [next] } as const }]);
+    const r = await tx.run([{ label: tr("Change fee recipient", "更改手续费接收地址"), params: { address: l.curve, abi: bondingCurveAbi, functionName: "setCreatorRecipient", args: [next] } as const }]);
     if (r) {
       setNext("");
       qc.invalidateQueries({ queryKey: ["launch", l.token.toLowerCase()] });
@@ -664,23 +675,23 @@ function FeesPanel({ d }: { d: LaunchDetail }) {
       <dl className="rows summary">
         {BUCKETS.map((b) => (
           <div key={b.id}>
-            <dt>{b.label}{b.id === 0 && <> → <span className="mono">{shortAddress(l.creatorRecipient)}</span></>}</dt>
+            <dt>{tr(b.label, b.zh)}{b.id === 0 && <> → <span className="mono">{shortAddress(l.creatorRecipient)}</span></>}</dt>
             <dd className="mono">
               {fmtAmount(l.fees[b.key], quote.decimals, 4)} {quote.symbol}
               {address && (
-                <button className="link-btn" disabled={tx.busy || l.fees[b.key] === "0"} onClick={() => claim(b.id)}>Send</button>
+                <button className="link-btn" disabled={tx.busy || l.fees[b.key] === "0"} onClick={() => claim(b.id)}>{tr("Send", "发送")}</button>
               )}
             </dd>
           </div>
         ))}
       </dl>
-      <p className="small muted" style={{ margin: 0 }}>Anyone can send accrued fees; they always go to the bucket's fixed recipient, never to the caller.</p>
+      <p className="small muted" style={{ margin: 0 }}>{tr("Anyone can send accrued fees; they always go to the bucket's fixed recipient, never to the caller.", "任何人都可以发送累计的手续费，手续费总是进入该类别固定的接收地址，绝不会给调用者。")}</p>
       {isRecipient && (
         <div className="field">
-          <span className="field-label">You are the creator fee recipient. Hand it to another address:</span>
+          <span className="field-label">{tr("You are the creator fee recipient. Hand it to another address:", "你是创作者手续费接收地址。可以转交给另一个地址：")}</span>
           <div className="field-row">
             <input className="text-input mono" value={next} onChange={(e) => setNext(e.target.value.trim())} placeholder="0x…" />
-            <button className="btn" disabled={tx.busy || !isAddress(next) || same(next, l.creatorRecipient)} onClick={setRecipient}>Change</button>
+            <button className="btn" disabled={tx.busy || !isAddress(next) || same(next, l.creatorRecipient)} onClick={setRecipient}>{tr("Change", "更改")}</button>
           </div>
         </div>
       )}

@@ -11,6 +11,7 @@ import { fmtAmount } from "../lib/format";
 import { feeFor, pickFeeToken } from "../lib/vault/actions";
 import { adapterAddress, prepareExecution } from "../lib/vault/execute";
 import { balances, type VaultStatus } from "../lib/vault/store";
+import { useT } from "../lib/i18n";
 
 const same = (a: string, b: string) => getAddress(a) === getAddress(b);
 
@@ -37,6 +38,7 @@ export function ShieldedEntry({
   blocked: string | null;
   onDone: () => void;
 }) {
+  const tr = useT();
   const b = useBroadcaster();
   const act = useVaultAction();
   const adapter = adapterAddress(status, "ShieldedLiquidityAdapter");
@@ -55,13 +57,13 @@ export function ShieldedEntry({
   const short = [0, 1].find((i) => amounts[i]! > 0n && need(i) > spendable[i]!);
   const disabledAsset = assets?.find((a) => !a.shieldingEnabled);
   const problem = !adapter || adapter.status !== "active"
-    ? "Shielded liquidity entries are closed on this network right now."
+    ? tr("Shielded liquidity entries are closed on this network right now.", "该网络目前已关闭隐私流动性存入。")
     : !assets
-      ? "Both of this market's tokens must be vault assets."
+      ? tr("Both of this market's tokens must be vault assets.", "该市场的两种代币都必须是金库资产。")
       : disabledAsset
-        ? `Shielding of ${disabledAsset.symbol} is switched off, so unused tokens could not come back as notes.`
+        ? tr(`Shielding of ${disabledAsset.symbol} is switched off, so unused tokens could not come back as notes.`, `${disabledAsset.symbol} 的存入隐私已关闭，因此未使用的代币无法以票据形式退回。`)
         : mode === "broadcaster" && !feeToken
-            ? "The broadcaster cannot take its fee from this deposit. Submit from your wallet."
+            ? tr("The broadcaster cannot take its fee from this deposit. Submit from your wallet.", "广播者无法从这笔存入中扣除手续费，请用钱包提交。")
             : null;
 
   function go() {
@@ -72,7 +74,7 @@ export function ShieldedEntry({
       .run({
         status,
         action: "execute",
-        label: `Shielded ${pairLabel(pool)} liquidity: ${tokens.map((t, i) => `${fmtAmount(amounts[i]!, t.decimals)} ${t.symbol}`).join(" + ")}`,
+        label: tr(`Shielded ${pairLabel(pool)} liquidity: `, `隐私 ${pairLabel(pool)} 流动性：`) + tokens.map((t, i) => `${fmtAmount(amounts[i]!, t.decimals)} ${t.symbol}`).join(" + "),
         mode,
         feeToken,
         prove: async (f, fr, onStage) => {
@@ -102,20 +104,19 @@ export function ShieldedEntry({
     <div className="stack" style={{ gap: 14 }}>
       <ModePicker mode={mode} onMode={setMode} b={b} action="execute" feeToken={feeTok} />
       <p className="vx-hint">
-        No entry fee.{mode === "broadcaster" && feeTok ? ` Broadcaster fee: ${fmtAmount(fee, feeTok.decimals, 6)} ${feeTok.symbol}, taken from your notes.` : ""} Unused tokens return to your vault as notes.
+        {tr("No entry fee.", "无存入手续费。")}{mode === "broadcaster" && feeTok ? tr(` Broadcaster fee: ${fmtAmount(fee, feeTok.decimals, 6)} ${feeTok.symbol}, taken from your notes.`, `广播者手续费：${fmtAmount(fee, feeTok.decimals, 6)} ${feeTok.symbol}，从你的票据中扣除。`) : ""} {tr("Unused tokens return to your vault as notes.", "未使用的代币会以票据形式退回你的金库。")}
       </p>
       <Exposure
         pub={[
-          "That a shielded position was opened in this market, and when",
-          "The amounts deposited and where they sit (the pool's events show them)",
-          "The new holder contract that keeps the liquidity",
+          ...tr(["That a shielded position was opened in this market, and when", "The amounts deposited and where they sit (the pool's events show them)", "The new holder contract that keeps the liquidity"],
+            ["在该市场开设了一个隐私仓位，以及时间", "存入的数量及其所在位置（资金池事件会显示）", "保管该流动性的新持有合约"]),
           ...senderExposure(mode),
         ]}
-        priv={["Which vault account owns the position", "Which of your notes paid for it", "Later private transfers of its shares"]}
+        priv={tr(["Which vault account owns the position", "Which of your notes paid for it", "Later private transfers of its shares"], ["哪个金库账户拥有该仓位", "用你的哪些票据支付", "之后其份额的私下转账"])}
       />
       {problem && <p className="notice warn small" style={{ margin: 0 }}>{problem}</p>}
       <VaultSubmit mode={mode} act={act} disabled={Boolean(blocked) || Boolean(problem) || short !== undefined} onClick={go}>
-        {blocked ?? (short !== undefined ? `Not enough ${tokens[short]!.symbol} in your vault` : "Prove and add liquidity")}
+        {blocked ?? (short !== undefined ? tr(`Not enough ${tokens[short]!.symbol} in your vault`, `金库中的 ${tokens[short]!.symbol} 不足`) : tr("Prove and add liquidity", "生成证明并添加流动性"))}
       </VaultSubmit>
     </div>
   );

@@ -20,6 +20,7 @@ import {
 import { bytesToHex, hexToBytes, type Address } from "viem";
 import { API_URL, NETWORK, manifest } from "../config";
 import { idbDelete, idbGet, idbSet } from "./idb";
+import { tNow } from "../i18n";
 
 export type StoredNote = {
   leafIndex: number;
@@ -146,7 +147,7 @@ export const vaultTree = () => tree;
 export const vaultState = () => state;
 
 function poolState(pool: string): PoolState {
-  if (!secret) throw new Error("The vault is locked.");
+  if (!secret) throw new Error(tNow("The vault is locked.", "金库已锁定。"));
   const k = pool.toLowerCase();
   secret.pools[k] ??= { scannedLeaf: 0, notes: [], pending: [] };
   return secret.pools[k]!;
@@ -178,7 +179,7 @@ export async function init() {
     const stored = await idbGet(ACCOUNT_KEY);
     set({ phase: stored ? "locked" : "none" });
   } catch (e) {
-    set({ phase: "unavailable", error: e instanceof Error ? e.message : "This browser cannot store a vault account." });
+    set({ phase: "unavailable", error: e instanceof Error ? e.message : tNow("This browser cannot store a vault account.", "此浏览器无法保存金库账户。") });
   }
   void refreshStatus();
 }
@@ -207,7 +208,7 @@ export async function createAccount(entropy: Uint8Array, passphrase: string, opt
 
 export async function unlock(passphrase: string) {
   const stored = await idbGet(ACCOUNT_KEY);
-  if (!stored) throw new Error("No vault account is stored in this browser.");
+  if (!stored) throw new Error(tNow("No vault account is stored in this browser.", "此浏览器中没有保存金库账户。"));
   const opened = await backup.open<Secret>(passphrase, stored);
   secret = opened.data;
   storageKey = opened.key;
@@ -253,16 +254,16 @@ export async function backupFile(passphrase: string): Promise<Blob> {
 }
 
 export async function readBackupFile(file: File, passphrase: string): Promise<Uint8Array> {
-  if (file.size > 64_000) throw new Error("That file is too large to be a Curveil backup.");
+  if (file.size > 64_000) throw new Error(tNow("That file is too large to be a Curveil backup.", "该文件太大，不可能是 Curveil 备份。"));
   let raw: unknown;
   try {
     raw = JSON.parse(await file.text());
   } catch {
-    throw new Error("That file is not a Curveil vault backup.");
+    throw new Error(tNow("That file is not a Curveil vault backup.", "该文件不是 Curveil 金库备份。"));
   }
   const { data } = await backup.open<{ entropy: string }>(passphrase, raw);
   const bytes = hexToBytes(data.entropy as `0x${string}`);
-  if (bytes.length !== 32) throw new Error("The backup file is damaged.");
+  if (bytes.length !== 32) throw new Error(tNow("The backup file is damaged.", "备份文件已损坏。"));
   return bytes;
 }
 
@@ -284,7 +285,7 @@ export async function refreshStatus(): Promise<VaultStatus | null> {
     set({ status });
     return status;
   } catch (e) {
-    set({ sync: { kind: "error", message: e instanceof Error ? e.message : "Vault status unavailable." } });
+    set({ sync: { kind: "error", message: e instanceof Error ? e.message : tNow("Vault status unavailable.", "无法获取金库状态。") } });
     return null;
   }
 }
@@ -303,7 +304,7 @@ async function doSync() {
   const pool = status.pool.toLowerCase();
   const domain = noteDomain(status.chainId, status.pool);
   if (domain.toString() !== status.noteDomain) {
-    set({ sync: { kind: "error", message: "The vault's note domain does not match this site's manifest. Stopped." } });
+    set({ sync: { kind: "error", message: tNow("The vault's note domain does not match this site's manifest. Stopped.", "金库的票据域与本网站的清单不匹配，已停止。") } });
     return;
   }
 
@@ -324,7 +325,7 @@ async function doSync() {
       );
       if (page.items.length === 0) break;
       for (const it of page.items) {
-        if (it.leafIndex !== c.commitments.length) throw new Error("Commitments arrived out of order. Try again.");
+        if (it.leafIndex !== c.commitments.length) throw new Error(tNow("Commitments arrived out of order. Try again.", "承诺数据到达顺序错乱，请重试。"));
         c.commitments.push(it.commitment);
         c.ciphertexts.push(it.encryptedNote);
       }
@@ -347,7 +348,7 @@ async function doSync() {
     }
     await idbSet(publicKey(pool), c);
   } catch (e) {
-    set({ sync: { kind: "error", message: e instanceof Error ? e.message : "Sync failed." } });
+    set({ sync: { kind: "error", message: e instanceof Error ? e.message : tNow("Sync failed.", "同步失败。") } });
     return;
   }
 

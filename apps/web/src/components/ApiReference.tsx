@@ -3,6 +3,7 @@ import { Loading, Sk } from "./Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/launchpads";
 import { API_URL } from "../lib/config";
+import { useT } from "../lib/i18n";
 
 type Schema = { type?: string | string[]; description?: string; properties?: Record<string, Schema>; items?: Schema; required?: string[]; enum?: unknown[]; $ref?: string };
 type Param = { name: string; in: string; description?: string; required?: boolean; schema?: Schema };
@@ -22,6 +23,7 @@ const METHOD_ORDER = ["get", "post", "patch", "delete"];
 
 /** The API reference, rendered from the live /v1/openapi.json so it never drifts from the server. */
 export function ApiReference() {
+  const t = useT();
   const doc = useQuery({ queryKey: ["openapi"], queryFn: () => api.openapi() as Promise<Doc>, staleTime: 300_000 });
   const [q, setQ] = useState("");
   const [tag, setTag] = useState<string>("all");
@@ -34,10 +36,10 @@ export function ApiReference() {
       for (const method of METHOD_ORDER) {
         const op = methods[method];
         if (!op) continue;
-        const t = op.tags?.[0] ?? "Other";
-        if (tag !== "all" && t !== tag) continue;
+        const tg = op.tags?.[0] ?? "Other";
+        if (tag !== "all" && tg !== tag) continue;
         if (term && !`${method} ${path} ${op.summary ?? ""} ${op.description ?? ""}`.toLowerCase().includes(term)) continue;
-        byTag.set(t, [...(byTag.get(t) ?? []), { path, method, op }]);
+        byTag.set(tg, [...(byTag.get(tg) ?? []), { path, method, op }]);
       }
     }
     const order = doc.data.tags?.map((t) => t.name) ?? [];
@@ -47,7 +49,7 @@ export function ApiReference() {
   if (doc.isLoading) {
     return (
       <div className="stack" aria-busy="true">
-        <Loading label="Loading the API reference" />
+        <Loading label={t("Loading the API reference", "正在加载 API 参考")} />
         <div className="toolbar">
           <Sk block w="100%" h={40} style={{ flex: 1 }} />
           <Sk w={140} h={40} />
@@ -65,8 +67,8 @@ export function ApiReference() {
   if (doc.isError || !doc.data) {
     return (
       <div className="notice bad" role="alert">
-        <span>The API description could not be loaded.</span>
-        <button className="btn btn-sm" onClick={() => doc.refetch()}>Retry</button>
+        <span>{t("The API description could not be loaded.", "无法加载 API 描述。")}</span>
+        <button className="btn btn-sm" onClick={() => doc.refetch()}>{t("Retry", "重试")}</button>
       </div>
     );
   }
@@ -77,13 +79,13 @@ export function ApiReference() {
     <div className="stack">
       <div className="toolbar">
         <label className="search">
-          <span className="sr-only">Search endpoints</span>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search endpoints" />
+          <span className="sr-only">{t("Search endpoints", "搜索接口")}</span>
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("Search endpoints", "搜索接口")} />
         </label>
         <label className="small muted sort-select">
           Section{" "}
           <select className="token-select" value={tag} onChange={(e) => setTag(e.target.value)}>
-            <option value="all">All</option>
+            <option value="all">{t("All", "全部")}</option>
             {doc.data.tags?.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
           </select>
         </label>
@@ -101,7 +103,7 @@ export function ApiReference() {
           {ops.map(({ path, method, op }) => <Endpoint key={`${method} ${path}`} path={path} method={method} op={op} schemas={schemas} />)}
         </section>
       ))}
-      {count === 0 && <p className="muted">No endpoint matches.</p>}
+      {count === 0 && <p className="muted">{t("No endpoint matches.", "没有匹配的接口。")}</p>}
     </div>
   );
 }
@@ -113,7 +115,9 @@ function auth(op: Op): { label: string; cls: string } {
 }
 
 function Endpoint({ path, method, op, schemas }: { path: string; method: string; op: Op; schemas: Record<string, Schema> }) {
+  const t = useT();
   const a = auth(op);
+  const AUTH_ZH: Record<string, string> = { "Wallet session": "钱包会话", Public: "公开", "Key or session": "密钥或会话" };
   const body = op.requestBody?.content?.["application/json"]?.schema;
   const ok = Object.entries(op.responses ?? {}).find(([code]) => /^2/.test(code));
   const response = ok?.[1].content?.["application/json"]?.schema;
@@ -124,7 +128,7 @@ function Endpoint({ path, method, op, schemas }: { path: string; method: string;
         <span className={`mono method method-${method}`}>{method.toUpperCase()}</span>
         <span className="mono" style={{ wordBreak: "break-all" }}>{path}</span>
         <span className="small muted" style={{ flex: 1, minWidth: 180 }}>{op.summary}</span>
-        <span className={`tag ${a.cls}`}>{a.label}</span>
+        <span className={`tag ${a.cls}`}>{t(a.label, AUTH_ZH[a.label] ?? a.label)}</span>
       </summary>
       <div className="stack" style={{ gap: 10, marginTop: 12 }}>
         {op.description && <p className="small" style={{ margin: 0, whiteSpace: "pre-line" }}>{op.description}</p>}
@@ -132,7 +136,7 @@ function Endpoint({ path, method, op, schemas }: { path: string; method: string;
         {op.parameters && op.parameters.length > 0 && (
           <div className="table-scroll" tabIndex={0}>
             <table className="data">
-              <thead><tr><th>Parameter</th><th>In</th><th>Type</th><th>Description</th></tr></thead>
+              <thead><tr><th>{t("Parameter", "参数")}</th><th>{t("In", "位置")}</th><th>{t("Type", "类型")}</th><th>{t("Description", "说明")}</th></tr></thead>
               <tbody>
                 {op.parameters.map((p) => (
                   <tr key={`${p.in}-${p.name}`}>
@@ -148,19 +152,19 @@ function Endpoint({ path, method, op, schemas }: { path: string; method: string;
         )}
         {body && (
           <div>
-            <p className="small muted" style={{ margin: "0 0 4px" }}>Request body (JSON)</p>
+            <p className="small muted" style={{ margin: "0 0 4px" }}>{t("Request body (JSON)", "请求体（JSON）")}</p>
             <Fields schema={body} schemas={schemas} />
           </div>
         )}
         {response && (
           <div>
-            <p className="small muted" style={{ margin: "0 0 4px" }}>Response {ok?.[0]}</p>
+            <p className="small muted" style={{ margin: "0 0 4px" }}>{t("Response", "响应")} {ok?.[0]}</p>
             <Fields schema={response} schemas={schemas} />
           </div>
         )}
         <pre className="code" tabIndex={0}><code>{sample}</code></pre>
         {method === "get" && !path.includes("{") && a.label === "Public" && (
-          <a className="small" href={`${API_URL}${path}`} target="_blank" rel="noreferrer">Open the live response</a>
+          <a className="small" href={`${API_URL}${path}`} target="_blank" rel="noreferrer">{t("Open the live response", "查看实时响应")}</a>
         )}
       </div>
     </details>

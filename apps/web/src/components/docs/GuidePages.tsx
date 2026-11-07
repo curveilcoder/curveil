@@ -1,20 +1,22 @@
 import { Link } from "@tanstack/react-router";
 import { SDK_VERSION } from "@curveil/sdk";
 import { Loading, Sk } from "../Skeleton";
-import { useStatus, STATUS_LABEL } from "../../lib/api";
+import { useStatus, STATUS_LABEL, STATUS_LABEL_ZH } from "../../lib/api";
+import { useLang, useT } from "../../lib/i18n";
+import * as ZH from "./GuidePagesZh";
 import { useTemplates } from "../../lib/launch";
 import { quoteSym } from "../../lib/tokens";
 import { API_URL, IS_TESTNET, NETWORK, manifest } from "../../lib/config";
 import { CaChip } from "../CaChip";
 import { Calc, Callout, Cards, C, Code, CodeTabs, DocCard, Icon, Section, Step, Steps, Table } from "./Kit";
 
-const origin = () => (typeof window === "undefined" ? "" : window.location.origin);
-const SDK_TARBALL = `/sdk/curveil-sdk-${SDK_VERSION}.tgz`;
-const clientLine = `createClient({ network: "${NETWORK}"${API_URL.includes("localhost") ? `, baseUrl: "${API_URL}"` : ""} })`;
+export const origin = () => (typeof window === "undefined" ? "" : window.location.origin);
+export const SDK_TARBALL = `/sdk/curveil-sdk-${SDK_VERSION}.tgz`;
+export const clientLine = `createClient({ network: "${NETWORK}"${API_URL.includes("localhost") ? `, baseUrl: "${API_URL}"` : ""} })`;
 
 // ------------------------------------------------------------------ docs home
 
-export function DocsHome() {
+function DocsHomeEn() {
   return (
     <div className="dk-home">
       <header className="dk-hero">
@@ -80,17 +82,18 @@ for (const l of launches) console.log(l.symbol, l.state);`,
   );
 }
 
-function LiveStatus() {
+export function LiveStatus({ title, lead }: { title?: string; lead?: string }) {
+  const t = useT();
   const { data, isError } = useStatus();
   return (
-    <Section title="What is live">
+    <Section title={title ?? "What is live"} id="what-is-live">
       <p className="dk-p">
-        {IS_TESTNET
+        {lead ?? (IS_TESTNET
           ? "Everything runs on testnet with test tokens that have no value. Numbers marked proposed are planned settings, not what is deployed today."
-          : "Markets, launches, launchpads, perps and the shielded vault are live on Robinhood Chain. They have not had an independent audit yet, and each vault deposit is capped. Anything not marked live here is not available yet."}
+          : "Markets, launches, launchpads, perps and the shielded vault are live on Robinhood Chain. They have not had an independent audit yet, and each vault deposit is capped. Anything not marked live here is not available yet.")}
       </p>
-      {isError && <p className="notice bad">Live status could not be loaded. Treat every module as not live until it can.</p>}
-      {!data && !isError && <Loading label="Loading live status" />}
+      {isError && <p className="notice bad">{t("Live status could not be loaded. Treat every module as not live until it can.", "无法加载实时状态。在能加载之前，请把所有模块都视为未上线。")}</p>}
+      {!data && !isError && <Loading label={t("Loading live status", "正在加载实时状态")} />}
       {!data && !isError && (
         <ul className="status-list" aria-busy="true">
           {[0, 1, 2, 3, 4].map((i) => (
@@ -108,7 +111,7 @@ function LiveStatus() {
             <li key={m.id}>
               <span className={`dot ${m.status === "not_live" ? "" : "good"}`} aria-hidden="true" />
               <span>{m.name}: <span className="muted">{m.reason}</span></span>
-              <span className="small">{STATUS_LABEL[m.status]}</span>
+              <span className="small">{t(STATUS_LABEL[m.status], STATUS_LABEL_ZH[m.status])}</span>
             </li>
           ))}
         </ul>
@@ -119,7 +122,7 @@ function LiveStatus() {
 
 // ------------------------------------------------------------------ markets
 
-export function MarketsGuide() {
+function MarketsGuideEn() {
   return (
     <>
       <Section title="Two kinds of pools">
@@ -183,7 +186,7 @@ export function MarketsGuide() {
 
 // ------------------------------------------------------------------ swaps
 
-export function SwapGuide() {
+function SwapGuideEn() {
   return (
     <>
       <Section title="How a route is found">
@@ -230,7 +233,7 @@ await wallet.sendTransaction(swapExactInTx({
 
 // ------------------------------------------------------------------ vault
 
-export function VaultGuide() {
+function VaultGuideEn() {
   return (
     <>
       <Section title="What stays private">
@@ -282,18 +285,19 @@ export function VaultGuide() {
 // ------------------------------------------------------------------ launches
 
 /** The templates the factory offers right now, read from the API. */
-function LiveTemplates() {
+export function LiveTemplates() {
+  const tr = useT();
   const t = useTemplates();
   if (t.isError) return null;
   return (
     <Table
-      head={["Template", "Quote", "Graduates at"]}
-      rows={t.data ? t.data.templates.filter((x) => x.enabled).map((x) => [x.label, quoteSym(x.quote), `${x.graduationThresholdQuote.toLocaleString("en-US")} ${quoteSym(x.quote)} net`]) : [[<Sk key="a" w="10ch" />, <Sk key="b" w="5ch" />, <Sk key="c" w="12ch" />]]}
+      head={tr(["Template", "Quote", "Graduates at"], ["模板", "计价资产", "毕业门槛"])}
+      rows={t.data ? t.data.templates.filter((x) => x.enabled).map((x) => [x.label, quoteSym(x.quote), tr(`${x.graduationThresholdQuote.toLocaleString("en-US")} ${quoteSym(x.quote)} net`, `净 ${x.graduationThresholdQuote.toLocaleString("en-US")} ${quoteSym(x.quote)}`)]) : [[<Sk key="a" w="10ch" />, <Sk key="b" w="5ch" />, <Sk key="c" w="12ch" />]]}
     />
   );
 }
 
-export function LaunchGuide() {
+function LaunchGuideEn() {
   return (
     <>
       <Section title="How a launch works">
@@ -344,7 +348,7 @@ await wallet.sendTransaction(buyTx({ curve, quoteIn, minTokensOut: withSlippage(
   );
 }
 
-export function LaunchpadsGuide() {
+function LaunchpadsGuideEn() {
   return (
     <>
       <Section title="What a launchpad is">
@@ -380,7 +384,7 @@ export function LaunchpadsGuide() {
 
 // ------------------------------------------------------------------ perps
 
-export function PerpsGuide() {
+function PerpsGuideEn() {
   return (
     <>
       <Section title="How it works">
@@ -452,7 +456,7 @@ export function PerpsGuide() {
 
 // ------------------------------------------------------------------ token, fees, risks
 
-export function TokenGuide() {
+function TokenGuideEn() {
   return (
     <>
       <Section title="Proposed design">
@@ -496,7 +500,7 @@ const FEES: [string, string, string][] = [
   ["Perpetual open or close", "0.08% of size", "Liquidity vault, with a share to the protocol"],
 ];
 
-export function FeesGuide() {
+function FeesGuideEn() {
   return (
     <>
       <Section title="Every fee">
@@ -537,7 +541,7 @@ const RISKS: [string, string][] = [
   ["Services can stop", "Oracles, RPC providers and broadcasters can fail or be delayed."],
 ];
 
-export function RisksGuide() {
+function RisksGuideEn() {
   return (
     <>
       <Callout kind="warn">
@@ -563,7 +567,7 @@ export function RisksGuide() {
 // ------------------------------------------------------------------ get started
 
 /** A plain walkthrough for a first visit, in the order most people take it. */
-export function GetStartedGuide() {
+function GetStartedGuideEn() {
   const usdgCap = IS_TESTNET ? "" : " Each deposit is capped at 1,000 USDG or 0.5 ETH while Curveil is unaudited.";
   return (
     <>
@@ -664,3 +668,18 @@ export function GetStartedGuide() {
     </>
   );
 }
+
+// ------------------------------------------------------------------ language
+
+/** Each guide page in English or Chinese (GuidePagesZh.tsx holds the Chinese text). */
+export function DocsHome() { return useLang() === "zh" ? <ZH.DocsHome /> : <DocsHomeEn />; }
+export function MarketsGuide() { return useLang() === "zh" ? <ZH.MarketsGuide /> : <MarketsGuideEn />; }
+export function SwapGuide() { return useLang() === "zh" ? <ZH.SwapGuide /> : <SwapGuideEn />; }
+export function VaultGuide() { return useLang() === "zh" ? <ZH.VaultGuide /> : <VaultGuideEn />; }
+export function LaunchGuide() { return useLang() === "zh" ? <ZH.LaunchGuide /> : <LaunchGuideEn />; }
+export function LaunchpadsGuide() { return useLang() === "zh" ? <ZH.LaunchpadsGuide /> : <LaunchpadsGuideEn />; }
+export function PerpsGuide() { return useLang() === "zh" ? <ZH.PerpsGuide /> : <PerpsGuideEn />; }
+export function TokenGuide() { return useLang() === "zh" ? <ZH.TokenGuide /> : <TokenGuideEn />; }
+export function FeesGuide() { return useLang() === "zh" ? <ZH.FeesGuide /> : <FeesGuideEn />; }
+export function RisksGuide() { return useLang() === "zh" ? <ZH.RisksGuide /> : <RisksGuideEn />; }
+export function GetStartedGuide() { return useLang() === "zh" ? <ZH.GetStartedGuide /> : <GetStartedGuideEn />; }

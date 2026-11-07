@@ -9,6 +9,7 @@ import { TILES } from "./Fields";
 import { useAspect } from "./HeroArt";
 import { useCycle } from "./play";
 import { NETWORK } from "../../lib/config";
+import { useT } from "../../lib/i18n";
 
 const STEPS = [
   {
@@ -53,6 +54,36 @@ await wallet.sendTransaction(releaseTx(operator, usdg, treasury));`,
   },
 ];
 
+/** The same steps in Chinese: the code stays, its comments are translated. */
+const ZH = [
+  {
+    title: "在合约上注册",
+    text: "一笔交易即可在 LaunchpadRegistry 合约上设置发射台的名称、品牌和手续费分成，无需部署任何合约。",
+    code: STEPS[0]!.code.replace("// One transaction. Your wallet becomes the admin.", "// 一笔交易，你的钱包即成为管理员。").replace("// 25%, within the cap", "// 25%，不超过上限"),
+  },
+  {
+    title: "搭建你自己的网站",
+    text: "网站随你设计。你的网站从 API 读取发行数据，SDK 为任何钱包构建每一笔交易。",
+    code: STEPS[1]!.code.replace("// Your launchpad and the tokens launched through it.", "// 你的发射台，以及通过它发行的代币。").replace("// Launching from your site records your launchpad.", "// 从你的网站发行，会记录到你的发射台。"),
+  },
+  {
+    title: "每次发行都有收益",
+    text: "通过你的网站发行的每个代币，都会把协议曲线手续费的一部分付给你。分成比例在代币创建时就已固定。",
+    code: STEPS[2]!.code.replace("// Pull your fees out of each curve, then pay your recipients.", "// 从每条曲线中提取手续费，再分发给你的收款人。"),
+  },
+];
+
+const RULES = [
+  { h: "You build", tone: "see", items: ["Your own website and domain", "Your brand and design", "Any framework and wallet library"] },
+  { h: "You set on the contract", tone: "see", items: ["Which launch templates you offer", "Your fee share, within the protocol's cap", "Who receives your fees"] },
+  { h: "Nobody can, not even you", tone: "no", items: ["Change a live launch's rules", "Touch curve reserves", "Skip graduation or the LP escrow", "Pay out more fees than were collected"] },
+];
+const RULES_ZH = [
+  { h: "由你构建", tone: "see", items: ["你自己的网站和域名", "你的品牌和设计", "任意框架和钱包库"] },
+  { h: "由你在合约上设置", tone: "see", items: ["提供哪些发行模板", "你的手续费分成，不超过协议上限", "谁来接收你的手续费"] },
+  { h: "任何人都不能，包括你", tone: "no", items: ["修改进行中发行的规则", "动用曲线储备", "跳过毕业或 LP 托管", "支付超过实际收取的手续费"] },
+];
+
 function Code({ src }: { src: string }) {
   return (
     <pre className="pad-code" aria-label="SDK example" tabIndex={0}>
@@ -72,19 +103,21 @@ function Code({ src }: { src: string }) {
 }
 
 export function PadBuilder({ head }: { head?: ReactNode }) {
+  const t = useT();
+  const steps = t(STEPS, STEPS.map((s, n) => ({ ...s, ...ZH[n]! })));
   const ref = useRef<HTMLDivElement>(null);
   const [cur, pick] = useCycle(ref, STEPS.length, 5200);
   const field = useRef<HTMLDivElement>(null);
   const fieldAspect = useAspect(field);
-  const step = STEPS[cur]!;
+  const step = steps[cur]!;
   return (
     <div ref={ref} className="pads">
       <div className="pads-top">
         <div className="pads-intro">
           {head}
-          <ol className="stage-list pad-steps" aria-label="Running a launchpad">
-            {STEPS.map((s, n) => (
-              <li key={s.title} data-state={n === cur ? "active" : undefined}>
+          <ol className="stage-list pad-steps" aria-label={t("Running a launchpad", "运营发射台")}>
+            {steps.map((s, n) => (
+              <li key={s.file} data-state={n === cur ? "active" : undefined}>
                 <span className="mono">{String(n + 1).padStart(2, "0")}</span>
                 <button type="button" onClick={() => pick(n)} aria-pressed={n === cur}>
                   <strong>{s.title}</strong>
@@ -101,36 +134,19 @@ export function PadBuilder({ head }: { head?: ReactNode }) {
               {STEPS.map((s, n) => <span key={s.file} className={n === cur ? "on" : ""}>{s.file}</span>)}
             </div>
             <Code key={cur} src={step.code} />
-            <p className="pad-foot mono">@curveil/sdk · any wallet library · no indexer to run</p>
+            <p className="pad-foot mono">{t("@curveil/sdk · any wallet library · no indexer to run", "@curveil/sdk · 任意钱包库 · 无需运行索引器")}</p>
           </div>
         </div>
       </div>
       <div className="pads-rules">
-        <div>
-          <p className="rule-h">You build</p>
-          <ul className="tick-list">
-            <li className="see">Your own website and domain</li>
-            <li className="see">Your brand and design</li>
-            <li className="see">Any framework and wallet library</li>
-          </ul>
-        </div>
-        <div>
-          <p className="rule-h">You set on the contract</p>
-          <ul className="tick-list">
-            <li className="see">Which launch templates you offer</li>
-            <li className="see">Your fee share, within the protocol's cap</li>
-            <li className="see">Who receives your fees</li>
-          </ul>
-        </div>
-        <div>
-          <p className="rule-h">Nobody can, not even you</p>
-          <ul className="tick-list">
-            <li className="no">Change a live launch's rules</li>
-            <li className="no">Touch curve reserves</li>
-            <li className="no">Skip graduation or the LP escrow</li>
-            <li className="no">Pay out more fees than were collected</li>
-          </ul>
-        </div>
+        {t(RULES, RULES_ZH).map((g) => (
+          <div key={g.h}>
+            <p className="rule-h">{g.h}</p>
+            <ul className="tick-list">
+              {g.items.map((x) => <li key={x} className={g.tone}>{x}</li>)}
+            </ul>
+          </div>
+        ))}
       </div>
     </div>
   );

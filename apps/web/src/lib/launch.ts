@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { API_URL } from "./config";
 import { ApiError, getJson } from "./api";
+import { tNow, useT } from "./i18n";
 
 export type CurveState = "created" | "trading" | "graduation_ready" | "graduated";
 
@@ -9,6 +10,13 @@ export const STATE_LABEL: Record<CurveState, string> = {
   trading: "Trading",
   graduation_ready: "Ready to graduate",
   graduated: "Graduated",
+};
+
+export const STATE_LABEL_ZH: Record<CurveState, string> = {
+  created: "新发行",
+  trading: "交易中",
+  graduation_ready: "可毕业",
+  graduated: "已毕业",
 };
 
 export type Template = {
@@ -168,7 +176,7 @@ export async function uploadMetadata(input: { description: string; website: stri
       body: JSON.stringify(input),
     });
   } catch {
-    throw new ApiError("The Curveil API could not be reached to store the token details.");
+    throw new ApiError(tNow("The Curveil API could not be reached to store the token details.", "无法连接 Curveil API 来保存代币信息。"));
   }
   const j = (await r.json().catch(() => ({}))) as { uri?: string; message?: string };
   if (!r.ok || !j.uri) throw new ApiError(j.message ?? `The Curveil API answered ${r.status}.`);
@@ -204,18 +212,18 @@ export function previewInitialBuy(t: Template, quoteIn: bigint): { tokensOut: bi
 }
 
 export function lockDuration(seconds: number): string {
-  if (seconds >= 86_400 && seconds % 86_400 === 0) return `${seconds / 86_400} days`;
-  if (seconds >= 3600 && seconds % 3600 === 0) return `${seconds / 3600} hours`;
-  if (seconds >= 60) return `${Math.round(seconds / 60)} minutes`;
-  return `${seconds} seconds`;
+  if (seconds >= 86_400 && seconds % 86_400 === 0) return tNow(`${seconds / 86_400} days`, `${seconds / 86_400} 天`);
+  if (seconds >= 3600 && seconds % 3600 === 0) return tNow(`${seconds / 3600} hours`, `${seconds / 3600} 小时`);
+  if (seconds >= 60) return tNow(`${Math.round(seconds / 60)} minutes`, `${Math.round(seconds / 60)} 分钟`);
+  return tNow(`${seconds} seconds`, `${seconds} 秒`);
 }
 
 export function untilLabel(ts: number): string {
   const s = ts - Math.floor(Date.now() / 1000);
-  if (s <= 0) return "unlocked";
-  if (s < 3600) return `in ${Math.ceil(s / 60)} min`;
-  if (s < 86_400) return `in ${Math.round(s / 3600)} h`;
-  return `in ${Math.round(s / 86_400)} days`;
+  if (s <= 0) return tNow("unlocked", "已解锁");
+  if (s < 3600) return tNow(`in ${Math.ceil(s / 60)} min`, `${Math.ceil(s / 60)} 分钟后`);
+  if (s < 86_400) return tNow(`in ${Math.round(s / 3600)} h`, `${Math.round(s / 3600)} 小时后`);
+  return tNow(`in ${Math.round(s / 86_400)} days`, `${Math.round(s / 86_400)} 天后`);
 }
 
 const createdKey = (token: string) => `curveil-new-launch:${token.toLowerCase()}`;

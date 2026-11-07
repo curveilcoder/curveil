@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { DitherCanvas, type Scene } from "../Dither";
 import { usePrefersReducedMotion } from "../../lib/motion";
+import { useT } from "../../lib/i18n";
 
 const clamp = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
 const hash = (i: number, j: number) => {
@@ -61,6 +62,7 @@ export function useAspect(ref: RefObject<HTMLElement | null>) {
 /* ---------- Lens ---------- */
 
 export const PRODUCTS = ["Swap", "Provide liquidity", "Launch a token", "Trade perps", "Run a launchpad"];
+const PRODUCTS_ZH = ["兑换", "提供流动性", "发行代币", "交易永续合约", "运营发射台"];
 const HOLD = 3; // seconds per product
 const FIT = 0.74; // shape scale inside the ring
 
@@ -170,6 +172,8 @@ export function makeLens(clock: { current: { start: number; still: boolean } }):
 
 /** The lens canvas plus the product labels, kept in step. */
 export function Lens() {
+  const t = useT();
+  const names = t(PRODUCTS, PRODUCTS_ZH);
   const reduced = usePrefersReducedMotion();
   const clock = useRef({ start: performance.now(), still: reduced });
   clock.current.still = reduced;
@@ -186,10 +190,10 @@ export function Lens() {
   return (
     <>
       <div className="lens">
-        <DitherCanvas make={make} aspect={1} cell={4} animate fps={24} label={`Curveil: ${PRODUCTS[cur]}`} />
+        <DitherCanvas make={make} aspect={1} cell={4} animate fps={24} label={`Curveil: ${names[cur]}`} />
       </div>
-      <ul className="lens-label" aria-label="What you can do on Curveil">
-        {PRODUCTS.map((name, i) => <li key={name} aria-current={i === cur ? "true" : undefined}>{name}</li>)}
+      <ul className="lens-label" aria-label={t("What you can do on Curveil", "在 Curveil 上可以做什么")}>
+        {names.map((name, i) => <li key={i} aria-current={i === cur ? "true" : undefined}>{name}</li>)}
       </ul>
     </>
   );

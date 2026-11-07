@@ -3,9 +3,11 @@ import { Link } from "@tanstack/react-router";
 import { useConnection, useDisconnect, useSwitchChain } from "wagmi";
 import { useAppKit } from "@reown/appkit/react";
 import { curveilChain, shortAddress } from "../lib/config";
+import { useT } from "../lib/i18n";
 
 /** Opens the wallet dialog, shows the address, switches to the Curveil chain. Never signs anything by itself. */
 export function ConnectButton() {
+  const t = useT();
   const { address, chainId, isConnected, status } = useConnection();
   const { open } = useAppKit();
   const switchChain = useSwitchChain();
@@ -22,7 +24,7 @@ export function ConnectButton() {
             void open({ view: "Connect" });
           }}
         >
-          {status === "connecting" ? "Check your wallet…" : "Connect wallet"}
+          {status === "connecting" ? t("Check your wallet…", "请在钱包中确认…") : t("Connect wallet", "连接钱包")}
         </button>
       </div>
     );
@@ -39,11 +41,11 @@ export function ConnectButton() {
             setError(null);
             switchChain.mutate(
               { chainId: curveilChain.id },
-              { onError: (e) => setError(e.name === "UserRejectedRequestError" ? "Network switch was cancelled." : `Could not switch network: ${e.message.split("\n")[0]}`) },
+              { onError: (e) => setError(e.name === "UserRejectedRequestError" ? t("Network switch was cancelled.", "已取消切换网络。") : t(`Could not switch network: ${e.message.split("\n")[0]}`, `无法切换网络：${e.message.split("\n")[0]}`)) },
             );
           }}
         >
-          {switchChain.isPending ? "Switching…" : `Switch to ${curveilChain.name}`}
+          {switchChain.isPending ? t("Switching…", "切换中…") : t(`Switch to ${curveilChain.name}`, `切换到 ${curveilChain.name}`)}
         </button>
         {error && <p className="connect-error" role="alert">{error}</p>}
       </div>
@@ -55,6 +57,7 @@ export function ConnectButton() {
 
 /** Connected: the address opens a small menu: profile, vault, copy address, disconnect. */
 function AccountMenu({ address }: { address: `0x${string}` }) {
+  const t = useT();
   const [shown, setShown] = useState(false);
   const [copied, setCopied] = useState(false);
   const disconnect = useDisconnect();
@@ -72,12 +75,12 @@ function AccountMenu({ address }: { address: `0x${string}` }) {
       <button className="chip mono" aria-expanded={shown} aria-haspopup="menu" onClick={() => setShown((v) => !v)}>
         <span className="dot good" aria-hidden="true" />
         {shortAddress(address)}
-        <span className="sr-only">Connected. Open the account menu.</span>
+        <span className="sr-only">{t("Connected. Open the account menu.", "已连接。打开账户菜单。")}</span>
       </button>
       {shown && (
         <div className="nav-menu account-menu" role="menu">
           <Link to="/app/profile/$address" params={{ address }} role="menuitem" onClick={() => setShown(false)}>
-            <MenuIcon d="M8 8a2.75 2.75 0 1 0 0-5.5A2.75 2.75 0 0 0 8 8Zm-5 5.5c.6-2.4 2.6-3.75 5-3.75s4.4 1.35 5 3.75" />Profile
+            <MenuIcon d="M8 8a2.75 2.75 0 1 0 0-5.5A2.75 2.75 0 0 0 8 8Zm-5 5.5c.6-2.4 2.6-3.75 5-3.75s4.4 1.35 5 3.75" />{t("Profile", "个人资料")}
           </Link>
           <button
             type="button"
@@ -90,11 +93,11 @@ function AccountMenu({ address }: { address: `0x${string}` }) {
             }}
           >
             {copied
-              ? <><MenuIcon d="m3.5 8.5 3 3 6-7" />Copied</>
-              : <><MenuIcon d="M5.5 5.5h8v8h-8zM10.5 3.5V2.5h-8v8h1" />Copy address</>}
+              ? <><MenuIcon d="m3.5 8.5 3 3 6-7" />{t("Copied", "已复制")}</>
+              : <><MenuIcon d="M5.5 5.5h8v8h-8zM10.5 3.5V2.5h-8v8h1" />{t("Copy address", "复制地址")}</>}
           </button>
           <button type="button" role="menuitem" className="menu-danger" onClick={() => { setShown(false); disconnect.mutate(); }}>
-            <MenuIcon d="M6.5 2.5h-3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3M10.5 11l3-3-3-3M13.5 8H6" />Disconnect
+            <MenuIcon d="M6.5 2.5h-3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3M10.5 11l3-3-3-3M13.5 8H6" />{t("Disconnect", "断开连接")}
           </button>
         </div>
       )}
