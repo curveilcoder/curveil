@@ -14,6 +14,7 @@ import {
   type UTCTimestamp,
 } from "lightweight-charts";
 import type { Candle } from "../lib/perps";
+import { Sk } from "./Skeleton";
 
 type Props = {
   candles: (Candle & { v?: number })[];
@@ -456,6 +457,24 @@ export function TvChart({ candles, mark, markTitle, height = 420, resetKey, mode
       </div>
       <div ref={box} className="tvc-plot" style={{ height }} />
       <p className="tvc-hint small">Scroll to zoom, drag to move, drag the price axis to rescale. Double-click the axis to fit again.</p>
+    </div>
+  );
+}
+
+/** The terminal frame while candles load: same toolbar and icons, the plot as one bar. */
+export function TvChartSkeleton({ toolbar, height }: { toolbar?: ReactNode; height: number }) {
+  return (
+    <div className="tvc tvc-term" aria-hidden="true">
+      <div className="tvc-top">
+        <div className="tvc-top-l">{toolbar}</div>
+        <div className="tvc-icons">
+          <span className="tvc-ico">{ICON.line}</span>
+          <span className="tvc-sep" />
+          <span className="tvc-ico">{ICON.full}</span>
+          <span className="tvc-ico">{ICON.shot}</span>
+        </div>
+      </div>
+      <div className="tvc-stage" style={{ height }}><Sk block w="100%" h="100%" /></div>
     </div>
   );
 }

@@ -5,7 +5,7 @@
  */
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { Loading, Sk, SkRows } from "../components/Skeleton";
-import { TvChart } from "../components/TvChart";
+import { TvChart, TvChartSkeleton } from "../components/TvChart";
 import "../styles/perps.css";
 import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -158,17 +158,7 @@ function PerpsPage() {
             {shielded && <SyncNote v={vault} />}
             <OrderPanel o={o} market={market} shielded={shielded} vault={vault} side={side} onSide={setSide} />
           </section>
-          <div className="pxt-side-foot">
-            <p className="pxt-privacy">
-              {shielded
-                ? <><b>Public:</b> market, size and price. <b>Hidden:</b> which wallet holds the position.</>
-                : <><b>Public:</b> market, size, price and your wallet address. Switch to Shielded to hide the wallet.</>}
-            </p>
-            <p className="pxt-warn">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l6.5 11.4H1.5z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M8 6.2v3.3M8 11.3v.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
-              <span>Leverage multiplies losses as well as gains. Not independently audited.</span>
-            </p>
-          </div>
+          <SideFoot shielded={shielded} />
         </aside>
         </div>
       </div>
@@ -407,9 +397,10 @@ function ChartHead({ o, market, onPick }: { o: PerpsOverview; market: PerpMarket
 // ------------------------------------------------------------------ chart, stats, open interest, facts
 
 const CHART_H = 360;
+const DEFAULT_RANGE: CandleRange = "12d";
 
 function ChartSection({ market }: { market: PerpMarket }) {
-  const [range, setRange] = useState<CandleRange>("12d");
+  const [range, setRange] = useState<CandleRange>(DEFAULT_RANGE);
   const q = usePerpCandles(market.id, range);
   const mark = market.markPrice ? Number(market.markPrice) : null;
   const c = q.data?.candles ?? [];
@@ -422,10 +413,7 @@ function ChartSection({ market }: { market: PerpMarket }) {
   return (
     <section className="tk-chart pxt-chart-body" aria-label={`${market.symbol} price`}>
       {q.isLoading && !q.data ? (
-        <>
-          <div className="pxt-tools">{sizes}</div>
-          <Sk block w="100%" h={CHART_H} />
-        </>
+        <ChartFrameSkeleton toolbar={sizes} />
       ) : q.isError && !q.data ? (
         <>
           <div className="pxt-tools">{sizes}</div>
@@ -549,67 +537,163 @@ function Trades({ market }: { market: PerpMarket }) {
 
 /** The page while markets load: the same frame, values as bars. */
 function PerpsSkeleton() {
+  const shielded = useFunding() === "shielded" && Boolean(PERPS_ADAPTER);
+  const off = { type: "button" as const, disabled: true, tabIndex: -1 };
+  const rows = (labels: string[], w = "8ch") => labels.map((l) => <div key={l}><dt>{l}</dt><dd><Sk w={w} /></dd></div>);
   return (
-    <div className="pxt px" aria-busy="true">
+    <div className="pxt px has-mbar" aria-busy="true">
       <ScrollLock />
       <Loading label="Loading perps markets" />
       <div className="pxt-grid">
         <div className="pxt-left">
           <section className="pxt-card pxt-watch" aria-hidden="true">
-            <div className="pxt-card-head"><h2>Markets</h2></div>
-            <div className="pxt-search"><Sk w="60%" /></div>
+            <div className="pxt-card-head"><h2>Markets</h2><Sk w={22} h={18} style={{ borderRadius: 999 }} /></div>
+            <label className="pxt-search">
+              <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5" /><path d="M10.5 10.5L14 14" /></svg>
+              <input type="search" placeholder="Search markets" disabled tabIndex={-1} />
+            </label>
+            <div className="pxt-watch-cols"><span>Market</span><span>Mark</span><span>24h</span></div>
             <ul className="pxt-watch-list">
               {[0, 1, 2].map((i) => (
-                <li key={i} className="pxt-watch-row">
-                  <span className="pxt-watch-mk"><Sk w={26} h={26} style={{ borderRadius: "50%" }} /><span><Sk w="7ch" /><Sk w="6ch" /></span></span>
-                  <span className="pxt-watch-right"><Sk w={64} h={22} /><Sk w="5ch" /></span>
+                <li key={i}>
+                  <div className="pxt-watch-row" aria-current={i === 0 ? "true" : undefined}>
+                    <span className="pxt-watch-mk">
+                      <Sk w={26} h={26} style={{ borderRadius: "50%" }} />
+                      <span><strong><Sk w="7ch" /></strong><span className="mono"><Sk w="8ch" /></span></span>
+                    </span>
+                    <span className="pxt-watch-right"><Sk w={64} h={22} /><span className="mono"><Sk w="6ch" /></span></span>
+                  </div>
                 </li>
               ))}
             </ul>
           </section>
-          <section className="pxt-card pxt-bal" aria-hidden="true">
-            <div className="pxt-card-head"><h2>Balances</h2></div>
-            {["Public wallet", "Shielded vault"].map((l) => (
-              <div key={l} className="pxt-bal-box"><div className="pxt-bal-top"><span>{l}</span></div><div className="pxt-bal-row"><span>{SYMBOL}</span><Sk w="6ch" /></div></div>
-            ))}
+          <section className="pxt-card pxt-bal">
+            <Balances />
           </section>
         </div>
         <div className="pxt-right">
         <div className="pxt-center">
         <section className="pxt-card pxt-chart" aria-hidden="true">
           <header className="pxt-head">
-            <div className="pxt-head-id"><Sk w={30} h={30} style={{ borderRadius: "50%" }} /><Sk w="7ch" h={22} /></div>
-            <div className="pxt-head-px"><Sk w="8ch" h={34} /><Sk w="6ch" h={24} /></div>
-            <dl className="pxt-head-stats">{["24h high", "24h low", "Oracle", "Funding 1h", "Open interest", "Volume 24h", "Vault liquidity"].map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="7ch" /></dd></div>)}</dl>
+            <div className="pxt-head-id">
+              <h1><span className="pxt-mkt-btn"><Sk w={30} h={30} style={{ borderRadius: "50%" }} /><Sk w="6ch" h={22} /></span></h1>
+              <Sk w={68} h={22} style={{ borderRadius: 999 }} />
+            </div>
+            <div className="pxt-head-px"><strong className="mono"><Sk w="8ch" /></strong><Sk w="6ch" h={26} /></div>
+            <dl className="pxt-head-stats">{rows(["24h high", "24h low", "Oracle", "Funding 1h", "Open interest", "Volume 24h", "Vault liquidity"], "7ch")}</dl>
           </header>
-          <div className="pxt-chart-body">
-            <div className="pxt-tools"><Sk w={260} h={34} /></div>
-            <Sk block w="100%" h={CHART_H} />
-          </div>
+          <section className="tk-chart pxt-chart-body"><ChartFrameSkeleton /></section>
         </section>
         <section className="pxt-card pxt-account" aria-hidden="true">
           <div className="tk-tabs px-account">
-            <div className="tk-tablist">{["Market info", "Positions", "Pending", "TP / SL", "History", "Market trades"].map((l) => <button key={l} type="button" role="tab" disabled tabIndex={-1}>{l}</button>)}</div>
-            <div className="px-empty"><Sk block w="100%" h={56} /></div>
+            <div className="tk-tablist">{["Market info", ...(shielded ? ["Shielded positions"] : ["Positions", "Pending", "TP / SL", "History"]), "Market trades"].map((l, i) => <button key={l} {...off} role="tab" aria-selected={i === 0}>{l}</button>)}</div>
+            <div className="pxt-pad pxt-info">
+              <section className="tk-curve px-oi">
+                <div className="row-between"><span className="tk-label">Open interest, long against short</span><Sk w="24ch" /></div>
+                <div className="px-split empty"><div className="px-split-l" style={{ width: "50%" }} /><div className="px-split-s" /></div>
+                <div className="px-oi-sides">
+                  <div><span className="good-text">Long –</span><span className="mono"><Sk w="23ch" /></span></div>
+                  <div><span className="bad-text">Short –</span><span className="mono"><Sk w="23ch" /></span></div>
+                </div>
+              </section>
+              <section className="tk-about">
+                <h2>Market details</h2>
+                <dl className="tk-facts">{rows(["Max leverage", "Open / close fee", "Maintenance margin", "Liquidation fee", "Profit cap", "Minimum margin", "Keeper fee", "Last on-chain price", "Price sources"])}</dl>
+                <p className="small muted"><Sk w="100%" /><Sk w="60%" /></p>
+              </section>
+            </div>
+          </div>
+        </section>
+        <section className="pxt-card pxt-liq">
+          <div className="pxt-card-head pxt-liq-head"><h2>Provide liquidity</h2></div>
+          <div className="pxt-pad">
+            <div className="swap-layout px-lp">
+              <div className="panel stack">
+                <div className="row-between"><p className="eyebrow" style={{ margin: 0 }}>Liquidity vault</p><span className="tag tag-public">Public</span></div>
+                <p className="small muted" style={{ margin: 0 }}>
+                  The vault is every trader's counterparty. It earns what traders lose, 80% of trading fees and the funding imbalance, and pays what they win. Share value moves with open positions.
+                </p>
+                <dl className="kv stats">{rows(["Value", "Share price", "Reserved"])}</dl>
+                <dl className="rows">{rows(["Free to redeem", "Most it can reserve", "Deposit lock"])}</dl>
+              </div>
+              <div className="panel stack">
+                <div className="seg fill" style={{ marginTop: 0 }}><button {...off} aria-pressed="true">Deposit</button><button {...off}>Redeem</button></div>
+                <AmountField label="Deposit" value="" onChange={() => {}} symbol={SYMBOL}><span className="token-tag">{SYMBOL}</span></AmountField>
+                <dl className="rows summary">{rows(["Shares you get", "Your shares"])}</dl>
+                <WalletAction verb="deposit"><Sk block w="100%" h={44} /></WalletAction>
+                <p className="small muted" style={{ margin: 0 }}><Sk w="100%" /><Sk w="70%" /></p>
+              </div>
+            </div>
           </div>
         </section>
         </div>
-        <aside className="pxt-card pxt-side" aria-hidden="true">
-          <div className="pxt-side-head"><h2>Trade</h2></div>
-          <section className="tk-trade px-order">
+        <aside className="pxt-card pxt-side">
+          <div className="pxt-side-head">
+            <h2>Trade <Sk w="7ch" /></h2>
+            {PERPS_ADAPTER && <FundingSwitch className="pxt-side-switch" />}
+          </div>
+          <section className={`tk-trade px-order${shielded ? " shielded-panel" : ""}`}>
+            <div className="px-chips"><span className="px-chip">Isolated</span><span className="px-chip">Market</span><span className="px-chip mono">Up to <Sk w="2ch" /></span></div>
             <div className="seg side-seg px-side-seg" style={{ marginTop: 0 }}>
-              <button type="button" disabled tabIndex={-1}>Long</button>
-              <button type="button" disabled tabIndex={-1}>Short</button>
+              <button {...off} aria-pressed="true" data-side="long">Long</button>
+              <button {...off} data-side="short">Short</button>
             </div>
-            <Sk block w="100%" h={88} />
-            <Sk block w="100%" h={36} />
-            <Sk block w="100%" h={36} />
-            <dl className="px-rows">{["Liquidation price", "Order value", "Fees"].map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="8ch" /></dd></div>)}</dl>
-            <Sk block w="100%" h={44} />
+            <div className="px-avail"><span>Available</span><span className="mono"><Sk w="8ch" /></span></div>
+            <AmountField label="Margin" value="" onChange={() => {}} symbol={SYMBOL}><span className="token-tag">{SYMBOL}</span></AmountField>
+            <div className="px-pcts">{[25, 50, 75, 100].map((f) => <button key={f} {...off}>{f}%</button>)}</div>
+            <div className="px-field">
+              <div className="px-field-top"><span>Leverage</span><span className="mono">3×</span></div>
+              <div className="px-levs">{LEVERAGES.map((l) => <button key={l} {...off} aria-pressed={l === 3}>{l}×</button>)}</div>
+            </div>
+            <div className="px-field">
+              <div className="px-field-top">
+                <span>Max slippage</span>
+                <div className="px-levs px-slip">{SLIPPAGES_BPS.map((b, i) => <button key={b} {...off} aria-pressed={i === 1}>{b / 100}%</button>)}</div>
+              </div>
+            </div>
+            <WalletAction verb="trade perps"><Sk block w="100%" h={44} /></WalletAction>
+            <dl className="px-rows">
+              {rows(["Liquidation price", "Order value", "Margin", "Fill no worse than", "Fees", "Most it can gain"])}
+              <div className="px-total"><dt>Total from your {shielded ? "notes" : "wallet"}</dt><dd><Sk w="8ch" /></dd></div>
+            </dl>
+            <p className="px-note"><Sk w="100%" /><Sk w="100%" /><Sk w="50%" /></p>
           </section>
+          <SideFoot shielded={shielded} />
         </aside>
         </div>
       </div>
+      <div className="tk-mbar px-mbar" aria-hidden="true">
+        <div className="tk-mbar-price"><span className="tk-label"><Sk w="7ch" /></span><strong className="mono"><Sk w="8ch" /></strong></div>
+        <button {...off} className="btn tk-buy">Long</button>
+        <button {...off} className="btn tk-sell">Short</button>
+      </div>
+    </div>
+  );
+}
+
+/** The chart card's frame while candles load: the real toolbar, the plot as one bar. */
+function ChartFrameSkeleton({ toolbar }: { toolbar?: ReactNode }) {
+  return (
+    <TvChartSkeleton
+      height={CHART_H}
+      toolbar={toolbar ?? <div className="pxt-tf">{RANGES.map(([r, label]) => <button key={r} type="button" disabled tabIndex={-1} aria-pressed={r === DEFAULT_RANGE}>{label}</button>)}</div>}
+    />
+  );
+}
+
+/** What an order makes public, and the leverage warning: under the order card. */
+function SideFoot({ shielded }: { shielded: boolean }) {
+  return (
+    <div className="pxt-side-foot">
+      <p className="pxt-privacy">
+        {shielded
+          ? <><b>Public:</b> market, size and price. <b>Hidden:</b> which wallet holds the position.</>
+          : <><b>Public:</b> market, size, price and your wallet address. Switch to Shielded to hide the wallet.</>}
+      </p>
+      <p className="pxt-warn">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l6.5 11.4H1.5z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M8 6.2v3.3M8 11.3v.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+        <span>Leverage multiplies losses as well as gains. Not independently audited.</span>
+      </p>
     </div>
   );
 }
