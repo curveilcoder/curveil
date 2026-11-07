@@ -73,7 +73,7 @@ const storedSigs = (): Hex[] => {
 /** A link to this page that carries the signatures so far, so the next owner adds theirs to them. */
 const shareLink = (extra: Hex[]) => {
   const all = [...new Set([...storedSigs(), ...extra].map((x) => x.toLowerCase()))];
-  return `${window.location.origin}/safe#sigs=${all.join(",")}`;
+  return `${window.location.origin}/app/safe#sigs=${all.join(",")}`;
 };
 
 /** Signatures that arrived in the link (#sigs=…). Each step keeps the ones made over its own hash. */

@@ -33,14 +33,14 @@ const chunk = <T,>(xs: T[], n: number) => Array.from({ length: Math.ceil(xs.leng
 
 /** Add liquidity to one pool. Reached only from that pool's page, so the pool is already chosen. */
 export function AddLiquidity() {
-  const { pool: address } = useParams({ from: "/pools/$pool/add" });
+  const { pool: address } = useParams({ from: "/app/pools/$pool/add" });
   const markets = useMarkets();
   const shielded = useFunding() === "shielded" && SHIELDED_EXECUTION;
   const vault = useShieldedVault(shielded);
   const pool = markets.data?.find((p) => p.address.toLowerCase() === address.toLowerCase());
   return (
     <div className="wrap tk">
-      <Link to={pool ? "/pools/$pool" : "/pools"} params={{ pool: address }} className="tk-back">
+      <Link to={pool ? "/app/pools/$pool" : "/app/pools"} params={{ pool: address }} className="tk-back">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
         {pool ? pairLabel(pool) : "Pools"}
       </Link>
@@ -63,7 +63,7 @@ export function AddLiquidity() {
             <AddSkeleton shielded={shielded} />
           </>
         ) : !pool ? (
-          <p className="notice bad" role="alert">No Curveil pool is indexed at <span className="mono">{address}</span>. <Link to="/pools">Back to Pools</Link></p>
+          <p className="notice bad" role="alert">No Curveil pool is indexed at <span className="mono">{address}</span>. <Link to="/app/pools">Back to Pools</Link></p>
         ) : (
           <AddForm pool={pool} vault={shielded ? vault : null} />
         )}
@@ -76,7 +76,7 @@ export function AddLiquidity() {
 export function CreatePoolPage() {
   return (
     <div className="wrap tk">
-      <Link to="/pools" className="tk-back">
+      <Link to="/app/pools" className="tk-back">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
         Pools
       </Link>
@@ -144,7 +144,7 @@ function AddSkeleton({ shielded }: { shielded: boolean }) {
 function PositionHead({ pool }: { pool: MarketPool }) {
   return (
     <div className="row-between">
-      <Link to="/pools/$pool" params={{ pool: pool.address }} className="pool-link">
+      <Link to="/app/pools/$pool" params={{ pool: pool.address }} className="pool-link">
         <TokenPair pool={pool} size={28} />
         <strong>{pairLabel(pool)}</strong>
       </Link>
@@ -180,7 +180,7 @@ function PositionCard(props: {
   return (
     <article className="panel lpc">
       <header className="lpc-head">
-        <Link to="/pools/$pool" params={{ pool: pool.address }} className="pool-link lpc-pair">
+        <Link to="/app/pools/$pool" params={{ pool: pool.address }} className="pool-link lpc-pair">
           <TokenPair pool={pool} size={32} />
           <span className="lpc-name">
             <strong>{pairLabel(pool)}</strong>

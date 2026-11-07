@@ -275,7 +275,7 @@ export function UnlockInline() {
         <button className="btn btn-primary" disabled={!pass || busy}>{busy ? "Unlocking…" : "Unlock"}</button>
       </div>
       {error && <p className="small bad-ink" role="alert" style={{ margin: 0 }}>{error}</p>}
-      <Link className="small muted vx-forgot" to="/vault">Forgot the passphrase?</Link>
+      <Link className="small muted vx-forgot" to="/app/vault">Forgot the passphrase?</Link>
     </form>
   );
 }

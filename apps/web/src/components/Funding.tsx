@@ -16,7 +16,7 @@ export function FundingRow({ what }: { what: string }) {
   return (
     <div className="funding-row">
       <span className="small muted">
-        {funding === "shielded" ? <span title={what}>Paying from your shielded <Link to="/vault">vault</Link>.</span> : "Paying from your connected wallet."}
+        {funding === "shielded" ? <span title={what}>Paying from your shielded <Link to="/app/vault">vault</Link>.</span> : "Paying from your connected wallet."}
       </span>
       <FundingSwitch />
     </div>
@@ -45,7 +45,7 @@ export function VaultGate({ v, children }: { v: VaultState; children: (status: V
   if (v.phase === "none") {
     return (
       <div className="notice">
-        Shielded funding uses a vault account in this browser. <Link to="/vault">Create or recover one</Link>, shield some funds, then come back.
+        Shielded funding uses a vault account in this browser. <Link to="/app/vault">Create or recover one</Link>, shield some funds, then come back.
       </div>
     );
   }

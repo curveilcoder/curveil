@@ -31,7 +31,7 @@ export function Pools() {
         lead="Every public DAMM pool and DLMM pair created by the Curveil factories. Open a pool to see its price, volume, liquidity and trades, and to add liquidity to it."
       >
         <div className="hero-actions">
-          <Link to="/pools/new" className="btn btn-primary">Create pool</Link>
+          <Link to="/app/pools/new" className="btn btn-primary">Create pool</Link>
         </div>
       </PageHead>
       <div className="stack">
@@ -78,7 +78,7 @@ export function Pools() {
                 <tr>
                   <td colSpan={8} className="muted">
                     {data?.length ? "No pool matches that search." : "No pools are indexed yet."}{" "}
-                    <Link to="/pools/new">Create a pool</Link>
+                    <Link to="/app/pools/new">Create a pool</Link>
                   </td>
                 </tr>
               )}
@@ -101,11 +101,11 @@ export function PoolRow({ p }: { p: MarketPool }) {
       className="row-link"
       onClick={(e) => {
         if ((e.target as HTMLElement).closest("a, button")) return;
-        navigate({ to: "/pools/$pool", params: { pool: p.address } });
+        navigate({ to: "/app/pools/$pool", params: { pool: p.address } });
       }}
     >
       <td>
-        <Link to="/pools/$pool" params={{ pool: p.address }} className="pool-link">
+        <Link to="/app/pools/$pool" params={{ pool: p.address }} className="pool-link">
           <TokenPair pool={p} size={24} />
           <span>{pairLabel(p)}</span>
         </Link>

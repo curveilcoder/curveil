@@ -180,14 +180,14 @@ dl.rows.summary dd { color: var(--ink); }
 .quote-line .mono { color: var(--ink-2); }
 
 /* ---------- The action ---------- */
-.btn-block { width: 100%; min-height: 52px; font-size: 15.5px; border-radius: var(--radius-field); }
+.btn-block { width: 100%; min-height: 44px; font-size: 15px; border-radius: var(--radius-field); }
 .btn-primary:disabled { background: var(--surface-2); border-color: var(--line-strong); color: var(--muted); opacity: 1; }
 .btn-primary:not(:disabled):hover { background: #dfe6f5; border-color: #dfe6f5; }
 .wallet-gate { border-radius: var(--radius-field); background: var(--field-bg); padding: 14px 16px; }
 /* Without a wallet, Connect is the next step: show it as the full-width main action, like the button it stands in for. */
 .wallet-gate { flex-direction: column; align-items: stretch; gap: 12px; }
 .wallet-gate .connect { width: 100%; }
-.wallet-gate .connect > .btn { width: 100%; min-height: 52px; font-size: 15.5px; border-radius: var(--radius-field); }
+.wallet-gate .connect > .btn { width: 100%; min-height: 42px; font-size: 14.5px; border-radius: var(--radius-field); }
 .range-kv dd { font-family: var(--font-mono) !important; font-size: 15px !important; }
 .preview-empty { display: grid; place-items: center; min-height: 120px; border: 1px dashed var(--line); border-radius: var(--radius-field); padding: 16px; text-align: center; }
 .choice-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }

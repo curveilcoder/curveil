@@ -58,8 +58,8 @@ function buildRoutes(pools: MarketPool[], a: `0x${string}`, b: `0x${string}`): R
 }
 
 export function Swap() {
-  const search = useSearch({ from: "/swap" });
-  const navigate = useNavigate({ from: "/swap" });
+  const search = useSearch({ from: "/app/swap" });
+  const navigate = useNavigate({ from: "/app/swap" });
   const shielded = useFunding() === "shielded" && SHIELDED_EXECUTION;
   // Public swaps can pay or receive native ETH; it is wrapped to WETH for the pools.
   const allTokens = useTokens({ eth: !shielded });
@@ -298,7 +298,7 @@ export function Swap() {
                       }}
                     />
                   ) : (
-                    <p className="small muted" style={{ margin: 0 }}>Shield an asset in the <Link to="/vault">vault</Link> first.</p>
+                    <p className="small muted" style={{ margin: 0 }}>Shield an asset in the <Link to="/app/vault">vault</Link> first.</p>
                   )
                 }
               </VaultGate>
@@ -427,7 +427,7 @@ function QuoteDetails({ tokIn, tokOut, amountIn, best, alternatives, failed, min
               <li key={p.address}>
                 <div className="row-between">
                   <span>{hin.symbol} → {hout.symbol}</span>
-                  <Link to="/pools/$pool" params={{ pool: p.address }} className="small">{kindLabel(p)}</Link>
+                  <Link to="/app/pools/$pool" params={{ pool: p.address }} className="small">{kindLabel(p)}</Link>
                 </div>
                 <span className="small muted">
                   Fee {fmtAmount(fee, hin.decimals, 6)} {hin.symbol}{pct !== null ? ` (${pct.toFixed(2)}%)` : ` (${fmtBps(p.fees.currentBps)})`}: {fmtAmount(fee - proto, hin.decimals, 6)} to LPs, {fmtAmount(proto, hin.decimals, 6)} to the protocol

@@ -50,8 +50,8 @@ function LiveChip() {
 function HeroActions() {
   return (
     <div className="hero-actions">
-      <Link to="/vault" className="btn btn-primary">Go shielded <span aria-hidden="true">→</span></Link>
-      <Link to="/perps" className="btn">Trade perps <span aria-hidden="true">→</span></Link>
+      <Link to="/app/vault" className="btn btn-primary">Go shielded <span aria-hidden="true">→</span></Link>
+      <Link to="/app/perps" className="btn">Trade perps <span aria-hidden="true">→</span></Link>
     </div>
   );
 }

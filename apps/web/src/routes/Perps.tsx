@@ -15,7 +15,8 @@ import { ModuleStatus } from "../components/ModuleStatus";
 import { ModuleGate } from "../components/ModuleGate";
 import { TxStatus } from "../components/TxStatus";
 import { WalletAction, AmountField } from "../components/WalletAction";
-import { FundingRow, SyncNote, VaultGate, useShieldedVault } from "../components/Funding";
+import { SyncNote, VaultGate, useShieldedVault } from "../components/Funding";
+import { FundingSwitch } from "../components/FundingSwitch";
 import { ShieldedPerpOpen, ShieldedPerpPositions } from "../components/ShieldedPerps";
 import { erc20Abi } from "../lib/abis";
 import { IS_TESTNET, QUOTE, curveilChain, explorerTx, shortAddress } from "../lib/config";
@@ -23,7 +24,7 @@ import { fmtAmount, fmtBps, parseAmount, timeAgo } from "../lib/format";
 import { useWalletTokens } from "../lib/tokens";
 import { useTxRunner, type TxStep } from "../lib/tx";
 import { useFunding } from "../lib/funding";
-import { balances } from "../lib/vault/store";
+import { balances, useVault } from "../lib/vault/store";
 import {
   LEVERAGES,
   ORDER_MANAGER,
@@ -75,19 +76,26 @@ export function Perps() {
   return <PerpsPage />;
 }
 
-type AccountTab = "positions" | "pending" | "orders" | "history" | "trades";
+type AccountTab = "info" | "positions" | "pending" | "orders" | "history" | "trades";
 /** Candle sizes, TradingView style. Each one fetches the most history Coinbase sends in one go. */
 const RANGES: [CandleRange, string][] = [["5h", "1m"], ["1d", "5m"], ["3d", "15m"], ["12d", "1h"], ["75d", "6h"], ["290d", "1D"]];
 
 /** Price change over the last day, from the reference candles and the live mark. */
-function useDayChange(market: PerpMarket) {
+/** The last day of reference candles: change against the live mark, 24h high and low, and closes for a sparkline. */
+function useDay(market: PerpMarket) {
   const day = usePerpCandles(market.id, "1d");
   const c = day.data?.candles ?? [];
   const markN = market.markPrice ? Number(market.markPrice) : null;
   const ref = c.length ? c[0]!.o : null;
   const now = markN ?? (c.length ? c[c.length - 1]!.c : null);
-  return ref && now ? (now - ref) / ref : null;
+  return {
+    change: ref && now ? (now - ref) / ref : null,
+    hi: c.length ? Math.max(...c.map((x) => x.h), markN ?? 0) : null,
+    lo: c.length ? Math.min(...c.map((x) => x.l), markN ?? Infinity) : null,
+    closes: c.map((x) => x.c),
+  };
 }
+const useDayChange = (market: PerpMarket) => useDay(market).change;
 
 const pctText = (x: number | null) => (x === null ? "–" : `${x >= 0 ? "+" : ""}${(x * 100).toFixed(2)}%`);
 const toneOf = (x: number | null) => (x === null || x === 0 ? "" : x > 0 ? "good-text" : "bad-text");
@@ -116,32 +124,53 @@ function PerpsPage() {
   if (overview.isLoading || !overview.data || !market) return <PerpsSkeleton />;
   const o = overview.data;
   return (
-    <div className="wrap tk px has-mbar">
-      <MarketHead o={o} market={market} onPick={setMarketId} />
-      <div className="tk-grid">
-        <div className="tk-main">
-          <ChartSection market={market} />
-          <MarketStats o={o} market={market} />
-          <section className="tk-about px-liquidity" id="px-liquidity" aria-labelledby="px-liquidity-title">
-            <h2 id="px-liquidity-title">Provide liquidity</h2>
-            <LiquidityVault o={o} />
+    <div className="pxt px has-mbar">
+      <ScrollLock />
+      <div className="pxt-grid">
+        <div className="pxt-left">
+          <section className="pxt-card pxt-watch" aria-label="Markets">
+            <Watchlist o={o} market={market} onPick={setMarketId} />
           </section>
-          <OpenInterest market={market} />
-          <MarketFacts o={o} market={market} />
-          <AccountTabs o={o} market={market} shielded={shielded} vault={vault} />
-          <ModuleStatus id="perps" />
+          <section className="pxt-card pxt-bal" aria-label="Balances">
+            <Balances />
+          </section>
         </div>
-        <aside className="tk-side" id="px-order" aria-label="Place an order">
-          <section className={`panel tk-trade px-order${shielded ? " shielded-panel" : ""}`}>
-            {PERPS_ADAPTER && <FundingRow what="Sizes and prices are public; who holds the position is not." />}
+        <div className="pxt-right">
+        <div className="pxt-center">
+          <section className="pxt-card pxt-chart" aria-label={`${market.symbol} chart`}>
+            <ChartHead o={o} market={market} onPick={setMarketId} />
+            <ChartSection market={market} />
+          </section>
+          <section className="pxt-card pxt-account">
+            <AccountTabs o={o} market={market} shielded={shielded} vault={vault} />
+          </section>
+          <section className="pxt-card pxt-liq" id="px-liquidity" aria-label="Provide liquidity">
+            <div className="pxt-card-head pxt-liq-head"><h2>Provide liquidity</h2></div>
+            <div className="pxt-pad"><LiquidityVault o={o} /></div>
+          </section>
+        </div>
+        <aside className="pxt-card pxt-side" id="px-order" aria-label="Place an order">
+          <div className="pxt-side-head">
+            <h2>Trade {market.symbol}</h2>
+            {PERPS_ADAPTER && <FundingSwitch className="pxt-side-switch" />}
+          </div>
+          <section className={`tk-trade px-order${shielded ? " shielded-panel" : ""}`}>
             {shielded && <SyncNote v={vault} />}
             <OrderPanel o={o} market={market} shielded={shielded} vault={vault} side={side} onSide={setSide} />
           </section>
-          <p className="tk-warn small">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l6.5 11.4H1.5z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M8 6.2v3.3M8 11.3v.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
-            <span>Leverage multiplies losses as well as gains. A position is liquidated when its margin falls to the maintenance margin.</span>
-          </p>
+          <div className="pxt-side-foot">
+            <p className="pxt-privacy">
+              {shielded
+                ? <><b>Public:</b> market, size and price. <b>Hidden:</b> which wallet holds the position.</>
+                : <><b>Public:</b> market, size, price and your wallet address. Switch to Shielded to hide the wallet.</>}
+            </p>
+            <p className="pxt-warn">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l6.5 11.4H1.5z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M8 6.2v3.3M8 11.3v.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+              <span>Leverage multiplies losses as well as gains. Not independently audited.</span>
+            </p>
+          </div>
         </aside>
+        </div>
       </div>
       <div className="tk-mbar px-mbar" role="region" aria-label="Quick trade">
         <div className="tk-mbar-price">
@@ -152,6 +181,122 @@ function PerpsPage() {
         <button type="button" className="btn tk-sell" onClick={() => pick("short")}>Short</button>
       </div>
     </div>
+  );
+}
+
+/** On wide screens the terminal fills the window and its columns scroll, not the page. */
+function ScrollLock() {
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("pxt-locked");
+    return () => root.classList.remove("pxt-locked");
+  }, []);
+  return null;
+}
+
+/** The time left until the next whole hour, when funding settles. */
+function useNextHour() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const left = 3600 - (Math.floor(now / 1000) % 3600);
+  const mm = String(Math.floor(left / 60)).padStart(2, "0");
+  const ss = String(left % 60).padStart(2, "0");
+  return { next: `${mm}:${ss}` };
+}
+
+const SHIELD = <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 13.5 3.5v4.2c0 3.3-2.3 5.7-5.5 6.8-3.2-1.1-5.5-3.5-5.5-6.8V3.5z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>;
+
+/** A small line chart of the last day's closes. */
+function Spark({ values, up }: { values: number[]; up: boolean | null }) {
+  if (values.length < 2) return <span className="pxt-spark" aria-hidden="true" />;
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const span = hi - lo || 1;
+  const pts = values.map((v, i) => `${((i / (values.length - 1)) * 64).toFixed(1)},${(22 - ((v - lo) / span) * 20).toFixed(1)}`).join(" ");
+  return (
+    <svg className={`pxt-spark ${up === null ? "" : up ? "good-text" : "bad-text"}`} viewBox="0 0 64 24" preserveAspectRatio="none" aria-hidden="true">
+      <polyline points={pts} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+/** Every perps market, searchable, with its last day at a glance. Picking one switches the page. */
+function Watchlist({ o, market, onPick }: { o: PerpsOverview; market: PerpMarket; onPick: (id: number) => void }) {
+  const [q, setQ] = useState("");
+  const term = q.trim().toLowerCase();
+  const list = o.markets.filter((m) => !term || m.symbol.toLowerCase().includes(term) || m.base.toLowerCase().includes(term));
+  return (
+    <>
+      <div className="pxt-card-head"><h2>Markets</h2><span className="pxt-count">{o.markets.length}</span></div>
+      <label className="pxt-search">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="M10.5 10.5L14 14" /></svg>
+        <span className="sr-only">Search markets</span>
+        <input type="search" placeholder="Search markets" value={q} onChange={(e) => setQ(e.target.value)} />
+      </label>
+      <div className="pxt-watch-cols" aria-hidden="true"><span>Market</span><span>Mark</span><span>24h</span></div>
+      <ul className="pxt-watch-list">
+        {list.map((m) => <WatchRow key={m.id} m={m} on={m.id === market.id} onPick={onPick} />)}
+        {list.length === 0 && <li className="small muted pxt-watch-none">No market matches “{q}”.</li>}
+      </ul>
+    </>
+  );
+}
+
+function WatchRow({ m, on, onPick }: { m: PerpMarket; on: boolean; onPick: (id: number) => void }) {
+  const d = useDay(m);
+  const up = d.change === null ? null : d.change >= 0;
+  return (
+    <li>
+      <button type="button" className="pxt-watch-row" aria-current={on ? "true" : undefined} onClick={() => onPick(m.id)}>
+        <span className="pxt-watch-mk">
+          <CoinMark base={m.base} />
+          <span>
+            <strong>{m.symbol}</strong>
+            <span className="mono">{fmtUsdPrice(m.markPrice ?? m.recordedPrice?.price)}</span>
+          </span>
+        </span>
+        <span className="pxt-watch-right">
+          <Spark values={d.closes} up={up} />
+          <span className={`mono ${toneOf(d.change)}`}>{pctText(d.change)}</span>
+        </span>
+      </button>
+    </li>
+  );
+}
+
+/** USDG in the connected wallet and in the shielded vault: what can margin a position. */
+function Balances() {
+  const { address } = useConnection();
+  const wallet = useWalletTokens([USDG], PERP_ENGINE);
+  const v = useVault();
+  const usdgAsset = v.status?.assets.find((a) => USDG && a.address.toLowerCase() === USDG.toLowerCase());
+  const shieldedBal = usdgAsset && v.phase === "unlocked" ? balances(usdgAsset.resource).spendable : undefined;
+  const pub = wallet.get(USDG).balance;
+  return (
+    <>
+      <div className="pxt-card-head"><h2>Balances</h2></div>
+      <div className="pxt-bal-box">
+        <div className="pxt-bal-top">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="4" width="12" height="9" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.3" /><path d="M2 6.5h12" stroke="currentColor" strokeWidth="1.3" /></svg>
+          <span>Public wallet</span>
+        </div>
+        <div className="pxt-bal-row"><span>{SYMBOL}</span><span className="mono">{!address ? "Not connected" : pub !== undefined ? usd(pub) : "–"}</span></div>
+      </div>
+      <Link to="/app/vault" className="pxt-bal-box pxt-bal-link">
+        <div className="pxt-bal-top">
+          <span className="pxt-fund-ico on">{SHIELD}</span>
+          <span>Shielded vault</span>
+          <svg className="pxt-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+        </div>
+        <div className="pxt-bal-row">
+          <span>{SYMBOL}</span>
+          <span className="mono">{shieldedBal !== undefined ? usd(shieldedBal) : v.phase === "locked" ? "Locked" : v.phase === "none" ? "No vault yet" : "–"}</span>
+        </div>
+      </Link>
+    </>
   );
 }
 
@@ -218,90 +363,88 @@ function PickerRow({ m, on, onPick }: { m: PerpMarket; on: boolean; onPick: (id:
   );
 }
 
-function MarketHead({ o, market, onPick }: { o: PerpsOverview; market: PerpMarket; onPick: (id: number) => void }) {
-  const change = useDayChange(market);
+/** The chart card's header: market switch, mark price and change, then the market's live numbers. */
+function ChartHead({ o, market, onPick }: { o: PerpsOverview; market: PerpMarket; onPick: (id: number) => void }) {
+  const d = useDay(market);
   const cfg = market.config;
+  const st = market.state;
+  const rec = market.recordedPrice;
+  const rate = Number(market.fundingRatePerHour);
+  const { next } = useNextHour();
   const [open, setOpen] = useState(false);
+  const f = (n: number | null) => (n === null ? "–" : n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: n >= 1000 ? 2 : 4 }));
   return (
-    <header className="tk-head">
+    <header className="pxt-head">
       {open && <MarketPicker o={o} market={market} onPick={onPick} onClose={() => setOpen(false)} />}
-      <div className="tk-id">
-        <CoinMark base={market.base} large />
-        <div className="tk-id-text">
-          <div className="tk-name">
-            <h1>
-              <button type="button" className="px-title-btn" aria-haspopup="dialog" title="Change market" onClick={() => setOpen(true)}>
-                {market.symbol}
-                <span className="px-title-chev" aria-hidden="true">
-                  <svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" /></svg>
-                </span>
-              </button>
-            </h1>
-            <span className="tk-sym">Perpetual</span>
-            {cfg && <span className="tag tag-illustration">Up to {cfg.maxLeverageBps / 10_000}×</span>}
-            {cfg && !cfg.enabled && <span className="tag tag-illustration">Paused</span>}
-          </div>
-          <p className="tk-meta">
-            <span>Isolated margin in {SYMBOL}</span>
-            <span>{o.priceSource === "pyth" ? "Pyth prices" : o.priceSource === "curveil-test-signer" ? `Median of ${market.markSources.length || 4} exchanges` : "Oracle network prices"}</span>
-            <span>Funding settles hourly</span>
-          </p>
-        </div>
+      <div className="pxt-head-id">
+        <h1>
+          <button type="button" className="pxt-mkt-btn" aria-haspopup="dialog" title="Change market" onClick={() => setOpen(true)}>
+            <CoinMark base={market.base} />
+            <span>{market.base}<span className="pxt-slash"> / </span>USD</span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+          </button>
+        </h1>
+        {cfg && <span className="pxt-pill">Up to {cfg.maxLeverageBps / 10_000}×</span>}
+        {cfg && !cfg.enabled && <span className="pxt-pill warn-text">Paused</span>}
       </div>
-      <div className="tk-cap">
-        <span className="tk-label">Mark price</span>
+      <div className="pxt-head-px">
         <strong className="mono">{fmtUsdPrice(market.markPrice)}</strong>
-        <span className={`tk-cap-sub mono ${toneOf(change)}`}>{pctText(change)} <span className="muted">24h</span></span>
+        <span className={`pxt-chg mono ${d.change === null ? "" : d.change >= 0 ? "up" : "down"}`}>{pctText(d.change)}</span>
       </div>
+      <dl className="pxt-head-stats">
+        <div><dt>24h high</dt><dd className="mono">{f(d.hi)}</dd></div>
+        <div><dt>24h low</dt><dd className="mono">{f(d.lo)}</dd></div>
+        <div><dt>Oracle</dt><dd className="mono" title={rec?.timestamp ? `Last recorded on-chain ${timeAgo(rec.timestamp)}` : undefined}>{rec?.timestamp ? fmtUsdPrice(rec.price) : "–"}</dd></div>
+        <div><dt>Funding 1h</dt><dd className={`mono ${toneOf(rate)}`} title={fundingText(market)}>{Number.isFinite(rate) ? `${(rate * 100).toFixed(4)}%` : "–"} <span className="muted">· {next}</span></dd></div>
+        <div><dt>Open interest</dt><dd className="mono">{st ? usd(BigInt(st.oiLong) + BigInt(st.oiShort), 0) : "–"} <span className="muted">{SYMBOL}</span></dd></div>
+        <div><dt>Volume 24h</dt><dd className="mono">{Number(market.volume24h).toLocaleString("en-US", { maximumFractionDigits: 0 })} <span className="muted">{SYMBOL}</span></dd></div>
+        <div><dt>Vault liquidity</dt><dd className="mono">{o.vault.freeLiquidity !== null ? usd(o.vault.freeLiquidity, 0) : "–"} <span className="muted">{SYMBOL}</span></dd></div>
+      </dl>
     </header>
   );
 }
 
 // ------------------------------------------------------------------ chart, stats, open interest, facts
 
+const CHART_H = 360;
+
 function ChartSection({ market }: { market: PerpMarket }) {
   const [range, setRange] = useState<CandleRange>("12d");
   const q = usePerpCandles(market.id, range);
   const mark = market.markPrice ? Number(market.markPrice) : null;
   const c = q.data?.candles ?? [];
-  const hi = c.length ? Math.max(...c.map((x) => x.h)) : null;
-  const lo = c.length ? Math.min(...c.map((x) => x.l)) : null;
-  const fmt = (n: number | null) => (n === null ? "–" : n.toLocaleString("en-US", { maximumFractionDigits: n >= 1000 ? 2 : 4 }));
-  return (
-    <section className="tk-chart" aria-label={`${market.symbol} price`}>
-      <div className="tk-chart-top">
-        <dl className="px-hilo">
-          <div><dt className="tk-label">High</dt><dd className="mono">{fmt(hi)}</dd></div>
-          <div><dt className="tk-label">Low</dt><dd className="mono">{fmt(lo)}</dd></div>
-        </dl>
-        <div className="seg tk-range" role="group" aria-label="Candle size" style={{ marginTop: 0 }}>
-          {RANGES.map(([r, label]) => <button key={r} type="button" aria-pressed={range === r} onClick={() => setRange(r)}>{label}</button>)}
-        </div>
-      </div>
-      {q.isLoading && !q.data ? <Sk block w="100%" h={420} /> : q.isError && !q.data ? (
-        <div className="chart-empty" style={{ minHeight: 420 }}><p className="small muted" style={{ margin: 0 }}>Reference prices are unavailable right now. Trading still uses the signed oracle price.</p></div>
-      ) : (
-        <TvChart candles={c} mark={mark} height={420} resetKey={`${market.id}:${range}`} />
-      )}
-      <p className="small muted" style={{ margin: 0 }}>Reference candles from Coinbase {market.base}-USD. The dashed line is the live mark price you trade at.</p>
-    </section>
+  const tf = RANGES.find(([r]) => r === range)?.[1] ?? "";
+  const sizes = (
+    <div className="pxt-tf" role="group" aria-label="Candle size">
+      {RANGES.map(([r, label]) => <button key={r} type="button" aria-pressed={range === r} onClick={() => setRange(r)}>{label}</button>)}
+    </div>
   );
-}
-
-function MarketStats({ o, market }: { o: PerpsOverview; market: PerpMarket }) {
-  const st = market.state;
-  const rec = market.recordedPrice;
-  const rate = Number(market.fundingRatePerHour);
-  const free = o.vault.freeLiquidity;
   return (
-    <dl className="tk-stats">
-      <div><dt>Oracle</dt><dd className="mono" title={rec?.timestamp ? `Last recorded on-chain ${timeAgo(rec.timestamp)}` : undefined}>{rec?.timestamp ? fmtUsdPrice(rec.price) : "–"}</dd></div>
-      <div><dt>Volume 24h</dt><dd>{Number(market.volume24h).toLocaleString("en-US", { maximumFractionDigits: 0 })} <span>{SYMBOL}</span></dd></div>
-      <div><dt>Trades 24h</dt><dd>{market.trades24h.toLocaleString("en-US")}</dd></div>
-      <div><dt>Open interest</dt><dd>{st ? usd(BigInt(st.oiLong) + BigInt(st.oiShort), 0) : "–"} <span>{SYMBOL}</span></dd></div>
-      <div><dt>Funding 1h</dt><dd className={`mono ${toneOf(rate)}`} title={fundingText(market)}>{Number.isFinite(rate) ? `${(rate * 100).toFixed(4)}%` : "–"}</dd></div>
-      <div><dt>Vault liquidity</dt><dd>{free !== null ? usd(free, 0) : "–"} <span>{SYMBOL}</span></dd></div>
-    </dl>
+    <section className="tk-chart pxt-chart-body" aria-label={`${market.symbol} price`}>
+      {q.isLoading && !q.data ? (
+        <>
+          <div className="pxt-tools">{sizes}</div>
+          <Sk block w="100%" h={CHART_H} />
+        </>
+      ) : q.isError && !q.data ? (
+        <>
+          <div className="pxt-tools">{sizes}</div>
+          <div className="chart-empty" style={{ minHeight: CHART_H }}><p className="small muted" style={{ margin: 0 }}>Reference prices are unavailable right now. Trading still uses the signed oracle price.</p></div>
+        </>
+      ) : (
+        <TvChart
+          candles={c}
+          mark={mark}
+          height={CHART_H}
+          resetKey={`${market.id}:${range}`}
+          terminal={{
+            title: `${market.base} / USD · ${tf} · Coinbase reference`,
+            toolbar: sizes,
+            fileName: `curveil-${market.base}-USD-${tf}`,
+          }}
+        />
+      )}
+    </section>
   );
 }
 
@@ -407,32 +550,65 @@ function Trades({ market }: { market: PerpMarket }) {
 /** The page while markets load: the same frame, values as bars. */
 function PerpsSkeleton() {
   return (
-    <div className="wrap tk px" aria-busy="true">
+    <div className="pxt px" aria-busy="true">
+      <ScrollLock />
       <Loading label="Loading perps markets" />
-      <header className="tk-head">
-        <div className="tk-id">
-          <Sk w={56} h={56} style={{ borderRadius: "50%" }} />
-          <div className="tk-id-text"><div className="tk-name"><h1><Sk w="5em" h="0.85em" /></h1></div><p className="tk-meta"><Sk w="38ch" /></p></div>
+      <div className="pxt-grid">
+        <div className="pxt-left">
+          <section className="pxt-card pxt-watch" aria-hidden="true">
+            <div className="pxt-card-head"><h2>Markets</h2></div>
+            <div className="pxt-search"><Sk w="60%" /></div>
+            <ul className="pxt-watch-list">
+              {[0, 1, 2].map((i) => (
+                <li key={i} className="pxt-watch-row">
+                  <span className="pxt-watch-mk"><Sk w={26} h={26} style={{ borderRadius: "50%" }} /><span><Sk w="7ch" /><Sk w="6ch" /></span></span>
+                  <span className="pxt-watch-right"><Sk w={64} h={22} /><Sk w="5ch" /></span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section className="pxt-card pxt-bal" aria-hidden="true">
+            <div className="pxt-card-head"><h2>Balances</h2></div>
+            {["Public wallet", "Shielded vault"].map((l) => (
+              <div key={l} className="pxt-bal-box"><div className="pxt-bal-top"><span>{l}</span></div><div className="pxt-bal-row"><span>{SYMBOL}</span><Sk w="6ch" /></div></div>
+            ))}
+          </section>
         </div>
-        <div className="tk-cap"><span className="tk-label">Mark price</span><strong><Sk w="6ch" /></strong></div>
-      </header>
-      <div className="tk-grid">
-        <div className="tk-main">
-          <section className="tk-chart"><Sk block w="100%" h={360} /></section>
-          <dl className="tk-stats">{["Oracle", "Volume 24h", "Trades 24h", "Open interest", "Funding 1h", "Vault liquidity"].map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="7ch" /></dd></div>)}</dl>
+        <div className="pxt-right">
+        <div className="pxt-center">
+        <section className="pxt-card pxt-chart" aria-hidden="true">
+          <header className="pxt-head">
+            <div className="pxt-head-id"><Sk w={30} h={30} style={{ borderRadius: "50%" }} /><Sk w="7ch" h={22} /></div>
+            <div className="pxt-head-px"><Sk w="8ch" h={34} /><Sk w="6ch" h={24} /></div>
+            <dl className="pxt-head-stats">{["24h high", "24h low", "Oracle", "Funding 1h", "Open interest", "Volume 24h", "Vault liquidity"].map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="7ch" /></dd></div>)}</dl>
+          </header>
+          <div className="pxt-chart-body">
+            <div className="pxt-tools"><Sk w={260} h={34} /></div>
+            <Sk block w="100%" h={CHART_H} />
+          </div>
+        </section>
+        <section className="pxt-card pxt-account" aria-hidden="true">
+          <div className="tk-tabs px-account">
+            <div className="tk-tablist">{["Market info", "Positions", "Pending", "TP / SL", "History", "Market trades"].map((l) => <button key={l} type="button" role="tab" disabled tabIndex={-1}>{l}</button>)}</div>
+            <div className="px-empty"><Sk block w="100%" h={56} /></div>
+          </div>
+        </section>
         </div>
-        <aside className="tk-side">
-          <section className="panel tk-trade px-order">
-            <div className="seg side-seg px-side-seg" aria-hidden="true" style={{ marginTop: 0 }}>
+        <aside className="pxt-card pxt-side" aria-hidden="true">
+          <div className="pxt-side-head"><h2>Trade</h2></div>
+          <section className="tk-trade px-order">
+            <div className="seg side-seg px-side-seg" style={{ marginTop: 0 }}>
               <button type="button" disabled tabIndex={-1}>Long</button>
               <button type="button" disabled tabIndex={-1}>Short</button>
             </div>
-            <Sk block w="100%" h={64} />
+            <Sk block w="100%" h={88} />
+            <Sk block w="100%" h={36} />
             <Sk block w="100%" h={36} />
             <dl className="px-rows">{["Liquidation price", "Order value", "Fees"].map((l) => <div key={l}><dt>{l}</dt><dd><Sk w="8ch" /></dd></div>)}</dl>
             <Sk block w="100%" h={44} />
           </section>
         </aside>
+        </div>
       </div>
     </div>
   );
@@ -629,18 +805,23 @@ function AccountTabs({ o, market, shielded, vault }: { o: PerpsOverview; market:
   const { address } = useConnection();
   const positions = usePerpPositions(shielded ? undefined : address);
   const orders = usePerpOrders(shielded ? undefined : address);
-  const [tab, setTab] = useState<AccountTab>("positions");
+  const [tab, setTab] = useState<AccountTab>("info");
   const list = positions.data?.positions ?? [];
   const live = list.filter((p) => p.status === "open" || p.status === "pending");
   const done = list.filter((p) => p.status !== "open" && p.status !== "pending").slice(0, 20);
   const pending = (positions.data?.requests ?? []).filter((r) => r.outcome === null);
   const settled = (positions.data?.requests ?? []).filter((r) => r.outcome !== null).slice(0, 30);
   const active = (orders.data?.orders ?? []).filter((x) => x.status === "active");
-  const tabs: [AccountTab, string, number | null][] = shielded
-    ? [["positions", "Shielded positions", null], ["trades", "Market trades", null]]
-    : [["positions", "Positions", live.length || null], ["pending", "Pending", pending.length || null], ["orders", "TP / SL", active.length || null], ["history", "History", null], ["trades", "Market trades", null]];
-  const shown = tabs.some(([t]) => t === tab) ? tab : "positions";
-  const account = shown !== "trades";
+  type Tab = [AccountTab, string, number | null];
+  const tabs: Tab[] = [
+    ["info", "Market info", null],
+    ...(shielded
+      ? ([["positions", "Shielded positions", null]] as Tab[])
+      : ([["positions", "Positions", live.length || null], ["pending", "Pending", pending.length || null], ["orders", "TP / SL", active.length || null], ["history", "History", null]] as Tab[])),
+    ["trades", "Market trades", null],
+  ];
+  const shown = tabs.some(([t]) => t === tab) ? tab : "info";
+  const account = shown !== "trades" && shown !== "info";
   return (
     <section className="tk-tabs px-account" aria-label="Positions, orders and trades">
       <div className="tk-tablist" role="tablist">
@@ -653,6 +834,12 @@ function AccountTabs({ o, market, shielded, vault }: { o: PerpsOverview; market:
       </div>
       {shown === "trades" ? (
         <Trades market={market} />
+      ) : shown === "info" ? (
+        <div className="pxt-pad pxt-info">
+          <OpenInterest market={market} />
+          <MarketFacts o={o} market={market} />
+          <ModuleStatus id="perps" />
+        </div>
       ) : shielded ? (
         <VaultGate v={vault}>{(status) => <ShieldedPerpPositions v={vault} status={status} o={o} />}</VaultGate>
       ) : !address && account ? (

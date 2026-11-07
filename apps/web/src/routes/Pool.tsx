@@ -24,7 +24,7 @@ type ChartKind = "price" | "volume" | "liquidity";
 
 function BackLink() {
   return (
-    <Link to="/pools" className="tk-back">
+    <Link to="/app/pools" className="tk-back">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       Pools
     </Link>
@@ -32,7 +32,7 @@ function BackLink() {
 }
 
 export function Pool() {
-  const { pool: address } = useParams({ from: "/pools/$pool" });
+  const { pool: address } = useParams({ from: "/app/pools/$pool" });
   const markets = useMarkets();
   const pool = markets.data?.find((p) => p.address.toLowerCase() === address.toLowerCase());
 
@@ -41,7 +41,7 @@ export function Pool() {
     return (
       <div className="wrap">
         <PageHead kicker="Explore" label="Pool" title="Pool not found" lead={<>No Curveil pool is indexed at <span className="mono">{address}</span> on this network.</>} />
-        <Link to="/pools" className="btn">All pools</Link>
+        <Link to="/app/pools" className="btn">All pools</Link>
       </div>
     );
   }
@@ -179,14 +179,14 @@ function PoolView({ pool }: { pool: MarketPool }) {
             <p className="tk-meta">
               <CopyAddress value={pool.address} />
               <a href={explorerTx(pool.createdTx)} target="_blank" rel="noreferrer">Created in block {pool.createdBlock.toLocaleString("en-US")}</a>
-              {pool.creator && <span>by <Link className="mono" to="/profile/$address" params={{ address: pool.creator }}>{shortAddress(pool.creator)}</Link></span>}
-              {pool.launch && <span>Graduated from <Link to="/launch/$token" params={{ token: pool.launch }}>a launch</Link></span>}
+              {pool.creator && <span>by <Link className="mono" to="/app/profile/$address" params={{ address: pool.creator }}>{shortAddress(pool.creator)}</Link></span>}
+              {pool.launch && <span>Graduated from <Link to="/app/launch/$token" params={{ token: pool.launch }}>a launch</Link></span>}
             </p>
           </div>
         </div>
         <div className="pl-actions">
-          <Link to="/swap" search={{ from: counter.address, to: base.address }} className="btn">Swap</Link>
-          <Link to="/pools/$pool/add" params={{ pool: pool.address }} className="btn btn-primary">Add liquidity</Link>
+          <Link to="/app/swap" search={{ from: counter.address, to: base.address }} className="btn">Swap</Link>
+          <Link to="/app/pools/$pool/add" params={{ pool: pool.address }} className="btn btn-primary">Add liquidity</Link>
         </div>
       </header>
 
@@ -293,8 +293,8 @@ function PoolView({ pool }: { pool: MarketPool }) {
           <span className="tk-label">{base.symbol}</span>
           <strong className="mono">{current !== null ? fmtPrice(current) : "–"} <span>{counter.symbol}</span></strong>
         </div>
-        <Link to="/swap" search={{ from: counter.address, to: base.address }} className="btn">Swap</Link>
-        <Link to="/pools/$pool/add" params={{ pool: pool.address }} className="btn btn-primary">Add</Link>
+        <Link to="/app/swap" search={{ from: counter.address, to: base.address }} className="btn">Swap</Link>
+        <Link to="/app/pools/$pool/add" params={{ pool: pool.address }} className="btn btn-primary">Add</Link>
       </div>
     </div>
   );
@@ -352,7 +352,7 @@ function Transactions({ pool, swaps, base, quoteSym, hasQuote }: { pool: MarketP
                   {hasQuote && <td className="num mono">{s.quoteValue !== null ? fmtNumber(s.quoteValue, 2) : "–"}</td>}
                   <td className="num mono">{fmtAmount(inIs0 ? s.amountIn : s.amountOut, pool.token0.decimals)}</td>
                   <td className="num mono">{fmtAmount(inIs0 ? s.amountOut : s.amountIn, pool.token1.decimals)}</td>
-                  <td className="mono small"><Link to="/profile/$address" params={{ address: s.recipient }}>{shortAddress(s.recipient)}</Link></td>
+                  <td className="mono small"><Link to="/app/profile/$address" params={{ address: s.recipient }}>{shortAddress(s.recipient)}</Link></td>
                 </tr>
               );
             })}

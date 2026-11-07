@@ -72,7 +72,7 @@ for (const l of launches) console.log(l.symbol, l.state);`,
           <h2>Get an API key</h2>
           <p>Reads work without one at 300 requests a minute. Sign in with your wallet to create a key for 3,000.</p>
         </div>
-        <Link to="/profile" search={{ tab: "developer", sub: "keys" }} className="btn btn-primary">Create a key <span aria-hidden="true">→</span></Link>
+        <Link to="/app/profile" search={{ tab: "developer", sub: "keys" }} className="btn btn-primary">Create a key <span aria-hidden="true">→</span></Link>
       </div>
 
       <LiveStatus />
@@ -168,7 +168,7 @@ export function MarketsGuide() {
 
       <Section title="Create a pool">
         <Steps>
-          <Step title="Pick the assets">Open <Link to="/pools/new">Create a pool</Link> and choose two admitted assets. See <Link to="/docs" search={{ page: "assets" }}>Admitted assets</Link> for the list.</Step>
+          <Step title="Pick the assets">Open <Link to="/app/pools/new">Create a pool</Link> and choose two admitted assets. See <Link to="/docs" search={{ page: "assets" }}>Admitted assets</Link> for the list.</Step>
           <Step title="Pick the type">Choose DLMM with one of the enabled bin steps (each comes with its own fee), or DAMM. These are fixed once the pool exists.</Step>
           <Step title="Set the starting price">For DLMM you enter it and the pool starts in the matching bin. For DAMM the ratio of the first deposit sets it. Check it against another market before you confirm.</Step>
           <Step title="Add liquidity">Add more at any time from the pool's page with <strong>Add liquidity</strong>.</Step>
@@ -253,7 +253,7 @@ export function VaultGuide() {
       <Section title="Use the Vault">
         <Steps>
           <Step title="Create your Curveil account">
-            Open <Link to="/vault">Vault</Link>. You get a recovery phrase that is separate from your wallet. Write it down and save the
+            Open <Link to="/app/vault">Vault</Link>. You get a recovery phrase that is separate from your wallet. Write it down and save the
             encrypted backup.
           </Step>
           <Step title="Shield">Deposit an admitted asset from your wallet. The deposit is public, the note it creates is not.{!IS_TESTNET && " On mainnet the Vault takes USDG and WETH (or ETH, which the site wraps), up to 1,000 USDG or 0.5 ETH per deposit while it is unaudited."}</Step>
@@ -400,7 +400,7 @@ export function PerpsGuide() {
             ["Most a position can gain", "100% of size"],
           ]}
         />
-        <p className="dk-p small">The <Link to="/perps">Perps page</Link> shows the live values for each market.</p>
+        <p className="dk-p small">The <Link to="/app/perps">Perps page</Link> shows the live values for each market.</p>
       </Section>
 
       <Section title="A worked example">
@@ -590,7 +590,7 @@ export function GetStartedGuide() {
 
           <Step title="2. Swap tokens">
             <p className="dk-p">
-              Open <Link to="/swap">Swap</Link>, pick what you pay and what you get, and type an amount. You see the route, the expected output, the minimum you receive, fees
+              Open <Link to="/app/swap">Swap</Link>, pick what you pay and what you get, and type an amount. You see the route, the expected output, the minimum you receive, fees
               and price impact before you sign. The first time you use a token, your wallet asks for an extra approval.
             </p>
             <Callout kind="note">Keep slippage low. Above 3% a trade can fill at a much worse price.</Callout>
@@ -598,7 +598,7 @@ export function GetStartedGuide() {
 
           <Step title="3. Add liquidity and earn fees">
             <p className="dk-p">
-              Open <Link to="/pools">Pools</Link>, choose a pool and press <C>Add liquidity</C>. Your position shows its value and unclaimed fees, and you can claim or remove
+              Open <Link to="/app/pools">Pools</Link>, choose a pool and press <C>Add liquidity</C>. Your position shows its value and unclaimed fees, and you can claim or remove
               it at any time.
             </p>
             <ul className="dk-list">
@@ -609,7 +609,7 @@ export function GetStartedGuide() {
 
           <Step title="4. Launch a token">
             <p className="dk-p">
-              Open <Link to="/launch">Launches</Link> and press <C>Create a token</C>. Pick a pair (USDG or ETH) and a size, then a name and symbol, which can never change.
+              Open <Link to="/app/launch">Launches</Link> and press <C>Create a token</C>. Pick a pair (USDG or ETH) and a size, then a name and symbol, which can never change.
               The token trades right away.
             </p>
             <ul className="dk-list">
@@ -621,7 +621,7 @@ export function GetStartedGuide() {
 
           <Step title="5. Trade perps">
             <p className="dk-p">
-              Open <Link to="/perps">Perps</Link> and pick a market: ETH or BTC up to 5×, SOL up to 2×. Choose Long or Short, your USDG margin and leverage, and check the
+              Open <Link to="/app/perps">Perps</Link> and pick a market: ETH or BTC up to 5×, SOL up to 2×. Choose Long or Short, your USDG margin and leverage, and check the
               liquidation price before you submit. Prices come from Pyth and are checked on-chain.
             </p>
             <ul className="dk-list">
@@ -634,7 +634,7 @@ export function GetStartedGuide() {
 
           <Step title="6. Go private with the vault">
             <p className="dk-p">
-              Open <Link to="/vault">Vault</Link> and press <C>Create account</C>. Write down the 24-word recovery phrase in order and set a passphrase for this browser. The
+              Open <Link to="/app/vault">Vault</Link> and press <C>Create account</C>. Write down the 24-word recovery phrase in order and set a passphrase for this browser. The
               phrase is separate from your wallet; losing it can mean losing shielded funds.
             </p>
             <ul className="dk-list">

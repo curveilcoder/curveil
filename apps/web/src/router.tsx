@@ -9,7 +9,13 @@ import type { VaultSub } from "./routes/Vault";
 const VAULT_SUB_IDS: readonly string[] = ["overview", "shield", "send", "withdraw", "notes", "backup"];
 import { NotFound } from "./routes/NotFound";
 
+/** dApp pages moved under /app; links to their old addresses land on the same page there. */
+const LEGACY_APP = /^\/(swap|pools|launch|vault|perps|profile|safe|markets|liquidity)(\/|$)/;
+
 const rootRoute = createRootRoute({
+  beforeLoad: ({ location }) => {
+    if (LEGACY_APP.test(location.pathname)) throw redirect({ href: `/app${location.href}`, replace: true });
+  },
   component: () => (
     <Shell>
       <ScrollRestoration />
@@ -19,54 +25,55 @@ const rootRoute = createRootRoute({
   notFoundComponent: NotFound,
 });
 
+const appRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app", beforeLoad: () => { throw redirect({ to: "/app/perps", replace: true }); } });
 const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/", component: Home, head: () => ({ meta: [{ title: "Curveil · Open markets. Private participation." }] }) });
-const poolsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/pools", component: lazyRouteComponent(() => import("./routes/Markets"), "Pools"), head: () => ({ meta: [{ title: "Pools · Curveil" }] }) });
-const poolNewRoute = createRoute({ getParentRoute: () => rootRoute, path: "/pools/new", component: lazyRouteComponent(() => import("./routes/Liquidity"), "CreatePoolPage"), head: () => ({ meta: [{ title: "Create a pool · Curveil" }] }) });
-const poolRoute = createRoute({ getParentRoute: () => rootRoute, path: "/pools/$pool", component: lazyRouteComponent(() => import("./routes/Pool"), "Pool"), head: () => ({ meta: [{ title: "Pool · Curveil" }] }) });
-const poolAddRoute = createRoute({ getParentRoute: () => rootRoute, path: "/pools/$pool/add", component: lazyRouteComponent(() => import("./routes/Liquidity"), "AddLiquidity"), head: () => ({ meta: [{ title: "Add liquidity · Curveil" }] }) });
+const poolsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/pools", component: lazyRouteComponent(() => import("./routes/Markets"), "Pools"), head: () => ({ meta: [{ title: "Pools · Curveil" }] }) });
+const poolNewRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/pools/new", component: lazyRouteComponent(() => import("./routes/Liquidity"), "CreatePoolPage"), head: () => ({ meta: [{ title: "Create a pool · Curveil" }] }) });
+const poolRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/pools/$pool", component: lazyRouteComponent(() => import("./routes/Pool"), "Pool"), head: () => ({ meta: [{ title: "Pool · Curveil" }] }) });
+const poolAddRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/pools/$pool/add", component: lazyRouteComponent(() => import("./routes/Liquidity"), "AddLiquidity"), head: () => ({ meta: [{ title: "Add liquidity · Curveil" }] }) });
 // Old addresses: Markets became Pools, and adding liquidity starts from a pool's page.
-const marketsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/markets", beforeLoad: () => { throw redirect({ to: "/pools", replace: true }); } });
-const marketRoute = createRoute({ getParentRoute: () => rootRoute, path: "/markets/$pool", beforeLoad: ({ params }) => { throw redirect({ to: "/pools/$pool", params: { pool: params.pool }, replace: true }); } });
+const marketsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/markets", beforeLoad: () => { throw redirect({ to: "/app/pools", replace: true }); } });
+const marketRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/markets/$pool", beforeLoad: ({ params }) => { throw redirect({ to: "/app/pools/$pool", params: { pool: params.pool }, replace: true }); } });
 const addr = (v: unknown) => (typeof v === "string" && /^0x[0-9a-fA-F]{40}$/.test(v) ? (v as `0x${string}`) : undefined);
 const swapRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/swap",
+  path: "/app/swap",
   component: lazyRouteComponent(() => import("./routes/Swap"), "Swap"),
   validateSearch: (s: Record<string, unknown>): { from?: `0x${string}`; to?: `0x${string}` } => ({ from: addr(s.from), to: addr(s.to) }),
   head: () => ({ meta: [{ title: "Swap · Curveil" }] }),
 });
 const liquidityRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/liquidity",
+  path: "/app/liquidity",
   validateSearch: (s: Record<string, unknown>): { tab?: string; pool?: `0x${string}` } => ({ tab: typeof s.tab === "string" ? s.tab : undefined, pool: addr(s.pool) }),
   beforeLoad: ({ search }) => {
-    if (search.tab === "create") throw redirect({ to: "/pools/new", replace: true });
-    if (search.pool) throw redirect({ to: "/pools/$pool/add", params: { pool: search.pool }, replace: true });
-    throw redirect({ to: "/pools", replace: true });
+    if (search.tab === "create") throw redirect({ to: "/app/pools/new", replace: true });
+    if (search.pool) throw redirect({ to: "/app/pools/$pool/add", params: { pool: search.pool }, replace: true });
+    throw redirect({ to: "/app/pools", replace: true });
   },
 });
-const launchRoute = createRoute({ getParentRoute: () => rootRoute, path: "/launch", component: lazyRouteComponent(() => import("./routes/Launch"), "Launch"), head: () => ({ meta: [{ title: "Launches · Curveil" }] }) });
+const launchRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/launch", component: lazyRouteComponent(() => import("./routes/Launch"), "Launch"), head: () => ({ meta: [{ title: "Launches · Curveil" }] }) });
 const launchNewRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/launch/new",
+  path: "/app/launch/new",
   component: lazyRouteComponent(() => import("./routes/LaunchCreate"), "LaunchCreate"),
   validateSearch: (s: Record<string, unknown>): { operator?: `0x${string}` } => ({ operator: addr(s.operator) }),
   head: () => ({ meta: [{ title: "Create a token · Curveil" }] }) });
-const launchTokenRoute = createRoute({ getParentRoute: () => rootRoute, path: "/launch/$token", component: lazyRouteComponent(() => import("./routes/LaunchToken"), "LaunchToken"), head: () => ({ meta: [{ title: "Token · Curveil" }] }) });
+const launchTokenRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/launch/$token", component: lazyRouteComponent(() => import("./routes/LaunchToken"), "LaunchToken"), head: () => ({ meta: [{ title: "Token · Curveil" }] }) });
 // The vault has its own page: it needs no wallet, so it does not belong in a profile.
 const vaultRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/vault",
+  path: "/app/vault",
   component: lazyRouteComponent(() => import("./routes/Vault"), "VaultPage"),
   validateSearch: (s: Record<string, unknown>): { sub?: VaultSub } => (VAULT_SUB_IDS.includes(s.sub as VaultSub) ? { sub: s.sub as VaultSub } : {}),
   head: () => ({ meta: [{ title: "Vault · Curveil" }] }),
 });
 // Older links opened the vault as a profile tab.
 const toVault = ({ search }: { search: { tab?: string; sub?: string } }) => {
-  if (search.tab === "vault") throw redirect({ to: "/vault", search: VAULT_SUB_IDS.includes(search.sub as VaultSub) ? { sub: search.sub as VaultSub } : {}, replace: true });
+  if (search.tab === "vault") throw redirect({ to: "/app/vault", search: VAULT_SUB_IDS.includes(search.sub as VaultSub) ? { sub: search.sub as VaultSub } : {}, replace: true });
 };
-const safeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/safe", component: lazyRouteComponent(() => import("./routes/SafeSign"), "SafeSign"), head: () => ({ meta: [{ title: "Sign the handover · Curveil" }, { name: "robots", content: "noindex" }] }) });
-const perpsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/perps", component: lazyRouteComponent(() => import("./routes/Perps"), "Perps"), head: () => ({ meta: [{ title: "Perps · Curveil" }] }) });
+const safeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/safe", component: lazyRouteComponent(() => import("./routes/SafeSign"), "SafeSign"), head: () => ({ meta: [{ title: "Sign the handover · Curveil" }, { name: "robots", content: "noindex" }] }) });
+const perpsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/perps", component: lazyRouteComponent(() => import("./routes/Perps"), "Perps"), head: () => ({ meta: [{ title: "Perps · Curveil" }] }) });
 // Developers and Transparency are now part of the docs; old links land on the matching page.
 const factoryRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -100,16 +107,16 @@ const docsRoute = createRoute({
   head: () => ({ meta: [{ title: "Docs · Curveil" }] }),
 });
 
-const profileMeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/profile", component: ProfileMe, validateSearch: parseProfileSearch, beforeLoad: toVault, head: () => ({ meta: [{ title: "Profile · Curveil" }] }) });
+const profileMeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/app/profile", component: ProfileMe, validateSearch: parseProfileSearch, beforeLoad: toVault, head: () => ({ meta: [{ title: "Profile · Curveil" }] }) });
 const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/profile/$address",
+  path: "/app/profile/$address",
   component: Profile,
   validateSearch: parseProfileSearch,
   beforeLoad: toVault,
   head: () => ({ meta: [{ title: "Profile · Curveil" }] }),
 });
-const routeTree = rootRoute.addChildren([profileMeRoute, profileRoute, homeRoute, poolsRoute, poolNewRoute, poolRoute, poolAddRoute, marketsRoute, marketRoute, swapRoute, liquidityRoute, launchRoute, launchNewRoute, launchTokenRoute, vaultRoute, perpsRoute, safeRoute, factoryRoute, developersRoute, transparencyRoute, docsRoute]);
+const routeTree = rootRoute.addChildren([appRoute, profileMeRoute, profileRoute, homeRoute, poolsRoute, poolNewRoute, poolRoute, poolAddRoute, marketsRoute, marketRoute, swapRoute, liquidityRoute, launchRoute, launchNewRoute, launchTokenRoute, vaultRoute, perpsRoute, safeRoute, factoryRoute, developersRoute, transparencyRoute, docsRoute]);
 
 const RELOAD_KEY = "curveil-stale-reload";
 /** A page file from an older release that is gone, or an empty module from a failed load. */

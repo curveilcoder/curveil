@@ -52,7 +52,7 @@ const httpsOk = (s: string) => !s || /^https:\/\/[^\s]+$/.test(s.trim());
 const createAbi = [...launchFactoryAbi, ...factoryErrors] as const;
 
 export function LaunchCreate() {
-  const { operator } = useSearch({ from: "/launch/new" });
+  const { operator } = useSearch({ from: "/app/launch/new" });
   const pad = useOperator(operator);
   const op = operator ? pad.data?.operator : undefined;
   const templates = useTemplates();
@@ -63,12 +63,12 @@ export function LaunchCreate() {
 
   return (
     <div className="wrap tk">
-      <Link to="/launch" className="tk-back">
+      <Link to="/app/launch" className="tk-back">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
         Launches
       </Link>
       <PageHead
-        kicker={<Link to="/launch">Launch</Link>} label="/ New token" title="Create a token" art="curve"
+        kicker={<Link to="/app/launch">Launch</Link>} label="/ New token" title="Create a token" art="curve"
         lead="Pick the pair and the size; together they set the economics. You choose the name, symbol, details and who receives your share of curve fees, then review every term before signing."
       />
       <div className="stack">
@@ -95,7 +95,7 @@ function OperatorNotice({ op, loading, error }: { op: Operator | undefined; load
   if (error || !op) {
     return (
       <p className="notice bad" role="alert">
-        That launchpad could not be found on this network. <Link to="/launch/new" search={{}}>Create without a launchpad</Link>.
+        That launchpad could not be found on this network. <Link to="/app/launch/new" search={{}}>Create without a launchpad</Link>.
       </p>
     );
   }
@@ -103,7 +103,7 @@ function OperatorNotice({ op, loading, error }: { op: Operator | undefined; load
   if (!op.acceptingLaunches) {
     return (
       <p className="notice warn" role="alert">
-        {name} is not accepting new launches right now{op.suspended ? " (suspended by the protocol)" : ""}. <Link to="/launch/new" search={{}}>Create without a launchpad</Link>.
+        {name} is not accepting new launches right now{op.suspended ? " (suspended by the protocol)" : ""}. <Link to="/app/launch/new" search={{}}>Create without a launchpad</Link>.
       </p>
     );
   }
@@ -270,7 +270,7 @@ function CreateForm({ t, templates, onTemplate, op }: { t: Template; templates: 
     qc.invalidateQueries({ queryKey: ["launches"] });
     if (ev) {
       markCreated(ev.args.token);
-      navigate({ to: "/launch/$token", params: { token: ev.args.token } });
+      navigate({ to: "/app/launch/$token", params: { token: ev.args.token } });
     }
   }
 

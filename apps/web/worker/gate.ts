@@ -43,10 +43,16 @@ const SEC = {
   "cache-control": "no-store",
 };
 
+/** dApp pages moved under /app; their old addresses redirect there permanently. */
+const LEGACY_APP = /^\/(swap|pools|launch|vault|perps|profile|safe|markets|liquidity)(\/|$)/;
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
-    if (env.SITE_LOCK !== "on" || !env.SITE_KEY) return env.ASSETS.fetch(req);
     const url = new URL(req.url);
+    if (LEGACY_APP.test(url.pathname)) {
+      return new Response(null, { status: 301, headers: { location: `/app${url.pathname}${url.search}`, "cache-control": "public, max-age=3600" } });
+    }
+    if (env.SITE_LOCK !== "on" || !env.SITE_KEY) return env.ASSETS.fetch(req);
     const want = await tokenFor(env.SITE_KEY);
 
     if (url.pathname === "/__lock/geist.woff2" || url.pathname === "/__lock/geist-mono.woff2") {

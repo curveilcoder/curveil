@@ -18,7 +18,7 @@ export function SignInGate() {
   const disconnect = useDisconnect();
   // Wait for the wallet picker to close, so the gate never covers it mid-connect.
   const picker = useAppKitState();
-  const onSafePage = useRouterState({ select: (s) => s.location.pathname.startsWith("/safe") });
+  const onSafePage = useRouterState({ select: (s) => s.location.pathname.startsWith("/app/safe") });
   const open = !onSafePage && isConnected && status === "connected" && Boolean(address) && !session.signedIn && !picker.open;
   const box = useRef<HTMLDivElement>(null);
 

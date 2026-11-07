@@ -38,7 +38,7 @@ function ApiGuide() {
       </Section>
       <Section title="Authentication and limits">
         <p className="dk-p">
-          Reads need no key and allow 300 requests a minute per IP. Send an <Link to="/profile" search={{ tab: "developer", sub: "keys" }}>API key</Link> as a bearer token to
+          Reads need no key and allow 300 requests a minute per IP. Send an <Link to="/app/profile" search={{ tab: "developer", sub: "keys" }}>API key</Link> as a bearer token to
           raise that to 3,000. Each response says which limit applied in <C>X-RateLimit-Limit</C> and <C>X-RateLimit-Tier</C>.
         </p>
         <CodeTabs
@@ -85,7 +85,7 @@ function Quickstart() {
       </Step>
 
       <Step title="Read data">
-        <p className="dk-p">Reads need no key (300 requests a minute per IP). An <Link to="/profile" search={{ tab: "developer", sub: "keys" }}>API key</Link> raises that to 3,000.</p>
+        <p className="dk-p">Reads need no key (300 requests a minute per IP). An <Link to="/app/profile" search={{ tab: "developer", sub: "keys" }}>API key</Link> raises that to 3,000.</p>
         <CodeTabs
           tabs={[
             {
@@ -129,7 +129,7 @@ await wallet.sendTransaction(createLaunchTx({
 
       <Step title="Receive webhooks">
         <p className="dk-p">
-          <Link to="/profile" search={{ tab: "developer", sub: "webhooks" }}>Add an endpoint</Link> in your profile, keep its signing secret, and verify every delivery against the raw body before trusting it.
+          <Link to="/app/profile" search={{ tab: "developer", sub: "webhooks" }}>Add an endpoint</Link> in your profile, keep its signing secret, and verify every delivery against the raw body before trusting it.
         </p>
         <Code>{`import { verifyWebhookRequest, WebhookVerificationError } from "@curveil/sdk/webhooks";
 
@@ -271,7 +271,7 @@ await wallet.sendTransaction(buyTx({ curve: launch.curve, quoteIn, minTokensOut:
             record that <C>curveil.operator(slug)</C> returns as <C>domainSetup.record</C>, then call{" "}
             <C>verifyDomain(operator)</C>. Your site can then find itself with <C>operatorByDomain(location.hostname)</C>.
           </li>
-          <li><Link to="/profile" search={{ tab: "developer", sub: "webhooks" }}>Webhooks</Link> tell your backend when a token launches, trades or graduates.</li>
+          <li><Link to="/app/profile" search={{ tab: "developer", sub: "webhooks" }}>Webhooks</Link> tell your backend when a token launches, trades or graduates.</li>
         </ul>
       </Step>
 

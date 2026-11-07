@@ -90,7 +90,7 @@ export function CreatePool() {
       qc.invalidateQueries({ queryKey: ["markets"] });
       // The pool cannot trade until it has liquidity: go straight to adding it.
       if (r.data && r.data !== zeroAddress) markCreated(r.data);
-      if (r.data && r.data !== zeroAddress) navigate({ to: "/pools/$pool/add", params: { pool: r.data } });
+      if (r.data && r.data !== zeroAddress) navigate({ to: "/app/pools/$pool/add", params: { pool: r.data } });
     }
   }
 
@@ -189,7 +189,7 @@ export function CreatePool() {
           <p className="notice good" style={{ margin: 0 }}>
             <span>
               This pool exists at <a href={explorerAddress(exists)} target="_blank" rel="noreferrer" className="mono">{exists.slice(0, 10)}…</a>.{" "}
-              <Link to="/pools/$pool/add" params={{ pool: exists }}>Add liquidity to it</Link>
+              <Link to="/app/pools/$pool/add" params={{ pool: exists }}>Add liquidity to it</Link>
             </span>
           </p>
         )}

@@ -86,7 +86,7 @@ function PositionCard({ p, status, pool }: { p: OwnedPosition; status: VaultStat
     <div className="panel stack shielded-panel">
       <div className="row-between">
         {pool ? (
-          <Link to="/pools/$pool" params={{ pool: pool.address }} className="pool-link">
+          <Link to="/app/pools/$pool" params={{ pool: pool.address }} className="pool-link">
             <TokenPair pool={pool} size={28} />
             <strong>{pairLabel(pool)}</strong>
           </Link>

@@ -20,16 +20,23 @@ function navActive(item: NavItem, path: string, search: Record<string, unknown>)
 /** Docs pages for builders: the Developers link owns them, Docs owns the rest. */
 const DEV_PAGES = ["quickstart", "api", "launchpad-guide", "testnet"];
 
-/** Top-level navigation: one direct link per product, so each name says where it goes. */
-const NAV: readonly NavItem[] = [
-  { label: "Swap", to: "/swap" },
-  { label: "Pools", to: "/pools", also: ["/liquidity"] },
-  { label: "Launches", to: "/launch" },
-  { label: "Perps", to: "/perps" },
-  { label: "Vault", to: "/vault" },
-  { label: "Developers", to: "/developers", isActive: (path, search) => path.startsWith("/docs") && DEV_PAGES.includes(String(search.page)) },
-  { label: "Docs", to: "/docs", isActive: (path, search) => path.startsWith("/docs") && !DEV_PAGES.includes(String(search.page)) },
-]
+const DEV_LINK: NavItem = { label: "Developers", to: "/developers", isActive: (path, search) => path.startsWith("/docs") && DEV_PAGES.includes(String(search.page)) };
+const DOCS_LINK: NavItem = { label: "Docs", to: "/docs", isActive: (path, search) => path.startsWith("/docs") && !DEV_PAGES.includes(String(search.page)) };
+
+/** The app's navigation: one direct link per product, so each name says where it goes. */
+const APP_NAV: readonly NavItem[] = [
+  { label: "Perps", to: "/app/perps" },
+  { label: "Swap", to: "/app/swap" },
+  { label: "Pools", to: "/app/pools", also: ["/app/liquidity"] },
+  { label: "Launches", to: "/app/launch" },
+  { label: "Vault", to: "/app/vault" },
+];
+
+/** The marketing site's navigation: reading only. The app is one button away. */
+const SITE_NAV: readonly NavItem[] = [DOCS_LINK, DEV_LINK];
+
+/** The dApp lives under /app; everything else is the marketing site. */
+export const isAppPath = (path: string) => path === "/app" || path.startsWith("/app/");
 
 function NavMenu({ item, pathname, openMenu, setOpenMenu, onNavigate }: {
   item: NavItem & { links: readonly NavLink[] };
@@ -107,10 +114,22 @@ function XLink() {
   );
 }
 
+const GITHUB_URL = "https://github.com/curveilcoder/curveil";
+const GITHUB_PATH = "M12 .5C5.65.5.5 5.65.5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z";
+
+function GitHubLink() {
+  return (
+    <a className="chip chip-icon" href={GITHUB_URL} target="_blank" rel="noreferrer" aria-label="Curveil on GitHub">
+      <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path d={GITHUB_PATH} fill="currentColor" /></svg>
+    </a>
+  );
+}
+
 function HeaderChips({ className }: { className: string }) {
   return (
     <div className={`header-chips ${className}`}>
       <XLink />
+      <GitHubLink />
     </div>
   );
 }
@@ -123,6 +142,8 @@ export function Shell({ children }: { children: ReactNode }) {
   const loading = useRouterState({ select: (s) => s.status === "pending" });
   // On the home page the header floats over the hero and fills in once the page scrolls.
   const over = pathname === "/";
+  const inApp = isAppPath(pathname);
+  const NAV = inApp ? APP_NAV : SITE_NAV;
   const header = useRef<HTMLElement>(null);
   const banner = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -150,7 +171,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
       )}
       <header ref={header} className={`header${over ? " over" : ""}${scrolled || open ? " scrolled" : ""}`}>
-        <div className="wrap header-row">
+        <div className="wrap header-row app-wide">
           <Link to="/" className="brand" aria-label="Curveil home">
             <Logo size={28} />
             <span>CURVEIL</span>
@@ -165,12 +186,18 @@ export function Shell({ children }: { children: ReactNode }) {
                 </Link>
               ),
             )}
-            <HeaderChips className="in-menu" />
+            {!inApp && <HeaderChips className="in-menu" />}
           </nav>
           <div className="header-actions">
-            <HeaderChips className="in-bar" />
-            <FundingSwitch className="hide-sm" />
-            <ConnectButton />
+            {!inApp && <HeaderChips className="in-bar" />}
+            {inApp ? (
+              <>
+                <FundingSwitch className="hide-sm" />
+                <ConnectButton />
+              </>
+            ) : (
+              <Link to="/app/perps" className="btn btn-primary btn-sm launch-app">Launch app</Link>
+            )}
             <button className="btn btn-sm menu-toggle" aria-expanded={open} aria-label="Menu" onClick={() => setOpen((o) => !o)}>
               {open ? "Close" : "Menu"}
             </button>
@@ -178,10 +205,11 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
         <div className={`route-progress${loading ? " on" : ""}`} aria-hidden="true" />
       </header>
-      <main id="main" className="main">{children}</main>
+      {/* App pages get the same space below as above; Perps fills the window instead. */}
+      <main id="main" className={`main${inApp && !pathname.startsWith("/app/perps") ? " app-main" : ""}`}>{children}</main>
       <TxToasts />
       <SignInGate />
-      <footer className={`footer${over ? "" : " footer-plain"}`}>
+      {!inApp && <footer className={`footer${over ? "" : " footer-plain"}`}>
         {over && <DitherCanvas make={WAVES} aspect={0.11} cell={5} animate className="footer-waves" />}
         <div className="wrap footer-grid">
           <div>
@@ -214,7 +242,7 @@ export function Shell({ children }: { children: ReactNode }) {
             </ul>
           </div>
         </div>
-      </footer>
+      </footer>}
     </>
   );
 }

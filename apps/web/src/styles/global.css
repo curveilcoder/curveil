@@ -45,7 +45,7 @@ strong, b { font-weight: 500; }
 .wrap { width: 100%; max-width: var(--shell-max); margin: 0 auto; padding: 0 var(--gutter); }
 
 /* ---------- Buttons and chips ---------- */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 3px; border: 1px solid var(--line-strong); background: transparent; cursor: pointer; text-decoration: none; font-weight: 600; font-size: 14.5px; letter-spacing: -0.01em; transition: background 0.15s, border-color 0.15s, transform 0.1s; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 0 14px; border-radius: 3px; border: 1px solid var(--line-strong); background: transparent; cursor: pointer; text-decoration: none; font-weight: 600; font-size: 14px; letter-spacing: -0.01em; transition: background 0.15s, border-color 0.15s, transform 0.1s; white-space: nowrap; }
 .btn:hover { background: var(--surface-2); }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -53,7 +53,7 @@ strong, b { font-weight: 500; }
 .btn-primary:hover { background: var(--ink); border-color: var(--ink); }
 .btn-public { border-color: var(--public); color: var(--public); }
 .btn-public:hover { background: var(--public-dim); }
-.btn-sm { min-height: 36px; padding: 0 12px; font-size: 14px; }
+.btn-sm { min-height: 32px; padding: 0 11px; font-size: 13.5px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; color: var(--muted); white-space: nowrap; }
 .chip button { background: none; border: 0; padding: 0; cursor: pointer; color: var(--ink); }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: none; }
@@ -72,6 +72,7 @@ strong, b { font-weight: 500; }
 .testnet-banner a { color: inherit; }
 .header { position: sticky; top: 0; z-index: 40; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .header-row { display: flex; align-items: center; gap: 20px; min-height: 72px; }
+.header-row.app-wide { max-width: 1920px; padding: 0 16px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; letter-spacing: 0.08em; font-size: 17px; }
 .brand svg { width: 30px; height: 30px; flex: none; }
 .nav { display: flex; align-items: center; gap: 4px; margin-left: 12px; }
@@ -91,7 +92,8 @@ strong, b { font-weight: 500; }
 .nav-menu a small { color: var(--muted); font-size: 13px; font-weight: 400; }
 .nav-menu a:hover, .nav-menu a[data-status="active"] { background: var(--surface-2); }
 .header-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-@media (min-width: 901px) { .header-actions .connect > .btn-sm { min-height: 42px; padding: 0 18px; font-size: 15px; } }
+@media (min-width: 901px) { .header-actions .connect > .btn-sm, .header-actions .launch-app { min-height: 36px; padding: 0 14px; font-size: 14px; } }
+.launch-app { text-decoration: none; }
 .menu-toggle { display: none; }
 @media (max-width: 900px) {
   .nav { display: none; }
@@ -119,6 +121,7 @@ strong, b { font-weight: 500; }
 /* Shielded panels look like any other panel: no colored edge. */
 
 .main { min-height: 70vh; }
+.main.app-main { padding-bottom: var(--page-y); }
 .footer { position: relative; margin-top: 40px; overflow: hidden; padding: 16px 0 48px; color: var(--muted); font-size: 14px; }
 .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; }
 @media (max-width: 760px) { .footer-grid { grid-template-columns: 1fr; } }
@@ -303,7 +306,7 @@ table.data tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
 .flip:hover { border-color: var(--public); }
 .slippage { display: grid; gap: 8px; }
 .slip-input { width: 96px; min-height: 36px; font-size: 14px; }
-.btn-block { width: 100%; min-height: 52px; font-size: 16px; }
+.btn-block { width: 100%; min-height: 44px; font-size: 15px; }
 dl.rows { margin: 0; display: grid; gap: 0; }
 dl.rows > div { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 dl.rows > div:last-child { border-bottom: 0; }

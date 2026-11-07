@@ -76,7 +76,7 @@ function AccountMenu({ address }: { address: `0x${string}` }) {
       </button>
       {shown && (
         <div className="nav-menu account-menu" role="menu">
-          <Link to="/profile/$address" params={{ address }} role="menuitem" onClick={() => setShown(false)}>
+          <Link to="/app/profile/$address" params={{ address }} role="menuitem" onClick={() => setShown(false)}>
             <MenuIcon d="M8 8a2.75 2.75 0 1 0 0-5.5A2.75 2.75 0 0 0 8 8Zm-5 5.5c.6-2.4 2.6-3.75 5-3.75s4.4 1.35 5 3.75" />Profile
           </Link>
           <button

@@ -50,8 +50,8 @@ export function parseProfileSearch(s: Record<string, unknown>): ProfileSearch {
 /** /profile: the connected wallet's own page, or a prompt to connect. */
 export function ProfileMe() {
   const { address } = useConnection();
-  const { tab, sub } = useSearch({ from: "/profile" });
-  if (address) return <Navigate to="/profile/$address" params={{ address }} search={{ tab, sub }} replace />;
+  const { tab, sub } = useSearch({ from: "/app/profile" });
+  if (address) return <Navigate to="/app/profile/$address" params={{ address }} search={{ tab, sub }} replace />;
   return (
     <div className="wrap tk">
       <header className="tk-head">
@@ -63,7 +63,7 @@ export function ProfileMe() {
       <div className="panel" style={{ maxWidth: 520, marginBottom: 40 }}>
         <WalletAction verb="see your profile">{null}</WalletAction>
       </div>
-      <p className="small muted">The shielded vault needs no wallet. <Link to="/vault">Open the vault</Link>.</p>
+      <p className="small muted">The shielded vault needs no wallet. <Link to="/app/vault">Open the vault</Link>.</p>
     </div>
   );
 }
@@ -76,8 +76,8 @@ function AddressAvatar({ address, size = 72 }: { address: string; size?: number 
 }
 
 export function Profile() {
-  const { address: raw } = useParams({ from: "/profile/$address" });
-  const { tab: picked, sub: pickedSub } = useSearch({ from: "/profile/$address" });
+  const { address: raw } = useParams({ from: "/app/profile/$address" });
+  const { tab: picked, sub: pickedSub } = useSearch({ from: "/app/profile/$address" });
   const navigate = useNavigate();
   const { address: me } = useConnection();
   const a = isAddress(raw, { strict: false }) ? raw : undefined;
@@ -99,7 +99,7 @@ export function Profile() {
     return (
       <div className="wrap">
         <PageHead kicker="Profile" label="Profile" title="Profile not found" lead={<><span className="mono">{raw}</span> is not a valid wallet address.</>} />
-        <Link to="/profile" className="btn">Your profile</Link>
+        <Link to="/app/profile" className="btn">Your profile</Link>
       </div>
     );
   }
@@ -130,7 +130,7 @@ export function Profile() {
   const tab: ProfileTab = picked && tabs.includes(picked) ? picked : (tabs.find((t) => (counts[t] ?? 0) > 0 || (t === "launches" && (counts.locks ?? 0) > 0) || (t === "liquidity" && (counts.pools ?? 0) > 0)) ?? "launches");
   const subs = SUBS[tab];
   const sub: ProfileSub | undefined = pickedSub && subs.includes(pickedSub) ? pickedSub : subs.find((x) => (counts[x] ?? 0) > 0) ?? subs[0];
-  const go = (t: ProfileTab, x?: ProfileSub) => void navigate({ to: "/profile/$address", params: { address: raw }, search: x ? { tab: t, sub: x } : { tab: t }, replace: true, resetScroll: false });
+  const go = (t: ProfileTab, x?: ProfileSub) => void navigate({ to: "/app/profile/$address", params: { address: raw }, search: x ? { tab: t, sub: x } : { tab: t }, replace: true, resetScroll: false });
   const label: Record<ProfileTab, string> = { launches: "Launches", liquidity: "Liquidity", perps: "Perps", activity: "Activity", vault: "Vault", developer: "Developer" };
   const subLabel: Partial<Record<ProfileSub, string>> = { tokens: "Tokens launched", locks: "Locked liquidity", positions: "Positions", pools: "Pools created", keys: "API keys", webhooks: "Webhooks" };
   const count = (n: number | null) => (n === null ? <Sk w="3ch" /> : n.toLocaleString("en-US"));
@@ -153,8 +153,8 @@ export function Profile() {
         </div>
         {own && (
           <div className="pf-actions">
-            <Link to="/launch/new" className="btn btn-sm">Create a token</Link>
-            <Link to="/pools" className="btn btn-sm">Add liquidity</Link>
+            <Link to="/app/launch/new" className="btn btn-sm">Create a token</Link>
+            <Link to="/app/pools" className="btn btn-sm">Add liquidity</Link>
           </div>
         )}
       </header>
@@ -230,7 +230,7 @@ function TokensTab({ q, own }: { q: Q<import("../lib/launch").Launch[]>; own: bo
   if (!q.data?.length) {
     return (
       <Empty text={own ? "You have not launched a token yet." : "This address has not launched a token."}>
-        {own && <Link to="/launch/new" className="btn btn-primary btn-sm">Create a token</Link>}
+        {own && <Link to="/app/launch/new" className="btn btn-primary btn-sm">Create a token</Link>}
       </Empty>
     );
   }
@@ -244,7 +244,7 @@ function LiquidityTab({ q, markets, loading, own, refetch }: { q: Q<import("../l
   if (!q.isLoading && !loading && rows.length === 0) {
     return (
       <Empty text={own ? "You have no liquidity in Curveil pools." : "This address has no liquidity in Curveil pools."}>
-        {own && <Link to="/pools" className="btn btn-primary btn-sm">Add liquidity</Link>}
+        {own && <Link to="/app/pools" className="btn btn-primary btn-sm">Add liquidity</Link>}
       </Empty>
     );
   }
@@ -271,7 +271,7 @@ function LiquidityTab({ q, markets, loading, own, refetch }: { q: Q<import("../l
                   : [(p as any).amountX, (p as any).amountY, (p as any).pendingFeesX, (p as any).pendingFeesY];
                 return (
                   <tr key={p.pool}>
-                    <td><Link to="/pools/$pool" params={{ pool: m.address }} className="pool-link"><TokenPair pool={m} size={24} /><span>{pairLabel(m)}</span></Link></td>
+                    <td><Link to="/app/pools/$pool" params={{ pool: m.address }} className="pool-link"><TokenPair pool={m} size={24} /><span>{pairLabel(m)}</span></Link></td>
                     <td><span className={`tag ${m.kind === "dlmm" ? "tag-public" : "tag-illustration"}`}>{kindLabel(m)}</span></td>
                     <td className="num mono small">{fmtAmount(a0, m.token0.decimals)} {m.token0.symbol}<br />{fmtAmount(a1, m.token1.decimals)} {m.token1.symbol}</td>
                     <td className="num mono small">{kind === "damm" ? `${((p as any).shareOfPool * 100).toFixed(2)}%` : `${(p as any).bins.length} bins`}</td>
@@ -294,7 +294,7 @@ function PoolsTab({ q, own }: { q: Q<MarketPool[]>; own: boolean }) {
     return (
       <Empty text={own ? "You have not created a pool yet." : "This address has not created a pool."}>
         <p className="small muted" style={{ margin: 0 }}>Pools made when a launch graduates belong to the launch, not to whoever finished the curve.</p>
-        {own && <Link to="/pools/new" className="btn btn-primary btn-sm">Create a pool</Link>}
+        {own && <Link to="/app/pools/new" className="btn btn-primary btn-sm">Create a pool</Link>}
       </Empty>
     );
   }
@@ -330,7 +330,7 @@ function LocksTab({ q, open, own }: { q: Q<Lock[]>; open: Lock[]; own: boolean }
             return (
               <tr key={l.id}>
                 <td className="mono small">#{l.id}</td>
-                <td>{l.launch ? <Link to="/launch/$token" params={{ token: l.launch.token }}>{t0 && t1 ? `${t0.symbol} / ${t1.symbol}` : l.launch.symbol}</Link> : <span className="mono small">{shortAddress(l.lpToken)}</span>}</td>
+                <td>{l.launch ? <Link to="/app/launch/$token" params={{ token: l.launch.token }}>{t0 && t1 ? `${t0.symbol} / ${t1.symbol}` : l.launch.symbol}</Link> : <span className="mono small">{shortAddress(l.lpToken)}</span>}</td>
                 <td className="num mono small">{t0 && t1 ? <>{fmtAmount(l.underlying0, t0.decimals)} {t0.symbol}<br />{fmtAmount(l.underlying1, t1.decimals)} {t1.symbol}</> : "–"}</td>
                 <td className="small">{l.claimed ? "LP claimed" : l.unlockAt * 1000 <= Date.now() ? <span className="good-text">Unlocked</span> : `Unlocks ${untilLabel(l.unlockAt)}`}</td>
                 <td className="num mono small">{t0 && t1 ? <>{fmtAmount(l.pendingFees0, t0.decimals)} {t0.symbol}<br />{fmtAmount(l.pendingFees1, t1.decimals)} {t1.symbol}</> : "–"}</td>
@@ -359,7 +359,7 @@ function PerpsTab({ q, live, own }: { q: Q<{ positions: import("../lib/perps").L
     return (
       <Empty text={own ? "You have no open perp positions." : "This address has no open perp positions."}>
         {closed > 0 && <p className="small muted" style={{ margin: 0 }}>{closed} closed {closed === 1 ? "position" : "positions"} earlier.</p>}
-        {own && <Link to="/perps" className="btn btn-primary btn-sm">Open a position</Link>}
+        {own && <Link to="/app/perps" className="btn btn-primary btn-sm">Open a position</Link>}
       </Empty>
     );
   }
@@ -368,7 +368,7 @@ function PerpsTab({ q, live, own }: { q: Q<{ positions: import("../lib/perps").L
       <div className="grid-2">
         {live.map((p) => <div key={p.id} className="panel stack"><PositionSummary p={p} m={overview.data?.markets.find((m) => m.id === p.market)} /></div>)}
       </div>
-      {closed > 0 && <p className="small muted" style={{ margin: 0 }}>Plus {closed} closed {closed === 1 ? "position" : "positions"}.{own && <> Manage on <Link to="/perps">Perps</Link>.</>}</p>}
+      {closed > 0 && <p className="small muted" style={{ margin: 0 }}>Plus {closed} closed {closed === 1 ? "position" : "positions"}.{own && <> Manage on <Link to="/app/perps">Perps</Link>.</>}</p>}
     </div>
   );
 }
@@ -402,7 +402,7 @@ function ActivityTab({ q, markets }: { q: Q<ActivityItem[]>; markets?: MarketPoo
             return (
               <tr key={`${it.txHash}-${it.type === "swap" ? it.logIndex : it.kind}`}>
                 <td><span className={`tag ${it.type === "swap" ? "tag-illustration" : it.kind === "remove" || it.kind === "transfer_out" ? "tag-short" : "tag-live"}`}>{kind}</span></td>
-                <td>{m ? <Link to="/pools/$pool" params={{ pool: m.address }}>{pairLabel(m)}</Link> : <span className="mono small">{shortAddress(it.pool)}</span>}</td>
+                <td>{m ? <Link to="/app/pools/$pool" params={{ pool: m.address }}>{pairLabel(m)}</Link> : <span className="mono small">{shortAddress(it.pool)}</span>}</td>
                 <td className="mono small">{details}</td>
                 <td className="num small"><a href={explorerTx(it.txHash)} target="_blank" rel="noreferrer" className="muted" title="View the transaction">{timeAgo(it.timestamp)}</a></td>
               </tr>

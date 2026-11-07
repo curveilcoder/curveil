@@ -45,7 +45,7 @@ export function Launch() {
         lead="Fixed-supply tokens on reviewed templates. Each trades on its own bonding curve until its reserve reaches the threshold, then anyone can graduate it into a DAMM pool whose liquidity is locked in escrow."
       >
         <div className="hero-actions">
-          <Link to="/launch/new" className="btn btn-primary">Create a token <span aria-hidden="true">→</span></Link>
+          <Link to="/app/launch/new" className="btn btn-primary">Create a token <span aria-hidden="true">→</span></Link>
           <Link to="/docs" search={{ page: "launch" }} className="btn btn-ghost">Read the guide</Link>
         </div>
       </PageHead>
@@ -88,7 +88,7 @@ export function Launch() {
           <div className="panel">
             <p style={{ margin: 0 }}>{data?.length ? "No launch matches that filter." : "No tokens have launched on this network yet."}</p>
             <p className="small muted" style={{ marginBottom: 0 }}>
-              <Link to="/launch/new">Create the first one</Link>.{IS_TESTNET && " On testnet you pay with test USDG from the faucet."}
+              <Link to="/app/launch/new">Create the first one</Link>.{IS_TESTNET && " On testnet you pay with test USDG from the faucet."}
             </p>
           </div>
         )}
@@ -109,7 +109,7 @@ export function LaunchCard({ l }: { l: LaunchT }) {
   const graduated = l.state === "graduated";
   const pct = graduated ? 100 : Math.min(100, l.progressBps / 100);
   return (
-    <Link to="/launch/$token" params={{ token: l.token }} className="lc" style={{ "--lc-hue": parseInt(l.token.slice(2, 8), 16) % 360 } as React.CSSProperties}>
+    <Link to="/app/launch/$token" params={{ token: l.token }} className="lc" style={{ "--lc-hue": parseInt(l.token.slice(2, 8), 16) % 360 } as React.CSSProperties}>
       <div className="lc-top">
         <TokenAvatar token={l.token} symbol={l.symbol} image={l.image} size={52} />
         <div className="lc-id">

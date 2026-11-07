@@ -49,12 +49,12 @@ export const VAULT_SUBS: VaultSub[] = ["overview", "shield", "send", "withdraw",
 
 /** /vault: its own page, because the vault needs no wallet. */
 export function VaultPage() {
-  const { sub } = useSearch({ from: "/vault" });
+  const { sub } = useSearch({ from: "/app/vault" });
   const navigate = useNavigate();
   return (
     <div className="wrap">
       <PageHead kicker="Private" label="Shielded" title="Vault" art="shield" lead="A private account kept in this browser. Shield funds, send them privately, and trade without linking them to your wallet." />
-      <VaultPanel sub={sub ?? "overview"} onSub={(v) => void navigate({ to: "/vault", search: { sub: v }, replace: true, resetScroll: false })} />
+      <VaultPanel sub={sub ?? "overview"} onSub={(v) => void navigate({ to: "/app/vault", search: { sub: v }, replace: true, resetScroll: false })} />
     </div>
   );
 }
@@ -300,7 +300,7 @@ function PositionsSection({ v, status }: { v: VaultState; status: VaultStatus })
         heading={
           <div className="row-between">
             <h2 id="positions-title" style={{ margin: 0 }}>Shielded liquidity positions</h2>
-            <Link to="/pools" className="small">Add liquidity</Link>
+            <Link to="/app/pools" className="small">Add liquidity</Link>
           </div>
         }
       />
@@ -631,7 +631,7 @@ function Notes({ v, status }: { v: VaultState; status: VaultStatus }) {
                     <td className="mono">#{n.leafIndex}</td>
                     <td>
                       {a?.symbol ??
-                        (share ? `Shares of ${positionLabel(share)}` : claim ? <>Perps claim on <Link to="/perps">position #{claim.positionId}</Link></> : "Liquidity shares or a perps claim (waiting for the index)")}
+                        (share ? `Shares of ${positionLabel(share)}` : claim ? <>Perps claim on <Link to="/app/perps">position #{claim.positionId}</Link></> : "Liquidity shares or a perps claim (waiting for the index)")}
                     </td>
                     <td className="mono">{a ? fmtAmount(n.amount, a.decimals, 6) : share ? `${unitsPct(BigInt(n.amount), BigInt(share.remainingUnits))}% of it` : claim ? "1 claim" : n.amount}</td>
                     <td>{reserved.has(n.nullifier) ? "Being spent" : "Spendable"}</td>

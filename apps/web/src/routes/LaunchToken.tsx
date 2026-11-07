@@ -26,7 +26,7 @@ import { useTxRunner, type TxStep } from "../lib/tx";
 import { padHref, useOperator } from "../lib/launchpads";
 
 export function LaunchToken() {
-  const { token } = useParams({ from: "/launch/$token" });
+  const { token } = useParams({ from: "/app/launch/$token" });
   const valid = isAddress(token);
   const detail = useLaunch(valid ? token : "0x0000000000000000000000000000000000000000", valid);
 
@@ -38,13 +38,13 @@ export function LaunchToken() {
     return (
       <div className="wrap">
         <PageHead
-          kicker={<Link to="/launch">Launch</Link>} title="Launch not found"
+          kicker={<Link to="/app/launch">Launch</Link>} title="Launch not found"
           lead={valid && !String(detail.error?.message).includes("404")
             ? "The Curveil API could not be reached, so this launch cannot be shown."
             : <>No Curveil launch is indexed for <span className="mono">{token}</span> on this network. A launch created in the last few seconds may still be indexing.</>}
         />
         <div className="hero-actions">
-          <Link to="/launch" className="btn">All launches</Link>
+          <Link to="/app/launch" className="btn">All launches</Link>
           {valid && <button className="btn" onClick={() => detail.refetch()}>Retry</button>}
         </div>
       </div>
@@ -60,7 +60,7 @@ function TokenSkeleton({ note }: { note?: string }) {
     <div className="wrap tk" aria-busy="true">
       <Loading label={note ?? "Loading the launch"} />
       {note && <p className="notice good" style={{ marginBottom: 16 }}>{note}</p>}
-      <Link to="/launch" className="tk-back">
+      <Link to="/app/launch" className="tk-back">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
         Launches
       </Link>
@@ -174,7 +174,7 @@ function TokenView({ d }: { d: LaunchDetail }) {
 
   return (
     <div className={`wrap tk${tradable || graduated ? " has-mbar" : ""}`}>
-      <Link to="/launch" className="tk-back">
+      <Link to="/app/launch" className="tk-back">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
         Launches
       </Link>
@@ -189,7 +189,7 @@ function TokenView({ d }: { d: LaunchDetail }) {
               <span className={`tag ${graduated ? "tag-live" : l.state === "graduation_ready" ? "tag-shielded" : "tag-public"}`}>{STATE_LABEL[l.state]}</span>
             </div>
             <p className="tk-meta">
-              <span>by <Link className="mono" to="/profile/$address" params={{ address: l.creator }}>{shortAddress(l.creator)}</Link></span>
+              <span>by <Link className="mono" to="/app/profile/$address" params={{ address: l.creator }}>{shortAddress(l.creator)}</Link></span>
               <a href={explorerTx(l.createdTx)} target="_blank" rel="noreferrer">{timeAgo(l.createdAt)}</a>
               <span>{q} pair</span>
               <CopyAddress value={l.token} />
@@ -242,7 +242,7 @@ function TokenView({ d }: { d: LaunchDetail }) {
                 empty="No trades in this range yet."
               />
             )}
-            <p className="small muted" style={{ margin: 0 }}>{q} per {l.symbol} after each curve trade.{graduated && l.pool ? <> Pool trades are on the <Link to="/pools/$pool" params={{ pool: l.pool }}>pool page</Link>.</> : ""}</p>
+            <p className="small muted" style={{ margin: 0 }}>{q} per {l.symbol} after each curve trade.{graduated && l.pool ? <> Pool trades are on the <Link to="/app/pools/$pool" params={{ pool: l.pool }}>pool page</Link>.</> : ""}</p>
           </section>
 
           <dl className="tk-stats">
@@ -271,7 +271,7 @@ function TokenView({ d }: { d: LaunchDetail }) {
           <dl className="tk-facts">
             <div><dt>Token</dt><dd><CopyAddress value={l.token} /></dd></div>
             <div><dt>Curve</dt><dd><CopyAddress value={l.curve} /></dd></div>
-            {l.pool && <div><dt>Pool</dt><dd><Link className="mono" to="/pools/$pool" params={{ pool: l.pool }}>{shortAddress(l.pool)}</Link></dd></div>}
+            {l.pool && <div><dt>Pool</dt><dd><Link className="mono" to="/app/pools/$pool" params={{ pool: l.pool }}>{shortAddress(l.pool)}</Link></dd></div>}
             <div><dt>Launched</dt><dd>{new Date(l.createdAt * 1000).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</dd></div>
             <div><dt>Template</dt><dd title={l.templateLabel ?? undefined}>{l.templateLabel ?? `Template ${l.templateId}`}</dd></div>
             {l.operator && <div><dt>Launchpad</dt><dd><a href={padHref(pad.data?.operator, l.operator)} target="_blank" rel="noreferrer">{padName ?? shortAddress(l.operator)}</a></dd></div>}
@@ -314,7 +314,7 @@ function TokenView({ d }: { d: LaunchDetail }) {
           <div className="panel stack tk-trade">
             {tradable && funding === "shielded" && (
               <p className="small muted tk-public-note">
-                Curve trades are public: they pay from your connected wallet, not your vault. Once the token graduates into a pool, it can be swapped shielded from <Link to="/swap">Swap</Link> if it is admitted to the vault.
+                Curve trades are public: they pay from your connected wallet, not your vault. Once the token graduates into a pool, it can be swapped shielded from <Link to="/app/swap">Swap</Link> if it is admitted to the vault.
               </p>
             )}
             {tradable && <TradePanel d={d} onConfirmed={setLastTx} side={side} onSide={setSide} />}
@@ -340,7 +340,7 @@ function TokenView({ d }: { d: LaunchDetail }) {
               <button type="button" className="btn btn-primary tk-buy" onClick={() => pickSide("buy")}>Buy</button>
             </>
           ) : (
-            l.pool && quote && <Link to="/swap" search={{ from: quote.address, to: l.token }} className="btn btn-primary">Trade in the pool</Link>
+            l.pool && quote && <Link to="/app/swap" search={{ from: quote.address, to: l.token }} className="btn btn-primary">Trade in the pool</Link>
           )}
         </div>
       )}
@@ -369,7 +369,7 @@ function TradesTable({ trades, symbol, quote }: { trades: ReturnType<typeof useL
                   {t.isBuy ? "Buy" : "Sell"}
                 </span>
               </td>
-              <td className="mono small"><Link to="/profile/$address" params={{ address: t.recipient }}>{shortAddress(t.recipient)}</Link></td>
+              <td className="mono small"><Link to="/app/profile/$address" params={{ address: t.recipient }}>{shortAddress(t.recipient)}</Link></td>
               <td className="num mono">{fmtAmount(t.quoteAmount, quote?.decimals ?? 6, isUsd(quote?.symbol) ? 2 : 4)}</td>
               <td className="num mono">{compact(Number(t.tokenAmount) / 1e18)}</td>
               <td className="num mono small">{fmtPrice(t.priceAfter)}</td>
@@ -554,7 +554,7 @@ function GraduatedPanel({ d, prior }: { d: LaunchDetail; prior: TxPhase | null }
       </div>
       {g ? (
         <dl className="rows summary">
-          <div><dt>Pool</dt><dd className="mono"><Link to="/pools/$pool" params={{ pool: g.pool }}>{shortAddress(g.pool)}</Link></dd></div>
+          <div><dt>Pool</dt><dd className="mono"><Link to="/app/pools/$pool" params={{ pool: g.pool }}>{shortAddress(g.pool)}</Link></dd></div>
           <div><dt>Tokens deposited</dt><dd className="mono">{fmtAmount(g.tokenAmount, 18, 0)}</dd></div>
           <div><dt>{quote?.symbol ?? "Quote"} deposited</dt><dd className="mono">{fmtAmount(g.quoteAmount, quote?.decimals ?? 6, isUsd(quote?.symbol) ? 2 : 4)}</dd></div>
           <div><dt>Graduated</dt><dd><a href={explorerTx(g.txHash)} target="_blank" rel="noreferrer">{timeAgo(g.timestamp)}</a></dd></div>
@@ -564,8 +564,8 @@ function GraduatedPanel({ d, prior }: { d: LaunchDetail; prior: TxPhase | null }
       )}
       {g && quote && (
         <div className="stack" style={{ gap: 8 }}>
-          <Link to="/swap" search={{ from: quote.address, to: d.launch.token }} className="btn btn-primary btn-block">Trade in the pool</Link>
-          <Link to="/pools/$pool" params={{ pool: g.pool }} className="btn btn-block">Pool details</Link>
+          <Link to="/app/swap" search={{ from: quote.address, to: d.launch.token }} className="btn btn-primary btn-block">Trade in the pool</Link>
+          <Link to="/app/pools/$pool" params={{ pool: g.pool }} className="btn btn-block">Pool details</Link>
         </div>
       )}
       <p className="small muted" style={{ margin: 0 }}>The curve is closed. All LP shares from graduation are in escrow; see Locked liquidity for their unlock dates.</p>
