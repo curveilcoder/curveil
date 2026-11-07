@@ -213,6 +213,23 @@
 .lens-top .live-chip { margin: 0; }
 @media (max-width: 520px) { .lens-top { justify-content: flex-start; padding-top: 16px; } .lens-top .live-chip { gap: 8px; font-size: 10.5px; letter-spacing: 0.06em; white-space: nowrap; } }
 .lens-foot .hero-actions { justify-content: center; margin-top: 0; }
+/* Hero call to action: one large Curveil-blue button, a light running round its edge, a soft glow */
+@property --cta-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.hero-launch { display: grid; justify-items: center; gap: 14px; }
+.launch-cta { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 18px; height: 58px; padding: 0 9px 0 30px; border-radius: 4px; background: linear-gradient(180deg, #3d78ff, var(--shielded)); color: #fff; font-size: 18px; font-weight: 600; letter-spacing: -0.015em; text-decoration: none; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 10px 36px rgba(37, 99, 255, 0.45), 0 0 90px rgba(37, 99, 255, 0.28); transition: transform 0.15s ease, box-shadow 0.25s ease; }
+.launch-cta::before { content: ""; position: absolute; inset: -1.5px; z-index: -1; border-radius: 5px; padding: 1.5px; background: conic-gradient(from var(--cta-a), transparent 0deg 250deg, rgba(255, 255, 255, 0.95) 300deg, transparent 340deg); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); animation: cta-spin 3.2s linear infinite; }
+.launch-cta::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.22) 50%, transparent 65%) no-repeat; background-size: 250% 100%; background-position: 130% 0; animation: cta-shine 4.8s ease-in-out infinite; }
+.launch-cta:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 14px 44px rgba(37, 99, 255, 0.6), 0 0 120px rgba(37, 99, 255, 0.38); }
+.launch-cta:active { transform: translateY(0); }
+.launch-cta:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.launch-cta-mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 3px; background: #fff; color: #000; transition: transform 0.2s ease; }
+.launch-cta-mark svg { display: block; transition: transform 0.6s cubic-bezier(0.3, 1.4, 0.5, 1); }
+.launch-cta:hover .launch-cta-mark svg { transform: rotate(120deg); }
+.launch-cta-note { margin: 0; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+@keyframes cta-spin { to { --cta-a: 360deg; } }
+@keyframes cta-shine { 0%, 55% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
+@media (prefers-reduced-motion: reduce) { .launch-cta::before, .launch-cta::after { animation: none; } .launch-cta:hover .launch-cta-mark svg { transform: none; } }
+@media (max-width: 520px) { .launch-cta { height: 54px; font-size: 17px; padding-left: 24px; } .launch-cta-mark { width: 38px; height: 38px; } }
 @media (max-width: 900px) {
   .lens-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 32px; }
   .lens-side.right { justify-items: start; text-align: left; }

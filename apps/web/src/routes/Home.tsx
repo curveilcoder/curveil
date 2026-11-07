@@ -1,6 +1,7 @@
 import { useRef, type ReactNode } from "react";
 import { Sk } from "../components/Skeleton";
 import { CaChip } from "../components/CaChip";
+import { Logo } from "../components/Logo";
 import { Link } from "@tanstack/react-router";
 import { useStatus } from "../lib/api";
 import { IS_TESTNET, manifest } from "../lib/config";
@@ -47,11 +48,15 @@ function LiveChip() {
   );
 }
 
+/** One way in: a large Curveil-blue button with a light running round its edge and the Curveil mark. */
 function HeroActions() {
   return (
-    <div className="hero-actions">
-      <Link to="/app/vault" className="btn btn-primary">Go shielded <span aria-hidden="true">→</span></Link>
-      <Link to="/app/perps" className="btn">Trade perps <span aria-hidden="true">→</span></Link>
+    <div className="hero-launch">
+      <Link to="/app/perps" className="launch-cta">
+        <span>Launch app</span>
+        <span className="launch-cta-mark" aria-hidden="true"><Logo size={24} tones={["shielded", "shielded", "shielded"]} /></span>
+      </Link>
+      <p className="launch-cta-note mono">No sign-up · connect a wallet to start</p>
     </div>
   );
 }
