@@ -134,6 +134,7 @@ function PerpsPage() {
           <section className="pxt-card pxt-bal" aria-label="Balances">
             <Balances />
           </section>
+          <VaultTeaser o={o} />
         </div>
         <div className="pxt-right">
         <div className="pxt-center">
@@ -254,6 +255,36 @@ function WatchRow({ m, on, onPick }: { m: PerpMarket; on: boolean; onPick: (id: 
         </span>
       </button>
     </li>
+  );
+}
+
+/** Scrolls to the liquidity card and briefly outlines it, so it is clear where to look. */
+function goToVault() {
+  const el = document.getElementById("px-liquidity");
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  el.classList.remove("pxt-flash");
+  void el.offsetWidth;
+  el.classList.add("pxt-flash");
+}
+
+/** The liquidity vault in the left column, so it is seen without scrolling. Without `o` it is the loading version. */
+function VaultTeaser({ o }: { o?: PerpsOverview }) {
+  const { address } = useConnection();
+  const mine = usePerpVaultAccount(o ? address : undefined);
+  const v = o?.vault;
+  const shares = mine.data ? BigInt(mine.data.shares) : 0n;
+  return (
+    <section className="pxt-card pxt-vlt" aria-label="Liquidity vault">
+      <div className="pxt-card-head"><h2>Liquidity vault</h2><span className="pxt-pill">Earn</span></div>
+      <p className="pxt-vlt-pitch">Take the other side of every trade. The vault earns 80% of trading fees and what traders lose, and pays what they win.</p>
+      <dl className="pxt-vlt-stats">
+        <div><dt>Value</dt><dd className="mono">{!v ? <Sk w="6ch" /> : v.totalAssets !== null ? `${usd(v.totalAssets, 0)} ${SYMBOL}` : "pricing…"}</dd></div>
+        <div><dt>Share price</dt><dd className="mono">{!v ? <Sk w="6ch" /> : v.sharePrice !== null ? v.sharePrice.toFixed(4) : "–"}</dd></div>
+      </dl>
+      {shares > 0n && mine.data?.value && <p className="pxt-vlt-mine">You hold <span className="mono">≈ {usd(mine.data.value)} {SYMBOL}</span></p>}
+      <button type="button" className="btn btn-primary btn-block" onClick={goToVault} disabled={!o}>Provide liquidity</button>
+    </section>
   );
 }
 
@@ -388,7 +419,7 @@ function ChartHead({ o, market, onPick }: { o: PerpsOverview; market: PerpMarket
         <div><dt>Funding 1h</dt><dd className={`mono ${toneOf(rate)}`} title={fundingText(market)}>{Number.isFinite(rate) ? `${(rate * 100).toFixed(4)}%` : "–"} <span className="muted">· {next}</span></dd></div>
         <div><dt>Open interest</dt><dd className="mono">{st ? usd(BigInt(st.oiLong) + BigInt(st.oiShort), 0) : "–"} <span className="muted">{SYMBOL}</span></dd></div>
         <div><dt>Volume 24h</dt><dd className="mono">{Number(market.volume24h).toLocaleString("en-US", { maximumFractionDigits: 0 })} <span className="muted">{SYMBOL}</span></dd></div>
-        <div><dt>Vault liquidity</dt><dd className="mono">{o.vault.freeLiquidity !== null ? usd(o.vault.freeLiquidity, 0) : "–"} <span className="muted">{SYMBOL}</span></dd></div>
+        <div><dt>Vault liquidity</dt><dd className="mono"><button type="button" className="pxt-stat-link" onClick={goToVault} title="Provide liquidity to the vault">{o.vault.freeLiquidity !== null ? usd(o.vault.freeLiquidity, 0) : "–"} <span className="muted">{SYMBOL}</span></button></dd></div>
       </dl>
     </header>
   );
@@ -570,6 +601,7 @@ function PerpsSkeleton() {
           <section className="pxt-card pxt-bal">
             <Balances />
           </section>
+          <VaultTeaser />
         </div>
         <div className="pxt-right">
         <div className="pxt-center">

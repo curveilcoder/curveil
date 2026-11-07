@@ -297,6 +297,22 @@ a.pxt-bal-box:hover { border-color: var(--line-strong); }
 .pxt-pad { padding: 16px; display: grid; gap: 24px; }
 .pxt-liq-head { padding: 16px 18px 0; }
 .pxt-liq .pxt-pad { padding-top: 12px; }
+/* Liquidity vault card in the left column: Curveil blue so it stands out from the balances */
+.pxt-vlt { padding: 16px 12px 12px; gap: 12px; border-color: rgba(37, 99, 255, 0.45); background: linear-gradient(160deg, rgba(37, 99, 255, 0.16), rgba(37, 99, 255, 0.03) 55%), var(--card); }
+.pxt-vlt-pitch { margin: 0; padding: 0 4px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.pxt-vlt-stats { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pxt-vlt-stats > div { padding: 10px 12px; border: 1px solid var(--card-line); border-radius: var(--radius-field); background: var(--card-in); display: grid; gap: 4px; }
+.pxt-vlt-stats dt { font-size: 12px; color: var(--faint); }
+.pxt-vlt-stats dd { margin: 0; font-size: 14px; color: #fff; }
+.pxt-vlt-mine { margin: 0; padding: 0 4px; font-size: 13px; color: var(--muted); }
+.pxt-vlt-mine .mono { color: var(--ink); }
+.pxt-stat-link { border: 0; padding: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-decoration: underline dotted rgba(122, 160, 255, 0.6); text-underline-offset: 4px; }
+.pxt-stat-link:hover { color: #fff; text-decoration-color: #7aa0ff; }
+.pxt-liq { scroll-margin-top: calc(var(--header-h, 72px) + 12px); }
+@media (min-width: 1241px) { .pxt-liq { scroll-margin-top: 0; } }
+.pxt-flash { animation: pxt-flash 1.8s ease-out; }
+@keyframes pxt-flash { 0%, 40% { border-color: var(--shielded); box-shadow: 0 0 0 1px var(--shielded); } 100% { box-shadow: 0 0 0 1px transparent; } }
+@media (prefers-reduced-motion: reduce) { .pxt-flash { animation: none; } }
 
 /* Laptop: no watchlist column (the market switch is in the chart header); balances sit under the order card */
 @media (max-width: 1240px) {
@@ -307,8 +323,11 @@ a.pxt-bal-box:hover { border-color: var(--line-strong); }
 /* Phone and tablet: one column, the order card under the chart */
 @media (max-width: 860px) {
   .pxt { padding: 8px 0 0; }
-  .pxt-grid { gap: 10px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "chart" "side" "acct" "liq" "left"; }
+  .pxt-grid { gap: 10px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "chart" "side" "vlt" "acct" "liq" "left"; }
   .pxt-liq { grid-area: liq; }
+  .pxt-left { display: contents; }
+  .pxt-bal { grid-area: left; }
+  .pxt-vlt { grid-area: vlt; padding: 16px; }
   .pxt-center { display: contents; }
   .pxt-card { border-radius: 0; border-left: 0; border-right: 0; }
   .pxt-head { padding: 14px 16px 12px; }
